@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="SlangPersistentStateComponentConfig">
+    <option name="additionalIncludePaths">
+      <list>
+        <option value="~/.vulkan/1.4.335.0/x86_64/bin" />
+      </list>
+    </option>
+    <option name="explicitSlangdLocation" value="~/.vulkan/1.4.335.0/x86_64/bin" />
+  </component>
+</project>
