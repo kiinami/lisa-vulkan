@@ -19,6 +19,12 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 ###############################################################################
 
 # Vulkan
+if (NOT IS_DIRECTORY $ENV{VULKAN_SDK})
+    message(WARNING "Vulkan SDK not detected, if installed please set VULKAN_SDK env var or manually provide libraries")
+else ()
+    message(STATUS "Found Vulkan SDK in $ENV{VULKAN_SDK}")
+endif ()
+include_directories($ENV{VULKAN_SDK}/include)
 find_package(Vulkan REQUIRED)
 message(STATUS "Found Vulkan: ${Vulkan_LIBRARY}")
 
@@ -72,9 +78,12 @@ find_library(SLANG_LIBRARY
 ###############################################################################
 
 add_executable(${PROJECT_NAME}
-        src/lisa/main.cpp
+        assets/shaders/shader.slang
 
-        assets/shader.slang
+        src/lisa/main.cpp
+        src/lisa/core/Application.cpp
+        src/lisa/core/Application.h
+        src/lisa/utils/chk.cpp
 )
 
 ###############################################################################
