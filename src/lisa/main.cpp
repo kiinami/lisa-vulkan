@@ -6,7 +6,7 @@
 
 int main(int argc, char** argv)
 {
-    auto app = Application("lisa");
-    app.init(1);
+    auto app = Application();
+    app.init("Lisa", 800, 600, 1);
     return app.run();
 }

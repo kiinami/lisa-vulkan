@@ -6,8 +6,8 @@
 #define LISA_VULKAN_APPLICATION_H
 #include <memory>
 
-#include "Renderer.h"
-#include "VulkanRHI.h"
+// #include "Renderer.h"
+// #include "VulkanRHI.h"
 #include "Window.h"
 
 class Application
@@ -16,16 +16,13 @@ public:
     Application();
     ~Application();
 
-    void init(const char* name, unsigned int device);
+    void init(const std::string& name, unsigned int width, unsigned int height, unsigned int device);
     int run();
 
 private:
-    const char* name_ = "lisa";
-    unsigned int device_ = 0;
-
     std::unique_ptr<Window> window_;
-    std::unique_ptr<VulkanRHI> vulkan_;
-    std::unique_ptr<Renderer> renderer_;
+    // std::unique_ptr<VulkanRHI> vulkan_;
+    // std::unique_ptr<Renderer> renderer_;
 };
 
 
