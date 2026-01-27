@@ -6,6 +6,6 @@
 
 int main(int argc, char** argv)
 {
-    auto app = Application();
+    auto app = Application("lisa");
     return app.run();
 }

@@ -80,10 +80,14 @@ find_library(SLANG_LIBRARY
 add_executable(${PROJECT_NAME}
         assets/shaders/shader.slang
 
+        src/lisa/utils/ExternalLibs.cpp
         src/lisa/main.cpp
         src/lisa/core/Application.cpp
         src/lisa/core/Application.h
         src/lisa/utils/chk.cpp
+        src/lisa/primitives/VulkanInstance.cpp
+        src/lisa/primitives/VulkanInstance.h
+        src/lisa/utils/ExternalLibs.cpp
 )
 
 ###############################################################################

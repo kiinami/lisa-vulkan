@@ -4,18 +4,20 @@
 
 #ifndef LISA_VULKAN_APPLICATION_H
 #define LISA_VULKAN_APPLICATION_H
+#include "../primitives/VulkanInstance.h"
 
 
 class Application
 {
 public:
-    Application();
+    explicit Application(const char* name);
     ~Application();
 
     int run();
 
 private:
-    static void init_libraries();
+    const char* name_;
+    VulkanInstance instance_{name_};
 };
 
 
