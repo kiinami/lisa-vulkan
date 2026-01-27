@@ -85,9 +85,13 @@ add_executable(${PROJECT_NAME}
         src/lisa/core/Application.cpp
         src/lisa/core/Application.h
         src/lisa/utils/chk.cpp
-        src/lisa/primitives/VulkanInstance.cpp
-        src/lisa/primitives/VulkanInstance.h
         src/lisa/utils/ExternalLibs.cpp
+        src/lisa/core/Renderer.cpp
+        src/lisa/core/Renderer.h
+        src/lisa/core/VulkanRHI.cpp
+        src/lisa/core/VulkanRHI.h
+        src/lisa/core/Window.cpp
+        src/lisa/core/Window.h
 )
 
 ###############################################################################

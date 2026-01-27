@@ -4,20 +4,28 @@
 
 #ifndef LISA_VULKAN_APPLICATION_H
 #define LISA_VULKAN_APPLICATION_H
-#include "../primitives/VulkanInstance.h"
+#include <memory>
 
+#include "Renderer.h"
+#include "VulkanRHI.h"
+#include "Window.h"
 
 class Application
 {
 public:
-    explicit Application(const char* name);
+    Application();
     ~Application();
 
+    void init(const char* name, unsigned int device);
     int run();
 
 private:
-    const char* name_;
-    VulkanInstance instance_{name_};
+    const char* name_ = "lisa";
+    unsigned int device_ = 0;
+
+    std::unique_ptr<Window> window_;
+    std::unique_ptr<VulkanRHI> vulkan_;
+    std::unique_ptr<Renderer> renderer_;
 };
 
 

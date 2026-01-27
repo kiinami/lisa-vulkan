@@ -7,7 +7,7 @@
 #include "Application.h"
 #include "../utils/chk.cpp"
 
-Application::Application(const char* name) : name_(name)
+Application::Application()
 {
 }
 
@@ -15,9 +15,14 @@ Application::~Application()
 {
 }
 
+void Application::init(const char* name, unsigned int device)
+{
+
+}
+
 int Application::run()
 {
-    std::cout << "Starting application " << name_;
+    std::cout << "Starting application '" << name_ <<"'...";
     return 0;
 }
 
