@@ -1,0 +1,19 @@
+{
+  "name" : "lisa",
+  "version-string" : "1.0.0",
+  "dependencies" : [
+    "quill",
+    { "name" : "ktx", "features" : [ "vulkan" ] },
+    "glm",
+    "tinyobjloader",
+    "lunarg-vulkantools",
+    "volk",
+    "vulkan-memory-allocator",
+    "shader-slang",
+    {
+      "name": "sdl3",
+      "default-features": false,
+      "features": ["vulkan", "wayland", "x11"]
+    }
+  ]
+}
