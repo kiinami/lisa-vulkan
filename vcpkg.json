@@ -6,7 +6,8 @@
     { "name" : "ktx", "features" : [ "vulkan" ] },
     "glm",
     "tinyobjloader",
-    "lunarg-vulkantools",
+    "vulkan-sdk-components",
+    "vulkan-validationlayers",
     "volk",
     "vulkan-memory-allocator",
     "shader-slang",
@@ -14,6 +15,7 @@
       "name": "sdl3",
       "default-features": false,
       "features": ["vulkan", "wayland", "x11"]
-    }
+    },
+    "cli11"
   ]
 }

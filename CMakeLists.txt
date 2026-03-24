@@ -13,9 +13,6 @@ endif()
 
 project(lisa LANGUAGES C CXX)
 
-# Add custom cmake module path
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
-
 # Set output directory for binaries
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 
@@ -31,27 +28,20 @@ find_package(volk CONFIG REQUIRED)
 find_package(VulkanMemoryAllocator CONFIG REQUIRED)
 find_package(SDL3 CONFIG REQUIRED)
 find_package(slang CONFIG REQUIRED)
+find_package(CLI11 CONFIG REQUIRED)
+find_package(quill CONFIG REQUIRED)
 
 ###############################################################################
-# Executable target
+# Library
 ###############################################################################
 
-add_executable(${PROJECT_NAME}
-        assets/shaders/shader.slang
-
-        src/lisa/utils/ExternalLibs.cpp
-        src/lisa/main.cpp
-        src/lisa/core/Application.cpp
-        src/lisa/core/Application.h
-        src/lisa/utils/chk.cpp
-        src/lisa/utils/ExternalLibs.cpp
-        src/lisa/core/Renderer.cpp
-        src/lisa/core/Renderer.h
-        src/lisa/core/VulkanRHI.cpp
-        src/lisa/core/VulkanRHI.h
-        src/lisa/core/Window.cpp
-        src/lisa/core/Window.h
+include_directories(src)
+file(GLOB_RECURSE LISA_FILES
+        "src/lisa/*.h"
+        "src/lisa/*.cpp"
 )
+
+add_library(${PROJECT_NAME} STATIC ${LISA_FILES})
 
 ###############################################################################
 # Compiler configuration
@@ -89,7 +79,7 @@ endif ()
 ###############################################################################
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
-        Vulkan::Vulkan
+        ${VCPKG_VULKAN_LIB}
         KTX::ktx
         SDL3::SDL3
         slang::slang
@@ -97,6 +87,27 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
         tinyobjloader::tinyobjloader
         volk::volk
         GPUOpen::VulkanMemoryAllocator
+        CLI11::CLI11
+        quill::quill
+)
+
+###############################################################################
+# Executable
+###############################################################################
+
+add_executable(${PROJECT_NAME}_app src/main.cpp)
+target_link_libraries(${PROJECT_NAME}_app PRIVATE
+        ${PROJECT_NAME}
+        ${VCPKG_VULKAN_LIB}
+        KTX::ktx
+        SDL3::SDL3
+        slang::slang
+        glm::glm
+        tinyobjloader::tinyobjloader
+        volk::volk
+        GPUOpen::VulkanMemoryAllocator
+        CLI11::CLI11
+        quill::quill
 )
 
 ###############################################################################
@@ -107,3 +118,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
 set_target_properties(${PROJECT_NAME} PROPERTIES
         DEBUGGER_WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
 )
+
+# Ensure correct debugging
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address,undefined -g -O1")
+set(CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -fsanitize=address,undefined")
