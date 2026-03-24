@@ -2,49 +2,56 @@
 // Created by kinami on 1/26/26.
 //
 
-#include <CLI/CLI.hpp>
-#include "lisa/graphics/graphics.h"
 #include "lisa/graphics/device/Instance.h"
+#include "lisa/graphics/graphics.h"
 #include "lisa/utils/defer.h"
 #include "lisa/utils/logging.h"
+
+#include <CLI/CLI.hpp>
+#include <quill/LogMacros.h>
 
 using namespace lisa;
 
 namespace {
-    CLI::App app{"lisa"};
-    std::string log_level = "debug";
+  CLI::App app{ "lisa" };
+  std::string log_level = "debug";
+} // namespace
+
+static int cli_args(int argc, char** argv) {
+  argv = app.ensure_utf8(argv);
+
+  app
+    .add_option(
+      "-l,--log-level", log_level, "The logging level of the application"
+    )
+    ->check(
+      CLI::IsMember(
+        { "trace", "debug", "info", "warning", "error", "critical" },
+        CLI::ignore_case
+      )
+    );
+
+  CLI11_PARSE(app, argc, argv);
+  return 0;
 }
 
-static int cli_args(int argc, char** argv)
-{
-    argv = app.ensure_utf8(argv);
+int main(int argc, char** argv) {
+  logging::init();
 
-    app.add_option(
-        "-l,--log-level",
-        log_level,
-        "The logging level of the application"
-        )
-    ->check(CLI::IsMember({"trace","debug","info","warning","error","critical"}, CLI::ignore_case));
+  auto result = cli_args(argc, argv);
+  if (result != 0) return result;
 
-    CLI11_PARSE(app, argc, argv);
-    return 0;
-}
+  logging::set_level(log_level);
 
-int main(int argc, char** argv)
-{
-    logging::init();
+  {
+    auto vk_layer_path = getenv("VK_ADD_LAYER_PATH");
+    LOG_DEBUG(logging::logger(), "VK_ADD_LAYER_PATH={}", vk_layer_path);
 
-    auto result = cli_args(argc, argv);
-    if (result != 0) return result;
+    auto instance = Instance();
 
-    logging::set_level(log_level);
+    graphics::init_device(instance);
+    defer(graphics::destroy_device());
+  }
 
-    {
-        auto instance = Instance();
-
-        graphics::init_device(instance);
-        defer(graphics::destroy_device());
-    }
-
-    return 0;
+  return 0;
 }

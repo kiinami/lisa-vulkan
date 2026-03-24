@@ -6,20 +6,20 @@
 #define LISA_INSTANCE_H
 #include <vulkan/vulkan_core.h>
 
-namespace lisa
-{
-    class Instance
-    {
-    public:
-        Instance();
-        ~Instance();
+namespace lisa {
+  class Instance {
+  public:
+    Instance();
+    ~Instance();
 
-        [[nodiscard]] VkInstance vk_instance() const { return instance_; }
+    [[nodiscard]]
+    VkInstance vk_instance() const {
+      return instance_;
+    }
 
-    private:
-        VkInstance instance_ = VK_NULL_HANDLE;
-    };
-}
+  private:
+    VkInstance instance_ = VK_NULL_HANDLE;
+  };
+} // namespace lisa
 
-
-#endif //LISA_INSTANCE_H
+#endif // LISA_INSTANCE_H

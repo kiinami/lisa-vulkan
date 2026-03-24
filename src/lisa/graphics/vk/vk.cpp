@@ -4,22 +4,17 @@
 
 #include "vk.h"
 
-#include <volk.h>
-#include <SDL3/SDL.h>
-#include <SDL3/SDL_vulkan.h>
-
 #include "lisa/utils/chk.h"
 
-namespace lisa::graphics
-{
-    void init_sdl()
-    {
-        utils::chk(SDL_Init(SDL_INIT_VIDEO));
-        utils::chk(SDL_Vulkan_LoadLibrary(nullptr));
-    }
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_vulkan.h>
+#include <volk.h>
 
-    void init_volk()
-    {
-        volkInitialize();
-    }
-}
+namespace lisa::graphics {
+  void init_sdl() {
+    utils::chk(SDL_Init(SDL_INIT_VIDEO));
+    utils::chk(SDL_Vulkan_LoadLibrary(nullptr));
+  }
+
+  void init_volk() { volkInitialize(); }
+} // namespace lisa::graphics

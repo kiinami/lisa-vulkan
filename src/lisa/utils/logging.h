@@ -7,13 +7,20 @@
 #pragma once
 #include <quill/Logger.h>
 #include <string>
+#include <vulkan/vk_platform.h>
+#include <vulkan/vulkan_core.h>
 
+namespace lisa::logging {
+  void init();
+  void set_level(const std::string& level);
+  quill::Logger* logger();
+  VKAPI_ATTR VkBool32 VKAPI_CALL vulkanDebugCallback(
+    VkDebugUtilsMessageSeverityFlagBitsEXT severity,
+    VkDebugUtilsMessageTypeFlagsEXT type,
+    const VkDebugUtilsMessengerCallbackDataEXT* callbackData,
+    void* userData
+  );
 
-namespace lisa::logging
-{
-    void init();
-    void set_level(const std::string& level);
-    quill::Logger* get_logger();
-}
+} // namespace lisa::logging
 
-#endif //LISA_LOGGING_H
+#endif // LISA_LOGGING_H
