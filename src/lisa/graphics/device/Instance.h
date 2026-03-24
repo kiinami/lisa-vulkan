@@ -20,6 +20,6 @@ namespace lisa {
   private:
     VkInstance instance_ = VK_NULL_HANDLE;
   };
-} // namespace lisa
+}
 
-#endif // LISA_INSTANCE_H
+#endif

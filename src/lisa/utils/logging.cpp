@@ -67,6 +67,6 @@ namespace lisa::logging {
     else
       LOG_DEBUG(vulkan_logger_, "[VULKAN] {}", msg);
 
-    return VK_FALSE; // don't abort
+    return VK_FALSE;
   }
-} // namespace lisa::logging
+}

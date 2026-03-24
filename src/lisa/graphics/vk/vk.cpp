@@ -17,4 +17,4 @@ namespace lisa::graphics {
   }
 
   void init_volk() { volkInitialize(); }
-} // namespace lisa::graphics
+}

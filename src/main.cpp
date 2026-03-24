@@ -15,7 +15,7 @@ using namespace lisa;
 namespace {
   CLI::App app{ "lisa" };
   std::string log_level = "debug";
-} // namespace
+}
 
 static int cli_args(int argc, char** argv) {
   argv = app.ensure_utf8(argv);

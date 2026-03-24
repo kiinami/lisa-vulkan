@@ -22,6 +22,6 @@ namespace lisa::utils {
       exit(result);
     }
   }
-} // namespace lisa::utils
+}
 
-#endif // LISA_CHK_H
+#endif

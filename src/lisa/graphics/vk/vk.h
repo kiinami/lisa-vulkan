@@ -10,6 +10,6 @@
 namespace lisa::graphics {
   void init_sdl();
   void init_volk();
-} // namespace lisa::graphics
+}
 
-#endif // LISA_VK_H
+#endif

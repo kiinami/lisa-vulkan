@@ -53,4 +53,4 @@ namespace lisa {
     SDL_Quit();
     vkDestroyInstance(instance_, nullptr);
   }
-} // namespace lisa
+}

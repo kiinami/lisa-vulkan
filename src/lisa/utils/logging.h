@@ -21,6 +21,6 @@ namespace lisa::logging {
     void* userData
   );
 
-} // namespace lisa::logging
+}
 
-#endif // LISA_LOGGING_H
+#endif

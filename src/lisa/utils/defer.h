@@ -28,4 +28,4 @@ private:
     code;                                                         \
   })
 
-#endif // LISA_DEFER_H
+#endif

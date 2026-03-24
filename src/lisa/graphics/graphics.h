@@ -15,6 +15,6 @@ namespace lisa::graphics {
   VkInstance instance();
   VkDevice device();
   VkPhysicalDevice physical_device();
-} // namespace lisa::graphics
+}
 
-#endif // LISA_GRAPHICS_H
+#endif

@@ -12,4 +12,4 @@ namespace lisa::graphics {
   void init_device(Instance& instance) { vk_instance = &instance; }
 
   void destroy_device() {}
-} // namespace lisa::graphics
+}
