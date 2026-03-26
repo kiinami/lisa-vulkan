@@ -8,7 +8,7 @@ cmake_minimum_required(VERSION 3.20 FATAL_ERROR)
 
 if(NOT CMAKE_TOOLCHAIN_FILE AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/external/vcpkg/scripts/buildsystems/vcpkg.cmake")
     set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_SOURCE_DIR}/external/vcpkg/scripts/buildsystems/vcpkg.cmake"
-        CACHE STRING "Vcpkg toolchain file")
+            CACHE STRING "Vcpkg toolchain file")
 endif()
 
 project(lisa LANGUAGES C CXX)
@@ -43,6 +43,14 @@ file(GLOB_RECURSE LISA_FILES
 
 add_library(${PROJECT_NAME} STATIC ${LISA_FILES})
 
+# Precompile massive headers to drastically speed up build times
+target_precompile_headers(${PROJECT_NAME} PUBLIC
+        <vulkan/vulkan.hpp>
+        <vk_mem_alloc.h>
+        <glm/glm.hpp>
+        <SDL3/SDL.h>
+)
+
 ###############################################################################
 # Compiler configuration
 ###############################################################################
@@ -51,8 +59,10 @@ add_library(${PROJECT_NAME} STATIC ${LISA_FILES})
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
 
 # Defines (Preprocessor macros)
-target_compile_definitions(${PROJECT_NAME} PRIVATE
+target_compile_definitions(${PROJECT_NAME} PUBLIC
         VK_NO_PROTOTYPES
+        VULKAN_HPP_NO_CONSTRUCTORS
+        VULKAN_HPP_NO_STRUCT_CONSTRUCTORS
         NOMINMAX
         _USE_MATH_DEFINES
 )

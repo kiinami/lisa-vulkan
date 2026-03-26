@@ -4,7 +4,12 @@
 
 #ifndef LISA_INSTANCE_H
 #define LISA_INSTANCE_H
-#include <vulkan/vulkan_core.h>
+#include "lisa/utils/defines.h"
+
+static const std::vector<const char*> VLAYERS = {};
+static const std::vector VLAYERS_DEBUG = {
+  "VK_LAYER_KHRONOS_validation"
+};
 
 namespace lisa {
   class Instance {
@@ -13,12 +18,17 @@ namespace lisa {
     ~Instance();
 
     [[nodiscard]]
-    VkInstance vk_instance() const {
+    vk::Instance vk_instance() const {
       return instance_;
     }
 
   private:
-    VkInstance instance_ = VK_NULL_HANDLE;
+    vk::Instance instance_ = VK_NULL_HANDLE;
+    vk::DebugUtilsMessengerEXT debug_messenger_ = VK_NULL_HANDLE;
+
+    static std::vector<const char*> get_instance_extensions();
+    static std::vector<const char*> get_validation_layers();
+    void add_debug_messenger();
   };
 }
 

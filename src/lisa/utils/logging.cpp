@@ -17,13 +17,18 @@ namespace lisa::logging {
     std::shared_ptr<Sink> sink_;
     Logger* logger_;
     Logger* vulkan_logger_;
-  } // namespace
+  }
 
   void init() {
     Backend::start();
     sink_ = Frontend::create_or_get_sink<ConsoleSink>("lisa");
-    logger_ = Frontend::create_or_get_logger("lisa", std::move(sink_));
-    vulkan_logger_ = Frontend::create_or_get_logger("vulkan", std::move(sink_));
+    logger_ = Frontend::create_or_get_logger("lisa", sink_);
+    vulkan_logger_ = Frontend::create_or_get_logger("vulkan", sink_);
+  }
+
+  LogLevel get_level()
+  {
+    return logger_->get_log_level();
   }
 
   void set_level(const std::string& level) {
@@ -50,19 +55,19 @@ namespace lisa::logging {
 
   Logger* logger() { return logger_; }
 
-  VKAPI_ATTR VkBool32 VKAPI_CALL vulkanDebugCallback(
-    VkDebugUtilsMessageSeverityFlagBitsEXT severity,
-    VkDebugUtilsMessageTypeFlagsEXT type,
-    const VkDebugUtilsMessengerCallbackDataEXT* callbackData,
+  VKAPI_ATTR vk::Bool32 VKAPI_CALL vulkanDebugCallback(
+    vk::DebugUtilsMessageSeverityFlagBitsEXT severity,
+    vk::DebugUtilsMessageTypeFlagsEXT type,
+    const vk::DebugUtilsMessengerCallbackDataEXT* callbackData,
     void* userData
   ) {
     const char* msg = callbackData->pMessage;
 
-    if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
+    if (severity & vk::DebugUtilsMessageSeverityFlagBitsEXT::eError)
       LOG_ERROR(vulkan_logger_, "[VULKAN] {}", msg);
-    else if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
+    else if (severity & vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning)
       LOG_WARNING(vulkan_logger_, "[VULKAN] {}", msg);
-    else if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)
+    else if (severity & vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo)
       LOG_INFO(vulkan_logger_, "[VULKAN] {}", msg);
     else
       LOG_DEBUG(vulkan_logger_, "[VULKAN] {}", msg);

@@ -5,10 +5,7 @@
 #include "vk.h"
 
 #include "lisa/utils/chk.h"
-
-#include <SDL3/SDL.h>
-#include <SDL3/SDL_vulkan.h>
-#include <volk.h>
+#include "lisa/utils/defines.h"
 
 namespace lisa::graphics {
   void init_sdl() {
@@ -16,5 +13,8 @@ namespace lisa::graphics {
     utils::chk(SDL_Vulkan_LoadLibrary(nullptr));
   }
 
-  void init_volk() { volkInitialize(); }
+  void init_volk() {
+    utils::chk(volkInitialize());
+    VULKAN_HPP_DEFAULT_DISPATCHER.init(vkGetInstanceProcAddr);
+  }
 }

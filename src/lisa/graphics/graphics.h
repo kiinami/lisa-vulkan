@@ -4,17 +4,16 @@
 
 #ifndef LISA_GRAPHICS_H
 #define LISA_GRAPHICS_H
+#include "lisa/utils/defines.h"
 #include "device/Instance.h"
-
-#include <vulkan/vulkan_core.h>
 
 namespace lisa::graphics {
   void init_device(Instance& instance);
   void destroy_device();
 
-  VkInstance instance();
-  VkDevice device();
-  VkPhysicalDevice physical_device();
+  vk::Instance instance();
+  vk::Device device();
+  vk::PhysicalDevice physical_device();
 }
 
 #endif

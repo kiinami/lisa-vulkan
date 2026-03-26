@@ -44,9 +44,6 @@ int main(int argc, char** argv) {
   logging::set_level(log_level);
 
   {
-    auto vk_layer_path = getenv("VK_ADD_LAYER_PATH");
-    LOG_DEBUG(logging::logger(), "VK_ADD_LAYER_PATH={}", vk_layer_path);
-
     auto instance = Instance();
 
     graphics::init_device(instance);
