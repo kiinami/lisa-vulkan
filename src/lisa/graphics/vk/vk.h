@@ -7,7 +7,6 @@
 
 namespace lisa::graphics {
   void init_sdl();
-  void init_volk();
 }
 
 #endif

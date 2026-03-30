@@ -4,31 +4,30 @@
 
 #include "PhysicalDevice.h"
 
-#include "lisa/utils/defines.h"
-#include "lisa/graphics/graphics.h"
-#include "lisa/utils/chk.h"
+#include "graphics/graphics.h"
+#include "utils/chk.h"
 
-namespace lisa::graphics
-{
-    PhysicalDevice::PhysicalDevice(const vk::PhysicalDevice device) : device_(device)
-    {
-        props_ = device_.getProperties2();
-    }
+#include <vulkan/vulkan.hpp>
 
-    uint PhysicalDevice::vulkan_version() const
-    {
-        return props_.properties.apiVersion;
-    }
+namespace lisa::graphics {
+  PhysicalDevice::PhysicalDevice(const vk::PhysicalDevice device) :
+    device_(device) {
+    props_ = device_.getProperties2();
+  }
 
-    std::string PhysicalDevice::name() const
-    {
-        return props_.properties.deviceName;
-    }
+  uint8 PhysicalDevice::vulkan_version() const {
+    return props_.properties.apiVersion;
+  }
 
-    bool PhysicalDevice::supports_features() const
-    {
-        vk::Bool32 supported;
-        vpGetPhysicalDeviceProfileSupport(instance(), device_, &profile_, &supported);
-        return supported;
-    }
+  std::string PhysicalDevice::name() const {
+    return props_.properties.deviceName;
+  }
+
+  bool PhysicalDevice::supports_features() const {
+    vk::Bool32 supported;
+    vpGetPhysicalDeviceProfileSupport(
+      instance(), device_, &profile_, &supported
+    );
+    return supported;
+  }
 }

@@ -4,7 +4,7 @@
 
 #include "graphics.h"
 
-#include "lisa/utils/logging.h"
+#include "utils/logging.h"
 
 namespace lisa::graphics {
   namespace {

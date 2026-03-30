@@ -6,7 +6,10 @@
 #define LISA_LOGGING_H
 #pragma once
 
-#include "lisa/utils/defines.h"
+#include <quill/Logger.h>
+#include <string>
+#include <vulkan/vulkan.hpp>
+#include <vulkan/vulkan_profiles.hpp>
 
 namespace lisa::logging {
   void init();

@@ -4,9 +4,9 @@
 
 #include "Instance.h"
 
-#include "lisa/graphics/vk/vk.h"
-#include "lisa/utils/chk.h"
-#include "lisa/utils/logging.h"
+#include "graphics/vk/vk.h"
+#include "utils/chk.h"
+#include "utils/logging.h"
 
 namespace lisa::graphics {
   std::vector<const char*> Instance::get_instance_extensions() {
@@ -44,7 +44,7 @@ namespace lisa::graphics {
   }
 
   void Instance::add_debug_messenger() {
-    const vk::DebugUtilsMessengerCreateInfoEXT debug_messenger_ci{
+    vk::DebugUtilsMessengerCreateInfoEXT debug_messenger_ci{
       .messageSeverity = vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose |
                          vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo |
                          vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning |
@@ -54,13 +54,20 @@ namespace lisa::graphics {
                      vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation,
       .pfnUserCallback = logging::vulkanDebugCallback
     };
-    debug_messenger_ =
-      utils::chkv(instance_.createDebugUtilsMessengerEXT(debug_messenger_ci));
+
+    auto func = (PFN_vkCreateDebugUtilsMessengerEXT) vkGetInstanceProcAddr(
+      instance_, "vkCreateDebugUtilsMessengerEXT"
+    );
+    if (func != nullptr) {
+      VkDebugUtilsMessengerEXT messenger;
+      VkDebugUtilsMessengerCreateInfoEXT c_info = debug_messenger_ci;
+      if (func(instance_, &c_info, nullptr, &messenger) == VK_SUCCESS)
+        debug_messenger_ = messenger;
+    }
   }
 
   Instance::Instance() {
     init_sdl();
-    init_volk();
 
     vk::ApplicationInfo app_info{ .pApplicationName = "lisa",
                                   .pEngineName = "lisa",
@@ -79,9 +86,6 @@ namespace lisa::graphics {
 
     utils::chk(vk::createInstance(&instance_ci, nullptr, &instance_));
 
-    volkLoadInstance(instance_);
-    VULKAN_HPP_DEFAULT_DISPATCHER.init(instance_);
-
     if (logging::get_level() <= quill::LogLevel::Debug) add_debug_messenger();
 
     LOG_DEBUG(logging::logger(), "Vulkan instance initiated");
@@ -90,7 +94,14 @@ namespace lisa::graphics {
   Instance::~Instance() {
     SDL_QuitSubSystem(SDL_INIT_VIDEO);
     SDL_Quit();
-    instance_.destroyDebugUtilsMessengerEXT(debug_messenger_);
+
+    if (debug_messenger_) {
+      auto func = (PFN_vkDestroyDebugUtilsMessengerEXT) vkGetInstanceProcAddr(
+        instance_, "vkDestroyDebugUtilsMessengerEXT"
+      );
+      if (func != nullptr) func(instance_, debug_messenger_, nullptr);
+    }
+
     instance_.destroy();
   }
 

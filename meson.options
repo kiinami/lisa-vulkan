@@ -1,0 +1,1 @@
+option('vulkan_sdk', type: 'string', value: '', description: 'Path to the Vulkan SDK root (e.g., /home/user/vulkan/1.x.x.x/x86_64)')

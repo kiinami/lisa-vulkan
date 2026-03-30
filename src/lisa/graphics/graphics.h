@@ -4,7 +4,7 @@
 
 #ifndef LISA_GRAPHICS_H
 #define LISA_GRAPHICS_H
-#include "lisa/utils/defines.h"
+#include <vulkan/vulkan.hpp>
 #include "device/Instance.h"
 
 namespace lisa::graphics {

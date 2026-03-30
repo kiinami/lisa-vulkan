@@ -4,17 +4,15 @@
 
 #include "vk.h"
 
-#include "lisa/utils/chk.h"
-#include "lisa/utils/defines.h"
+#include "utils/common.h"
+#include "utils/chk.h"
+
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_vulkan.h>
 
 namespace lisa::graphics {
   void init_sdl() {
     utils::chk(SDL_Init(SDL_INIT_VIDEO));
     utils::chk(SDL_Vulkan_LoadLibrary(nullptr));
-  }
-
-  void init_volk() {
-    utils::chk(volkInitialize());
-    VULKAN_HPP_DEFAULT_DISPATCHER.init(vkGetInstanceProcAddr);
   }
 }

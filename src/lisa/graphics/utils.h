@@ -4,7 +4,6 @@
 
 #ifndef LISA_UTILS_H
 #define LISA_UTILS_H
-#include "lisa/utils/defines.h"
 #include "device/PhysicalDevice.h"
 
 namespace lisa::graphics::utils

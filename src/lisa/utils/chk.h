@@ -5,7 +5,6 @@
 #ifndef LISA_CHK_H
 #define LISA_CHK_H
 
-#include "defines.h"
 #include "logging.h"
 
 namespace lisa::utils {

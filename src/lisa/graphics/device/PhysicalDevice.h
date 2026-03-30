@@ -4,7 +4,8 @@
 
 #ifndef LISA_PHYSICALDEVICE_H
 #define LISA_PHYSICALDEVICE_H
-#include "lisa/utils/defines.h"
+#include "utils/common.h"
+#include <vulkan/vulkan.hpp>
 #include <vulkan/vulkan_profiles.hpp>
 
 namespace lisa::graphics {
@@ -13,7 +14,7 @@ namespace lisa::graphics {
   public:
     explicit PhysicalDevice(vk::PhysicalDevice device);
 
-    uint vulkan_version() const;
+    uint8 vulkan_version() const;
     std::string name() const;
     bool supports_features() const;
 

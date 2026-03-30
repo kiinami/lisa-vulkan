@@ -5,7 +5,6 @@
 #ifndef LISA_INSTANCE_H
 #define LISA_INSTANCE_H
 #include "PhysicalDevice.h"
-#include "lisa/utils/defines.h"
 
 static const std::vector<const char*> VLAYERS = {};
 static const std::vector VLAYERS_DEBUG = {
