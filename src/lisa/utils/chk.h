@@ -6,6 +6,9 @@
 #define LISA_CHK_H
 
 #include "logging.h"
+#include "quill/LogMacros.h"
+
+#include <SDL3/SDL_error.h>
 
 namespace lisa::utils {
   inline void chk(const vk::Result result) {

@@ -5,8 +5,12 @@
 #include "Instance.h"
 
 #include "graphics/vk/vk.h"
+#include "quill/LogMacros.h"
 #include "utils/chk.h"
 #include "utils/logging.h"
+
+#include <SDL3/SDL_init.h>
+#include <SDL3/SDL_vulkan.h>
 
 namespace lisa::graphics {
   std::vector<const char*> Instance::get_instance_extensions() {

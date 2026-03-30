@@ -4,6 +4,7 @@
 
 #include "graphics.h"
 
+#include "quill/LogMacros.h"
 #include "utils/logging.h"
 
 namespace lisa::graphics {
