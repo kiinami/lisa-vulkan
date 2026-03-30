@@ -8,13 +8,13 @@
 #include "lisa/utils/logging.h"
 
 #include <CLI/CLI.hpp>
-#include <quill/LogMacros.h>
 
 using namespace lisa;
 
 namespace {
   CLI::App app{ "lisa" };
   std::string log_level = "debug";
+  int device = 0;
 }
 
 static int cli_args(int argc, char** argv) {
@@ -31,6 +31,8 @@ static int cli_args(int argc, char** argv) {
       )
     );
 
+  app.add_option("-d,--device", device, "The GPU device to use");
+
   CLI11_PARSE(app, argc, argv);
   return 0;
 }
@@ -44,9 +46,9 @@ int main(int argc, char** argv) {
   logging::set_level(log_level);
 
   {
-    auto instance = Instance();
+    auto instance = graphics::Instance();
 
-    graphics::init_device(instance);
+    graphics::init_device(instance, device);
     defer(graphics::destroy_device());
   }
 

@@ -19,6 +19,8 @@
 #include <SDL3/SDL_vulkan.h>
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
+#define VP_VULKAN_PROFILES_IMPLEMENTATION
+#include <vulkan/vulkan_profiles.hpp>
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE

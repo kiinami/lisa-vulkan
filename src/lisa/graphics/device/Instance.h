@@ -4,6 +4,7 @@
 
 #ifndef LISA_INSTANCE_H
 #define LISA_INSTANCE_H
+#include "PhysicalDevice.h"
 #include "lisa/utils/defines.h"
 
 static const std::vector<const char*> VLAYERS = {};
@@ -11,7 +12,7 @@ static const std::vector VLAYERS_DEBUG = {
   "VK_LAYER_KHRONOS_validation"
 };
 
-namespace lisa {
+namespace lisa::graphics {
   class Instance {
   public:
     Instance();
@@ -21,6 +22,8 @@ namespace lisa {
     vk::Instance vk_instance() const {
       return instance_;
     }
+
+    std::vector<PhysicalDevice> physical_devices() const;
 
   private:
     vk::Instance instance_ = VK_NULL_HANDLE;

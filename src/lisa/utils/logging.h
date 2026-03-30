@@ -19,7 +19,6 @@ namespace lisa::logging {
     const vk::DebugUtilsMessengerCallbackDataEXT* callbackData,
     void* userData
   );
-
 }
 
 #endif

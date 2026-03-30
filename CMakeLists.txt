@@ -31,19 +31,20 @@ find_package(slang CONFIG REQUIRED)
 find_package(CLI11 CONFIG REQUIRED)
 find_package(quill CONFIG REQUIRED)
 
+add_subdirectory(cmake/vulkan_profiles)
+
 ###############################################################################
 # Library
 ###############################################################################
 
-include_directories(src)
 file(GLOB_RECURSE LISA_FILES
         "src/lisa/*.h"
         "src/lisa/*.cpp"
 )
-
 add_library(${PROJECT_NAME} STATIC ${LISA_FILES})
 
-# Precompile massive headers to drastically speed up build times
+target_include_directories(${PROJECT_NAME} PUBLIC src)
+
 target_precompile_headers(${PROJECT_NAME} PUBLIC
         <vulkan/vulkan.hpp>
         <vk_mem_alloc.h>
@@ -99,6 +100,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
         GPUOpen::VulkanMemoryAllocator
         CLI11::CLI11
         quill::quill
+        VulkanProfiles_Generated
 )
 
 ###############################################################################
@@ -118,6 +120,7 @@ target_link_libraries(${PROJECT_NAME}_app PRIVATE
         GPUOpen::VulkanMemoryAllocator
         CLI11::CLI11
         quill::quill
+        VulkanProfiles_Generated
 )
 
 ###############################################################################

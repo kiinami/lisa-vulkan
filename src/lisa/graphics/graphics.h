@@ -8,7 +8,7 @@
 #include "device/Instance.h"
 
 namespace lisa::graphics {
-  void init_device(Instance& instance);
+  void init_device(Instance& instance, int index);
   void destroy_device();
 
   vk::Instance instance();

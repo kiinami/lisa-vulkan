@@ -6,6 +6,7 @@
     { "name" : "ktx", "features" : [ "vulkan" ] },
     "glm",
     "tinyobjloader",
+    "vulkan-headers",
     "vulkan-sdk-components",
     "vulkan-validationlayers",
     "volk",

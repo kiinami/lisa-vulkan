@@ -4,12 +4,31 @@
 
 #include "graphics.h"
 
+#include "lisa/utils/logging.h"
+
 namespace lisa::graphics {
   namespace {
-    Instance* vk_instance = nullptr;
+    Instance* instance_ = nullptr;
+    PhysicalDevice* physical_device_ = nullptr;
   }
 
-  void init_device(Instance& instance) { vk_instance = &instance; }
+  void init_device(Instance& instance, int index)
+  {
+    instance_ = &instance;
+    auto physical_devices = instance_->physical_devices();
+
+    if (index >= physical_devices.size())
+      LOG_CRITICAL(logging::logger(), "Device index outside bounds");
+
+    physical_device_ = &physical_devices[index];
+
+    if (!physical_device_->supports_features())
+      LOG_CRITICAL(logging::logger(), "Device not supported");
+
+    LOG_INFO(logging::logger(), "GPU selected: {}", physical_device_->name());
+  }
 
   void destroy_device() {}
+
+  vk::Instance instance() { return instance_->vk_instance(); }
 }

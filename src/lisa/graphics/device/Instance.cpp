@@ -8,7 +8,7 @@
 #include "lisa/utils/chk.h"
 #include "lisa/utils/logging.h"
 
-namespace lisa {
+namespace lisa::graphics {
   std::vector<const char*> Instance::get_instance_extensions() {
     uint32_t count = 0;
     const char* const* sdl_extensions =
@@ -54,12 +54,13 @@ namespace lisa {
                      vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation,
       .pfnUserCallback = logging::vulkanDebugCallback
     };
-    debug_messenger_ = utils::chkv(instance_.createDebugUtilsMessengerEXT(debug_messenger_ci));
+    debug_messenger_ =
+      utils::chkv(instance_.createDebugUtilsMessengerEXT(debug_messenger_ci));
   }
 
   Instance::Instance() {
-    graphics::init_sdl();
-    graphics::init_volk();
+    init_sdl();
+    init_volk();
 
     vk::ApplicationInfo app_info{ .pApplicationName = "lisa",
                                   .pEngineName = "lisa",
@@ -91,5 +92,20 @@ namespace lisa {
     SDL_Quit();
     instance_.destroyDebugUtilsMessengerEXT(debug_messenger_);
     instance_.destroy();
+  }
+
+  std::vector<PhysicalDevice> Instance::physical_devices() const {
+    auto devices = instance_.enumeratePhysicalDevices();
+
+    std::vector<PhysicalDevice> wrapped;
+    wrapped.reserve(devices.size());
+
+    std::ranges::transform(
+      devices, std::back_inserter(wrapped), [](const vk::PhysicalDevice& d) {
+        return PhysicalDevice(d);
+      }
+    );
+
+    return wrapped;
   }
 }
