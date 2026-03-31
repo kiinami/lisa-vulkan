@@ -13,6 +13,7 @@ namespace lisa::graphics {
   public:
     explicit PhysicalDevice(const vk::raii::PhysicalDevice& device);
 
+    [[nodiscard]] const vk::raii::PhysicalDevice& vk_physical_device();
     [[nodiscard]] uint8 vulkan_version() const;
     [[nodiscard]] std::string name() const;
     [[nodiscard]] bool supports_features() const;

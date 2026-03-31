@@ -4,9 +4,9 @@
 
 #include "PhysicalDevice.h"
 
-#include "utils/common.h"
 #include "graphics/context.h"
 #include "utils/chk.h"
+#include "utils/common.h"
 
 namespace lisa::graphics {
   PhysicalDevice::PhysicalDevice(const vk::raii::PhysicalDevice& device) :
@@ -14,13 +14,13 @@ namespace lisa::graphics {
     props_ = device_.getProperties2().properties;
   }
 
-  uint8 PhysicalDevice::vulkan_version() const {
-    return props_.apiVersion;
+  const vk::raii::PhysicalDevice& PhysicalDevice::vk_physical_device() {
+    return device_;
   }
 
-  std::string PhysicalDevice::name() const {
-    return props_.deviceName;
-  }
+  uint8 PhysicalDevice::vulkan_version() const { return props_.apiVersion; }
+
+  std::string PhysicalDevice::name() const { return props_.deviceName; }
 
   bool PhysicalDevice::supports_features() const {
     vk::Bool32 supported;
@@ -45,6 +45,8 @@ namespace lisa::graphics {
         return (qf.queueFlags & vk::QueueFlagBits::eGraphics) !=
                static_cast<vk::QueueFlags>(0);
       });
-    return static_cast<uint32>(std::distance(queue_families.begin(), graphics_queue));
+    return static_cast<uint32>(
+      std::distance(queue_families.begin(), graphics_queue)
+    );
   }
 }

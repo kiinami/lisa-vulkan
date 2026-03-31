@@ -43,6 +43,8 @@ int main(int argc, char** argv) {
 
   {
     graphics::context::init();
+
+    graphics::context::destroy();
   }
 
   return 0;
