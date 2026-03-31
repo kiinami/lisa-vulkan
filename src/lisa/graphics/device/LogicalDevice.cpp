@@ -5,6 +5,7 @@
 #include "LogicalDevice.h"
 
 #include "graphics/context.h"
+#include "utils/chk.h"
 #include "utils/common.h"
 #include "utils/logging.h"
 
@@ -41,11 +42,12 @@ namespace lisa::graphics {
 
     const VpDeviceCreateInfo device_ci{ .pCreateInfo = &vk_device_ci };
     VkDevice dev;
-    vpCreateDevice(*physical_device, &device_ci, nullptr, &dev);
-    const auto device = vk::Device{ dev };
-    device_ = vk::raii::Device{ physical_device, device };
+    utils::chk(vpCreateDevice(*physical_device, &device_ci, nullptr, &dev));
+    device_ = vk::raii::Device{ physical_device, vk::Device{ dev } };
 
     logging::debug("Logical device created");
+
+    queue_ = Queue(device_.getQueue(queue_index, 0));
   }
 
   LogicalDevice::~LogicalDevice() { device_.waitIdle(); }

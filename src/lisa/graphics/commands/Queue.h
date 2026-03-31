@@ -4,11 +4,15 @@
 
 #ifndef LISA_VULKAN_QUEUE_H
 #define LISA_VULKAN_QUEUE_H
-#import "utils/common.h"
+#include "utils/common.h"
 
 namespace lisa::graphics {
   class Queue {
-
+  public:
+    explicit Queue(vk::raii::Queue queue_) : queue_(queue_) {};
+    ~Queue() = default;
+  private:
+    vk::raii::Queue queue_;
   };
 }
 
