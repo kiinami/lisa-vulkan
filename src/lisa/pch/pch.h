@@ -6,17 +6,13 @@
 #include <array>
 #include <fstream>
 #include <iostream>
-#include <quill/Backend.h>
-#include <quill/Frontend.h>
-#include <quill/LogMacros.h>
-#include <quill/Logger.h>
-#include <quill/sinks/ConsoleSink.h>
 #include <string>
 #include <vector>
+#include <spdlog/spdlog.h>
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_vulkan.h>
 #include <vk_mem_alloc.h>
-#include <vulkan/vulkan.hpp>
+#include <vulkan/vulkan_raii.hpp>
 #include <vulkan/vulkan_profiles.hpp>
 
 #include <glm/glm.hpp>

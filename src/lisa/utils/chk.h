@@ -6,14 +6,13 @@
 #define LISA_CHK_H
 
 #include "logging.h"
-#include "quill/LogMacros.h"
 
 #include <SDL3/SDL_error.h>
 
 namespace lisa::utils {
   inline void chk(const vk::Result result) {
     if (result != vk::Result::eSuccess)
-      LOG_ERROR(logging::logger(), "Vulkan call returned an error");
+      logging::error("Vulkan call returned an error");
   }
 
   template<typename RV> auto chkv(RV&& rv) {
@@ -22,7 +21,7 @@ namespace lisa::utils {
                     rv.value;
                   }) {
       if (rv.result != vk::Result::eSuccess)
-        LOG_ERROR(logging::logger(), "Vulkan call returned an error");
+        logging::error("Vulkan call returned an error");
       return std::forward<RV>(rv).value;
     } else {
       return std::forward<RV>(rv);
@@ -31,22 +30,14 @@ namespace lisa::utils {
 
   inline void chk(const VkResult result) {
     if (result != VK_SUCCESS) {
-      LOG_ERROR(
-        logging::logger(),
-        "Vulkan call returned an error (VkResult: {})",
-        static_cast<int>(result)
+      logging::error(
+        "Vulkan call returned an error (VkResult: {})", static_cast<int>(result)
       );
-      exit(result);
     }
   }
 
   inline void chk(const bool result) {
-    if (!result) {
-      LOG_ERROR(
-        logging::logger(), "Call returned an error: {}", SDL_GetError()
-      );
-      exit(1);
-    }
+    if (!result) logging::abort("Call returned an error: {}", SDL_GetError());
   }
 }
 

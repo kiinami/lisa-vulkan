@@ -5,12 +5,12 @@
 #include "Instance.h"
 
 #include "graphics/vk/vk.h"
-#include "quill/LogMacros.h"
 #include "utils/chk.h"
 #include "utils/logging.h"
 
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_vulkan.h>
+#include <spdlog/spdlog.h>
 
 namespace lisa::graphics {
   std::vector<const char*> Instance::get_instance_extensions() {
@@ -18,14 +18,13 @@ namespace lisa::graphics {
     const char* const* sdl_extensions =
       SDL_Vulkan_GetInstanceExtensions(&count);
     std::vector extensions(sdl_extensions, sdl_extensions + count);
-    if (logging::get_level() <= quill::LogLevel::Debug)
+    if (logging::debug_enabled())
       extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
     return extensions;
   }
 
   std::vector<const char*> Instance::get_validation_layers() {
-    const auto& vlayers =
-      logging::get_level() <= quill::LogLevel::Debug ? VLAYERS_DEBUG : VLAYERS;
+    const auto& vlayers = logging::debug_enabled() ? VLAYERS_DEBUG : VLAYERS;
 
     std::vector<const char*> return_layers;
     const auto available_layers = vk::enumerateInstanceLayerProperties();
@@ -41,7 +40,7 @@ namespace lisa::graphics {
       }
 
       if (!found)
-        LOG_ERROR(logging::logger(), "Validation layer not found: {}", layer);
+        logging::abort("Validation layer not found: {}", layer);
     }
 
     return return_layers;
@@ -83,9 +82,9 @@ namespace lisa::graphics {
 
     instance_ = ctx.createInstance(instance_ci, nullptr);
 
-    if (logging::get_level() <= quill::LogLevel::Debug) add_debug_messenger();
+    if (logging::debug_enabled()) add_debug_messenger();
 
-    LOG_DEBUG(logging::logger(), "Vulkan instance initiated");
+    logging::debug("Vulkan instance initiated");
   }
 
   Instance::~Instance() {
@@ -110,7 +109,7 @@ namespace lisa::graphics {
     return wrapped;
   }
 
-  PhysicalDevice Instance::pick_physical_device() {
+  PhysicalDevice Instance::pick_physical_device() const {
     const auto devices = physical_devices();
     if (devices.empty())
       logging::abort("Failed to find GPUs with Vulkan support");
@@ -127,8 +126,11 @@ namespace lisa::graphics {
       candidates.insert(std::make_pair(score, pd));
     }
 
-    if (!candidates.empty() && candidates.rbegin()->first > 0)
-      return candidates.rbegin()->second;
+    if (!candidates.empty() && candidates.rbegin()->first > 0) {
+      auto selected = candidates.rbegin()->second;
+      logging::info("Selected GPU device: '{}'", selected.name());
+      return selected;
+    }
 
     logging::abort("Failed to find a suitable GPU");
   }

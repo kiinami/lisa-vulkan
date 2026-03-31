@@ -44,9 +44,9 @@ endif
 
 cli11 = dependency('CLI11', required: true)
 glm = dependency('glm', required: true)
-quill = dependency('quill', required: true)
 sdl3 = dependency('sdl3', required: true)
 slang = dependency('slang', required: true)
+spdlog = dependency('spdlog', required: true)
 tinyobjloader = dependency('tinyobjloader', required: true)
 vulkan = dependency('vulkan', required: true)
 vulkan_memory_allocator = dependency('VulkanMemoryAllocator', required: true)
@@ -90,14 +90,14 @@ lisa_library = library(
     'lisa',
     sources: src,
     include_directories: inc,
-    dependencies: [glm, quill, sdl3, slang, tinyobjloader, vulkan, vulkan_memory_allocator],
+    dependencies: [glm, sdl3, slang, spdlog, tinyobjloader, vulkan, vulkan_memory_allocator],
     cpp_pch: 'src/lisa/pch/pch.h'
 )
 
 lisa_dep = declare_dependency(
     include_directories: include_directories('src/lisa'),
     link_with: lisa_library,
-    dependencies: [glm, quill, sdl3, slang, tinyobjloader, vulkan, vulkan_memory_allocator]
+    dependencies: [glm, sdl3, slang, spdlog, tinyobjloader, vulkan, vulkan_memory_allocator]
 )
 
 ###############################################################################

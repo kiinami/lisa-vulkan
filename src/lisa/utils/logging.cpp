@@ -4,53 +4,45 @@
 
 #include "logging.h"
 
-#include <quill/Backend.h>
-#include <quill/Frontend.h>
-#include <quill/LogMacros.h>
-#include <quill/Logger.h>
-#include <quill/sinks/ConsoleSink.h>
+#include "spdlog/sinks/stdout_color_sinks-inl.h"
+
+#include <spdlog/spdlog.h>
 
 namespace lisa::logging {
-  using namespace quill;
-
   namespace {
-    std::shared_ptr<Sink> sink_;
-    Logger* logger_;
-    Logger* vulkan_logger_;
+    auto main_logger_ = spdlog::stdout_color_mt("lisa");
+    auto vulkan_logger_ = spdlog::stdout_color_mt("vulkan");
   }
 
-  void init() {
-    Backend::start();
-    sink_ = Frontend::create_or_get_sink<ConsoleSink>("lisa");
-    logger_ = Frontend::create_or_get_logger("lisa", sink_);
-    vulkan_logger_ = Frontend::create_or_get_logger("vulkan", sink_);
+  void init(const std::string& level) {
+    spdlog::set_default_logger(main_logger_);
+    set_level(level);
+    spdlog::set_pattern("[%H:%M:%S] [%^---%L---%$] [%n] %v");
   }
 
-  LogLevel get_level() { return logger_->get_log_level(); }
+  spdlog::level::level_enum get_level() { return spdlog::get_level(); }
 
   void set_level(const std::string& level) {
     if (level == "trace") {
-      logger_->set_log_level(LogLevel::TraceL1);
-      vulkan_logger_->set_log_level(LogLevel::TraceL1);
+      spdlog::set_level(spdlog::level::trace);
     } else if (level == "debug") {
-      logger_->set_log_level(LogLevel::Debug);
-      vulkan_logger_->set_log_level(LogLevel::Debug);
+      spdlog::set_level(spdlog::level::debug);
     } else if (level == "info") {
-      logger_->set_log_level(LogLevel::Info);
-      vulkan_logger_->set_log_level(LogLevel::Info);
+      spdlog::set_level(spdlog::level::info);
     } else if (level == "warning") {
-      logger_->set_log_level(LogLevel::Warning);
-      vulkan_logger_->set_log_level(LogLevel::Warning);
+      spdlog::set_level(spdlog::level::warn);
     } else if (level == "error") {
-      logger_->set_log_level(LogLevel::Error);
-      vulkan_logger_->set_log_level(LogLevel::Error);
+      spdlog::set_level(spdlog::level::err);
     } else if (level == "critical") {
-      logger_->set_log_level(LogLevel::Critical);
-      vulkan_logger_->set_log_level(LogLevel::Critical);
+      spdlog::set_level(spdlog::level::critical);
     }
   }
 
-  Logger* logger() { return logger_; }
+  bool debug_enabled() {
+    return get_level() <= spdlog::level::debug;
+  }
+
+
 
   VKAPI_ATTR vk::Bool32 VKAPI_CALL vulkanDebugCallback(
     vk::DebugUtilsMessageSeverityFlagBitsEXT severity,
@@ -61,19 +53,14 @@ namespace lisa::logging {
     const char* msg = callbackData->pMessage;
 
     if (severity & vk::DebugUtilsMessageSeverityFlagBitsEXT::eError)
-      LOG_ERROR(vulkan_logger_, "[VULKAN] {}", msg);
+      vulkan_logger_->error(msg);
     else if (severity & vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning)
-      LOG_WARNING(vulkan_logger_, "[VULKAN] {}", msg);
+      vulkan_logger_->warn(msg);
     else if (severity & vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo)
-      LOG_INFO(vulkan_logger_, "[VULKAN] {}", msg);
+      vulkan_logger_->debug(msg);
     else
-      LOG_DEBUG(vulkan_logger_, "[VULKAN] {}", msg);
+      vulkan_logger_->trace(msg);
 
     return VK_FALSE;
-  }
-
-  void abort(const std::string& msg) {
-    LOG_CRITICAL(logger_, "{}", msg);
-    exit(1);
   }
 }

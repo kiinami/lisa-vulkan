@@ -17,7 +17,7 @@ namespace lisa::graphics {
     explicit Instance(const vk::raii::Context& ctx);
     ~Instance();
 
-    PhysicalDevice pick_physical_device();
+    PhysicalDevice pick_physical_device() const;
 
     vk::raii::Instance& vk_instance() { return instance_; }
 

@@ -3,8 +3,6 @@
 //
 
 #include "lisa/graphics/context.h"
-#include "lisa/graphics/device/Instance.h"
-#include "lisa/utils/defer.h"
 #include "lisa/utils/logging.h"
 
 #include <CLI/CLI.hpp>
@@ -38,12 +36,10 @@ static int cli_args(int argc, char** argv) {
 }
 
 int main(int argc, char** argv) {
-  logging::init();
-
   auto result = cli_args(argc, argv);
   if (result != 0) return result;
 
-  logging::set_level(log_level);
+  logging::init(log_level);
 
   {
     graphics::context::init();
