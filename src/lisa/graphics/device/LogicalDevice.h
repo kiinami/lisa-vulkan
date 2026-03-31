@@ -14,10 +14,7 @@ namespace lisa::graphics {
     explicit LogicalDevice(const vk::raii::PhysicalDevice& physical_device);
     ~LogicalDevice();
 
-    [[nodiscard]]
-    const vk::raii::Device& vk_device() {
-      return device_;
-    }
+    operator const vk::raii::Device&() const { return device_; }
 
     const Queue& queue() { return queue_.value(); }
 

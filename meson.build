@@ -49,7 +49,8 @@ slang = dependency('slang', required: true)
 spdlog = dependency('spdlog', required: true)
 tinyobjloader = dependency('tinyobjloader', required: true)
 vulkan = dependency('vulkan', required: true)
-vulkan_memory_allocator = dependency('VulkanMemoryAllocator', required: true)
+vma = dependency('VulkanMemoryAllocator', required: true)
+vma_hpp = dependency('VulkanMemoryAllocator-Hpp', required: true)
 
 ###############################################################################
 # Sources
@@ -65,6 +66,9 @@ src = files(
 
     'src/lisa/graphics/commands/Queue.h',
     'src/lisa/graphics/commands/Queue.cpp',
+
+    'src/lisa/graphics/memory/MemoryAllocator.h',
+    'src/lisa/graphics/memory/MemoryAllocator.cpp',
 
     'src/lisa/graphics/device/Instance.h',
     'src/lisa/graphics/device/Instance.cpp',
@@ -90,14 +94,14 @@ lisa_library = library(
     'lisa',
     sources: src,
     include_directories: inc,
-    dependencies: [glm, sdl3, slang, spdlog, tinyobjloader, vulkan, vulkan_memory_allocator],
+    dependencies: [glm, sdl3, slang, spdlog, tinyobjloader, vulkan, vma, vma_hpp],
     cpp_pch: 'src/lisa/pch/pch.h'
 )
 
 lisa_dep = declare_dependency(
     include_directories: include_directories('src/lisa'),
     link_with: lisa_library,
-    dependencies: [glm, sdl3, slang, spdlog, tinyobjloader, vulkan, vulkan_memory_allocator]
+    dependencies: [glm, sdl3, slang, spdlog, tinyobjloader, vulkan, vma, vma_hpp]
 )
 
 ###############################################################################

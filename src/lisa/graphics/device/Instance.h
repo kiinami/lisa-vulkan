@@ -19,7 +19,11 @@ namespace lisa::graphics {
 
     PhysicalDevice pick_physical_device() const;
 
-    vk::raii::Instance& vk_instance() { return instance_; }
+    operator const vk::raii::Instance&() const { return instance_; }
+
+    operator const vk::Instance&() const { return *instance_; }
+
+    operator VkInstance() const { return *instance_; }
 
   private:
     vk::raii::Instance instance_ = nullptr;

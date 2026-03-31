@@ -14,10 +14,6 @@ namespace lisa::graphics {
     props_ = device_.getProperties2().properties;
   }
 
-  const vk::raii::PhysicalDevice& PhysicalDevice::vk_physical_device() {
-    return device_;
-  }
-
   uint8 PhysicalDevice::vulkan_version() const { return props_.apiVersion; }
 
   std::string PhysicalDevice::name() const { return props_.deviceName; }
@@ -25,7 +21,7 @@ namespace lisa::graphics {
   bool PhysicalDevice::supports_features() const {
     vk::Bool32 supported;
     vpGetPhysicalDeviceProfileSupport(
-      *context::vk_instance(), *device_, &profile_, &supported
+      context::instance(), *device_, &profile_, &supported
     );
     return supported;
   }

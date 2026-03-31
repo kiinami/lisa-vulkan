@@ -9,13 +9,10 @@
 #include "device/Instance.h"
 
 namespace lisa::graphics::context {
-  vk::raii::Context& context();
-  Instance& instance();
-  const vk::raii::Instance& vk_instance();
-  const vk::raii::PhysicalDevice& vk_physical_device();
-
   void init();
   void destroy();
+
+  const Instance& instance();
 }
 
 #endif
