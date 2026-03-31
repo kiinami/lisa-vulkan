@@ -58,15 +58,20 @@ src = files(
     'src/lisa/utils/common.h',
     'src/lisa/implementations.cpp',
 
-    'src/lisa/graphics/graphics.h',
-    'src/lisa/graphics/graphics.cpp',
+    'src/lisa/graphics/context.h',
+    'src/lisa/graphics/context.cpp',
     'src/lisa/graphics/utils.h',
     'src/lisa/graphics/utils.cpp',
+
+    'src/lisa/graphics/commands/Queue.h',
+    'src/lisa/graphics/commands/Queue.cpp',
 
     'src/lisa/graphics/device/Instance.h',
     'src/lisa/graphics/device/Instance.cpp',
     'src/lisa/graphics/device/PhysicalDevice.h',
     'src/lisa/graphics/device/PhysicalDevice.cpp',
+    'src/lisa/graphics/device/LogicalDevice.h',
+    'src/lisa/graphics/device/LogicalDevice.cpp',
 
     'src/lisa/graphics/vk/vk.h',
     'src/lisa/graphics/vk/vk.cpp',

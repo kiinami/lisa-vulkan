@@ -26,10 +26,7 @@ namespace lisa::logging {
     vulkan_logger_ = Frontend::create_or_get_logger("vulkan", sink_);
   }
 
-  LogLevel get_level()
-  {
-    return logger_->get_log_level();
-  }
+  LogLevel get_level() { return logger_->get_log_level(); }
 
   void set_level(const std::string& level) {
     if (level == "trace") {
@@ -73,5 +70,10 @@ namespace lisa::logging {
       LOG_DEBUG(vulkan_logger_, "[VULKAN] {}", msg);
 
     return VK_FALSE;
+  }
+
+  void abort(const std::string& msg) {
+    LOG_CRITICAL(logger_, "{}", msg);
+    exit(1);
   }
 }

@@ -4,11 +4,16 @@
 
 #ifndef LISA_GRAPHICS_H
 #define LISA_GRAPHICS_H
-#include <vulkan/vulkan.hpp>
+
+#include "utils/common.h"
 #include "device/Instance.h"
 
-namespace lisa::graphics {
+namespace lisa::graphics::context {
+  vk::raii::Context& context();
+  Instance& instance();
+  const vk::raii::Instance& vk_instance();
 
+  void init();
 }
 
 #endif

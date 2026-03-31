@@ -17,7 +17,7 @@ namespace lisa::graphics {
     uint32_t count = 0;
     const char* const* sdl_extensions =
       SDL_Vulkan_GetInstanceExtensions(&count);
-    std::vector<const char*> extensions(sdl_extensions, sdl_extensions + count);
+    std::vector extensions(sdl_extensions, sdl_extensions + count);
     if (logging::get_level() <= quill::LogLevel::Debug)
       extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
     return extensions;
@@ -48,7 +48,7 @@ namespace lisa::graphics {
   }
 
   void Instance::add_debug_messenger() {
-    vk::DebugUtilsMessengerCreateInfoEXT debug_messenger_ci{
+    constexpr vk::DebugUtilsMessengerCreateInfoEXT debug_messenger_ci{
       .messageSeverity = vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose |
                          vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo |
                          vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning |
@@ -59,18 +59,11 @@ namespace lisa::graphics {
       .pfnUserCallback = logging::vulkanDebugCallback
     };
 
-    auto func = (PFN_vkCreateDebugUtilsMessengerEXT) vkGetInstanceProcAddr(
-      instance_, "vkCreateDebugUtilsMessengerEXT"
-    );
-    if (func != nullptr) {
-      VkDebugUtilsMessengerEXT messenger;
-      VkDebugUtilsMessengerCreateInfoEXT c_info = debug_messenger_ci;
-      if (func(instance_, &c_info, nullptr, &messenger) == VK_SUCCESS)
-        debug_messenger_ = messenger;
-    }
+    debug_messenger_ =
+      instance_.createDebugUtilsMessengerEXT(debug_messenger_ci);
   }
 
-  Instance::Instance() {
+  Instance::Instance(const vk::raii::Context& ctx) {
     init_sdl();
 
     vk::ApplicationInfo app_info{ .pApplicationName = "lisa",
@@ -88,7 +81,7 @@ namespace lisa::graphics {
       .ppEnabledExtensionNames = extensions.data(),
     };
 
-    utils::chk(vk::createInstance(&instance_ci, nullptr, &instance_));
+    instance_ = ctx.createInstance(instance_ci, nullptr);
 
     if (logging::get_level() <= quill::LogLevel::Debug) add_debug_messenger();
 
@@ -98,15 +91,6 @@ namespace lisa::graphics {
   Instance::~Instance() {
     SDL_QuitSubSystem(SDL_INIT_VIDEO);
     SDL_Quit();
-
-    if (debug_messenger_) {
-      auto func = (PFN_vkDestroyDebugUtilsMessengerEXT) vkGetInstanceProcAddr(
-        instance_, "vkDestroyDebugUtilsMessengerEXT"
-      );
-      if (func != nullptr) func(instance_, debug_messenger_, nullptr);
-    }
-
-    instance_.destroy();
   }
 
   std::vector<PhysicalDevice> Instance::physical_devices() const {
@@ -116,11 +100,36 @@ namespace lisa::graphics {
     wrapped.reserve(devices.size());
 
     std::ranges::transform(
-      devices, std::back_inserter(wrapped), [](const vk::PhysicalDevice& d) {
+      devices,
+      std::back_inserter(wrapped),
+      [](const vk::raii::PhysicalDevice& d) {
         return PhysicalDevice(d);
       }
     );
 
     return wrapped;
+  }
+
+  PhysicalDevice Instance::pick_physical_device() {
+    const auto devices = physical_devices();
+    if (devices.empty())
+      logging::abort("Failed to find GPUs with Vulkan support");
+
+    std::multimap<int, PhysicalDevice> candidates;
+    for (const auto& pd : devices) {
+      uint32 score = 0;
+
+      if (!pd.supports_features()) continue;
+
+      if (pd.is_discrete()) score += 1000;
+      score += pd.max_image_dimensions();
+
+      candidates.insert(std::make_pair(score, pd));
+    }
+
+    if (!candidates.empty() && candidates.rbegin()->first > 0)
+      return candidates.rbegin()->second;
+
+    logging::abort("Failed to find a suitable GPU");
   }
 }

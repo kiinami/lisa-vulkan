@@ -1,5 +1,5 @@
 #pragma once
-#include <vulkan/vulkan.hpp>
+#include <vulkan/vulkan_raii.hpp>
 #include <glm/glm.hpp>
 
 namespace lisa {

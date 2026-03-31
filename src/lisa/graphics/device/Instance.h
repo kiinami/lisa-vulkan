@@ -6,31 +6,29 @@
 #define LISA_INSTANCE_H
 #include "PhysicalDevice.h"
 
+#include <vulkan/vulkan_raii.hpp>
+
 static const std::vector<const char*> VLAYERS = {};
-static const std::vector VLAYERS_DEBUG = {
-  "VK_LAYER_KHRONOS_validation"
-};
+static const std::vector VLAYERS_DEBUG = { "VK_LAYER_KHRONOS_validation" };
 
 namespace lisa::graphics {
   class Instance {
   public:
-    Instance();
+    explicit Instance(const vk::raii::Context& ctx);
     ~Instance();
 
-    [[nodiscard]]
-    vk::Instance vk_instance() const {
-      return instance_;
-    }
+    PhysicalDevice pick_physical_device();
 
-    std::vector<PhysicalDevice> physical_devices() const;
+    vk::raii::Instance& vk_instance() { return instance_; }
 
   private:
-    vk::Instance instance_ = VK_NULL_HANDLE;
-    vk::DebugUtilsMessengerEXT debug_messenger_ = VK_NULL_HANDLE;
+    vk::raii::Instance instance_ = nullptr;
+    vk::raii::DebugUtilsMessengerEXT debug_messenger_ = nullptr;
 
     static std::vector<const char*> get_instance_extensions();
     static std::vector<const char*> get_validation_layers();
     void add_debug_messenger();
+    std::vector<PhysicalDevice> physical_devices() const;
   };
 }
 

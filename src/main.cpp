@@ -2,8 +2,8 @@
 // Created by kinami on 1/26/26.
 //
 
+#include "lisa/graphics/context.h"
 #include "lisa/graphics/device/Instance.h"
-#include "lisa/graphics/graphics.h"
 #include "lisa/utils/defer.h"
 #include "lisa/utils/logging.h"
 
@@ -46,10 +46,7 @@ int main(int argc, char** argv) {
   logging::set_level(log_level);
 
   {
-    auto instance = graphics::Instance();
-
-    graphics::init_device(instance, device);
-    defer(graphics::destroy_device());
+    graphics::context::init();
   }
 
   return 0;
