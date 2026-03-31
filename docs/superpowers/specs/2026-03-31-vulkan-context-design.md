@@ -3,34 +3,36 @@
 ## Overview
 This specification details a clean architecture for managing global Vulkan state within the `lisa-vulkan` engine. The goal is to provide easy access to the core Vulkan context (`Instance`, `PhysicalDevice`, `LogicalDevice`, `Queue`s) without passing a multitude of references or pointers around the codebase.
 
-## Design Approach: Static Namespace
-The engine will use a static namespace pattern. This approach centralizes the Vulkan context initialization, cleanup, and access.
+## Design Approach: Static Namespace with Custom Wrappers & `vk::raii`
+The engine will use a static namespace pattern combined with custom engine-level wrapper classes around Vulkan-Hpp's `vk::raii` module. All main Vulkan types will have corresponding wrappers in the engine (e.g., `lisa::graphics::Instance`, `lisa::graphics::LogicalDevice`, `lisa::graphics::PhysicalDevice`), some of which are already written.
 
 ### 1. Architecture
 *   **Location:** A new module `src/lisa/graphics/Context.h` and `src/lisa/graphics/Context.cpp`.
 *   **Namespace:** `lisa::graphics::Context`
-*   **Visibility:** The header will expose simple accessor functions (e.g., `GetDevice()`). The `.cpp` file will hold the actual static instances or pointers to the Vulkan objects, keeping them hidden from the rest of the application and preventing multiple definitions.
+*   **Visibility:** The header will expose simple accessor functions (e.g., `GetDevice()`). The `.cpp` file will hold the static instances of the engine's custom wrapper classes (wrapped in `std::unique_ptr` to explicitly manage initialization/destruction order).
 
-### 2. State Management
-The `Context.cpp` file will manage the lifetime of the core Vulkan objects:
-*   `std::unique_ptr<Instance> s_Instance`
-*   `std::unique_ptr<PhysicalDevice> s_PhysicalDevice`
-*   `std::unique_ptr<LogicalDevice> s_LogicalDevice`
-*   `Queue* s_GraphicsQueue` (Pointer into the logical device's queues, or managed by the logical device and queried via the Context)
+### 2. State Management (Custom Wrappers)
+The `Context.cpp` file will manage the lifetime of the core wrapper objects. By using wrappers, the engine abstracts away raw `vk::raii` initialization details and embeds custom logic (like device scoring, layer validation, etc.):
+*   `std::unique_ptr<vk::raii::Context>` (Base Vulkan context, usually raw as it has no custom logic)
+*   `std::unique_ptr<lisa::graphics::Instance>` (Wrapper holding `vk::raii::Instance`)
+*   `std::unique_ptr<lisa::graphics::PhysicalDevice>` (Wrapper holding `vk::raii::PhysicalDevice`)
+*   `std::unique_ptr<lisa::graphics::LogicalDevice>` (Wrapper holding `vk::raii::Device`)
 
 ### 3. Accessors
-The header will provide globally accessible functions returning references or pointers to the underlying objects. This allows any system (like a Renderer, AssetManager, or CommandBuffer wrapper) to easily access the device:
-*   `Instance& GetInstance();`
-*   `PhysicalDevice& GetPhysicalDevice();`
-*   `LogicalDevice& GetDevice();`
-*   `Queue& GetGraphicsQueue();`
+The header will provide globally accessible functions returning references to the custom wrapper objects:
+*   `lisa::graphics::Instance& GetInstance();`
+*   `lisa::graphics::PhysicalDevice& GetPhysicalDevice();`
+*   `lisa::graphics::LogicalDevice& GetDevice();`
+
+*(Note: Accessing the raw `vk::raii` handles or standard `vk::` handles should be done through getter methods inside the wrapper classes themselves, e.g., `GetDevice().vk_device()`)*
 
 ### 4. Initialization and Cleanup
-Vulkan requires strict ordering of destruction (e.g., Logical Device before Physical Device/Instance). To enforce this:
-*   `void Init();` - Called once at application startup (e.g., in `main.cpp` or the core Engine initialization). This function creates the `Instance`, selects the `PhysicalDevice`, and creates the `LogicalDevice`.
-*   `void Shutdown();` - Called once at application shutdown. This function destroys the objects in the reverse order of their creation and sets the pointers to null to prevent dangling references.
+Even with `vk::raii` powering the wrappers, global static variables have an undefined destruction order across different translation units. To guarantee the `Device` is destroyed before the `Instance`, we use explicit initialization and shutdown functions:
+*   `void Init();` - Called once at application startup. This creates the base `vk::raii::Context`, then creates the custom `lisa::graphics::Instance`, selects a `lisa::graphics::PhysicalDevice`, and creates the `lisa::graphics::LogicalDevice`.
+*   `void Shutdown();` - Called once at application shutdown. This calls `.reset()` on the `unique_ptr`s in the reverse order of creation (Device -> PhysicalDevice -> Instance -> Context).
 
 ## Benefits
-*   **Zero Reference Passing:** Systems that need to create Vulkan objects (buffers, images, pipelines) can just call `lisa::graphics::Context::GetDevice()` and use it.
-*   **Strict Lifetime Control:** The `Init()` and `Shutdown()` functions guarantee that Vulkan objects are created and destroyed in the exact required order.
+*   **Encapsulation:** Wrappers provide an abstraction layer over Vulkan initialization, separating business logic from raw API calls.
+*   **Zero Reference Passing:** Systems that need to interact with Vulkan can just call `lisa::graphics::Context::GetDevice()` and use it.
+*   **Safe RAII Semantics:** Memory safety is maintained using Vulkan-Hpp's RAII wrappers inside the custom classes, while explicit initialization guarantees correct dependency ordering.
 *   **Clean Interfaces:** Class constructors don't need to be polluted with `LogicalDevice&` parameters, resulting in a cleaner and more readable codebase.
