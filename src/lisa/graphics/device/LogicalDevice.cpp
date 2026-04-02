@@ -6,6 +6,7 @@
 
 #include "graphics/constants.h"
 #include "graphics/context.h"
+#include "utils/Fence.h"
 #include "utils/chk.h"
 #include "utils/common.h"
 #include "utils/logging.h"
@@ -35,7 +36,7 @@ namespace lisa::graphics {
       .pQueuePriorities = &queue_priority
     };
 
-    const char* device_extensions[] = { vk::KHRSwapchainExtensionName };
+    const char* device_extensions[] = {vk::KHRSwapchainExtensionName};
 
     VkDeviceCreateInfo vk_device_ci{
       .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
@@ -45,15 +46,16 @@ namespace lisa::graphics {
       .ppEnabledExtensionNames = device_extensions,
     };
 
-    const VpDeviceCreateInfo device_ci{ .pCreateInfo = &vk_device_ci,
-                                        .enabledFullProfileCount = 1,
-                                        .pEnabledFullProfiles =
-                                          &constants::PROFILE };
+    const VpDeviceCreateInfo device_ci{
+      .pCreateInfo = &vk_device_ci,
+      .enabledFullProfileCount = 1,
+      .pEnabledFullProfiles = &constants::PROFILE
+    };
     VkDevice dev;
     utils::chk(vpCreateDevice(
       constants::capabilities(), *physical_device, &device_ci, nullptr, &dev
     ));
-    device_ = vk::raii::Device{ physical_device, vk::Device{ dev } };
+    device_ = vk::raii::Device{physical_device, vk::Device{dev}};
 
     logging::debug("Logical device created");
 
@@ -78,5 +80,22 @@ namespace lisa::graphics {
     const vk::ImageViewCreateInfo& view_ci
   ) const {
     return device_.createImageView(view_ci);
+  }
+
+  const CommandBuffer& LogicalDevice::cmd_buffer() const {
+    return CommandBuffer(
+      std::move(device_.allocateCommandBuffers(
+        {.commandPool = command_pool_, .commandBufferCount = 1}
+      )[0])
+    );
+  }
+
+  void LogicalDevice::submit_cmd_buffer_with_fence(const CommandBuffer& cmd_buffer) const {
+    auto fence = device_.createFence({});
+    const vk::SubmitInfo submit_info{
+      .commandBufferCount = 1, .pCommandBuffers = cmd_buffer
+    };
+    queue_.submit(submit_info, fence);
+    lisa::utils::chk(device_.waitForFences({fence}, vk::True, UINT64_MAX));
   }
 }

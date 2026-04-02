@@ -24,6 +24,8 @@ namespace lisa::graphics {
 
     operator const vma::raii::Buffer&() { return buffer_; }
 
+    operator const vk::Buffer&() { return buffer_; }
+
     const vma::raii::Allocation& allocation() const {
       return buffer_.getAllocation();
     }

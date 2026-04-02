@@ -8,7 +8,7 @@
 
 namespace lisa::graphics {
   Buffer::Buffer(const vk::DeviceSize size, const vk::BufferUsageFlags usage) {
-    const vk::BufferCreateInfo buffer_ci{ .size = size, .usage = usage };
+    const vk::BufferCreateInfo buffer_ci{.size = size, .usage = usage};
     buffer_ = context::allocator().create_buffer(buffer_ci);
   }
 }

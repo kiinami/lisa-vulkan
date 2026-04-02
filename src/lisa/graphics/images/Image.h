@@ -45,18 +45,23 @@ namespace lisa::graphics {
     }
   };
 
+  static constexpr vma::AllocationCreateInfo DEFAULT_ALLOCATION_CI = {
+    .flags = vma::AllocationCreateFlagBits::eDedicatedMemory,
+    .usage = vma::MemoryUsage::eAuto
+  };
+
   class Image {
   public:
+    Image() = default;
+    ~Image() = default;
+
     Image(
       ImageFormat format,
       vk::ImageUsageFlags usage,
       const vec3& size,
       vk::ImageType type = vk::ImageType::e2D,
-      uint32 layers = 1,
       uint32 mips = 1,
-      const vma::AllocationCreateInfo& allocation_ci = {
-        .flags = vma::AllocationCreateFlagBits::eDedicatedMemory,
-        .usage = vma::MemoryUsage::eAuto }
+      const vma::AllocationCreateInfo& allocation_ci = DEFAULT_ALLOCATION_CI
     );
 
     Image(
@@ -70,8 +75,6 @@ namespace lisa::graphics {
       format_(format),
       usage_(usage),
       type_(vk::ImageType::e2D) {}
-
-    ~Image();
 
     Image(const Image&) = delete;
     Image& operator=(const Image&) = delete;
@@ -90,8 +93,6 @@ namespace lisa::graphics {
 
     const vec3& size() const { return size_; }
 
-    uint32 layers() const { return layers_; }
-
     uint32 mipmaps() const { return mips_; }
 
     ImageFormat format() const { return format_; }
@@ -105,12 +106,15 @@ namespace lisa::graphics {
       views_;
 
     vec3 size_;
-    uint32 layers_ = 1;
     uint32 mips_ = 1;
 
     ImageFormat format_;
     vk::ImageUsageFlags usage_{ 0 };
     vk::ImageType type_;
+
+    void allocate(
+      const vma::AllocationCreateInfo& allocation_ci = DEFAULT_ALLOCATION_CI
+    );
   };
 }
 

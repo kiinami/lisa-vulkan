@@ -13,16 +13,18 @@ namespace lisa::graphics {
     vk::ImageUsageFlags usage,
     const vec3& size,
     vk::ImageType type,
-    uint32 layers,
     uint32 mips,
     const vma::AllocationCreateInfo& allocation_ci
   ) :
     size_(size),
-    layers_(layers),
     mips_(mips),
     format_(format),
     usage_(usage),
     type_(type) {
+    allocate(allocation_ci);
+  }
+
+  void Image::allocate(const vma::AllocationCreateInfo& allocation_ci) {
     const vk::ImageCreateInfo image_ci{
       .imageType = type_,
       .format = format_,
@@ -38,10 +40,9 @@ namespace lisa::graphics {
     image_ = context::allocator().create_image(image_ci, allocation_ci);
   }
 
-  Image::~Image() = default;
-
   const vk::raii::ImageView& Image::view(const ImageViewDesc& desc) {
-    if (auto it = views_.find(desc); it != views_.end()) return it->second;
+    if (const auto it = views_.find(desc); it != views_.end())
+      return it->second;
 
     const vk::ImageViewCreateInfo view_ci{
       .image = static_cast<const vk::Image&>(*this),
