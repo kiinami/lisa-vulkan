@@ -10,12 +10,12 @@ namespace lisa {
   typedef uint32_t uint32;
   typedef uint64_t uint64;
 
-  typedef glm::vec2 Vector2f;
-  typedef glm::vec3 Vector3f;
-  typedef glm::vec4 Vector4f;
+  typedef glm::vec2 vec2;
+  typedef glm::vec3 vec3;
+  typedef glm::vec4 vec4;
 
   typedef glm::quat Quaternion;
 
-  typedef glm::mat3 Matrix3f;
-  typedef glm::mat4 Matrix4f;
+  typedef glm::mat3 mat3;
+  typedef glm::mat4 mat4;
 }

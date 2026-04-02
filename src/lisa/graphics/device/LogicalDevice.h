@@ -18,6 +18,9 @@ namespace lisa::graphics {
 
     const Queue& queue() { return queue_.value(); }
 
+    vk::raii::ImageView
+      create_image_view(const vk::ImageViewCreateInfo& view_ci) const;
+
   private:
     vk::raii::Device device_ = nullptr;
     std::optional<Queue> queue_;

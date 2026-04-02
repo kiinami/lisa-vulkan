@@ -23,18 +23,18 @@ namespace lisa::graphics {
     [[nodiscard]]
     std::string name() const;
     [[nodiscard]]
-    bool supports_features() const;
+    bool supports_profile() const;
     [[nodiscard]]
     bool is_discrete() const;
     [[nodiscard]]
     uint32 max_image_dimensions() const;
     uint32 queue_family_index() const;
+    vk::SurfaceCapabilitiesKHR
+      surface_capabilities(const vk::raii::SurfaceKHR& surface) const;
 
   private:
     vk::raii::PhysicalDevice device_ = nullptr;
     vk::PhysicalDeviceProperties props_;
-    const VpProfileProperties profile_ = { VP_KHR_ROADMAP_2022_NAME,
-                                           VP_KHR_ROADMAP_2022_SPEC_VERSION };
   };
 }
 

@@ -22,4 +22,11 @@ namespace lisa::graphics {
     ) {
     logging::debug("Memory allocator created");
   }
+
+  vma::raii::Image MemoryAllocator::create_image(
+    const vk::ImageCreateInfo& image_ci,
+    const vma::AllocationCreateInfo& allocation_ci
+  ) const {
+    return allocator_.createImage(image_ci, allocation_ci);
+  }
 }

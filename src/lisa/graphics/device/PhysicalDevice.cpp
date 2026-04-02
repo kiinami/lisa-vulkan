@@ -4,6 +4,7 @@
 
 #include "PhysicalDevice.h"
 
+#include "graphics/constants.h"
 #include "graphics/context.h"
 #include "utils/chk.h"
 #include "utils/common.h"
@@ -12,17 +13,22 @@ namespace lisa::graphics {
   PhysicalDevice::PhysicalDevice(const vk::raii::PhysicalDevice& device) :
     device_(device) {
     props_ = device_.getProperties2().properties;
+    logging::debug("Physical device with name '{}' created", name());
   }
 
   uint8 PhysicalDevice::vulkan_version() const { return props_.apiVersion; }
 
   std::string PhysicalDevice::name() const { return props_.deviceName; }
 
-  bool PhysicalDevice::supports_features() const {
+  bool PhysicalDevice::supports_profile() const {
     vk::Bool32 supported;
-    vpGetPhysicalDeviceProfileSupport(
-      context::instance(), *device_, &profile_, &supported
-    );
+    utils::chk(vpGetPhysicalDeviceProfileSupport(
+      constants::capabilities(),
+      context::instance(),
+      *device_,
+      &constants::PROFILE,
+      &supported
+    ));
     return supported;
   }
 
@@ -44,5 +50,11 @@ namespace lisa::graphics {
     return static_cast<uint32>(
       std::distance(queue_families.begin(), graphics_queue)
     );
+  }
+
+  vk::SurfaceCapabilitiesKHR PhysicalDevice::surface_capabilities(
+    const vk::raii::SurfaceKHR& surface
+  ) const {
+    return device_.getSurfaceCapabilitiesKHR(surface);
   }
 }

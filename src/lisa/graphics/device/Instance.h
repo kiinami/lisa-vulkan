@@ -7,9 +7,7 @@
 #include "PhysicalDevice.h"
 
 #include <vulkan/vulkan_raii.hpp>
-
-static const std::vector<const char*> VLAYERS = {};
-static const std::vector VLAYERS_DEBUG = { "VK_LAYER_KHRONOS_validation" };
+#include <vulkan/vulkan_profiles.hpp>
 
 namespace lisa::graphics {
   class Instance {
@@ -28,7 +26,7 @@ namespace lisa::graphics {
   private:
     vk::raii::Instance instance_ = nullptr;
     vk::raii::DebugUtilsMessengerEXT debug_messenger_ = nullptr;
-
+    bool supports_profile();
     static std::vector<const char*> get_instance_extensions();
     static std::vector<const char*> get_validation_layers();
     void add_debug_messenger();

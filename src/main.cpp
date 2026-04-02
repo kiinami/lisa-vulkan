@@ -4,6 +4,7 @@
 
 #include "lisa/graphics/context.h"
 #include "lisa/utils/logging.h"
+#include "window/context.h"
 
 #include <CLI/CLI.hpp>
 
@@ -42,9 +43,11 @@ int main(int argc, char** argv) {
   logging::init(log_level);
 
   {
+    window::context::init(1280, 720);
     graphics::context::init();
 
     graphics::context::destroy();
+    window::context::destroy();
   }
 
   return 0;

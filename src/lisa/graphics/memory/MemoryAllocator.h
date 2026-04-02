@@ -5,8 +5,8 @@
 #ifndef LISA_VULKAN_MEMORYALLOCATOR_H
 #define LISA_VULKAN_MEMORYALLOCATOR_H
 #include "graphics/device/Instance.h"
-#include "graphics/device/PhysicalDevice.h"
 #include "graphics/device/LogicalDevice.h"
+#include "graphics/device/PhysicalDevice.h"
 
 #include <vk_mem_alloc_raii.hpp>
 
@@ -21,6 +21,13 @@ namespace lisa::graphics {
     ~MemoryAllocator() = default;
 
     operator const vma::raii::Allocator&() const { return allocator_; }
+
+    vma::raii::Image create_image(
+      const vk::ImageCreateInfo& image_ci,
+      const vma::AllocationCreateInfo& allocation_ci = {
+        .flags = vma::AllocationCreateFlagBits::eDedicatedMemory,
+        .usage = vma::MemoryUsage::eAuto }
+    ) const;
 
   private:
     vma::raii::Allocator allocator_;

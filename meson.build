@@ -16,6 +16,7 @@ add_project_arguments('-DNOMINMAX', language: 'cpp')
 add_project_arguments('-D_USE_MATH_DEFINES', language: 'cpp')
 add_project_arguments('-DVULKAN_HPP_NO_CONSTRUCTORS', language: 'cpp')
 add_project_arguments('-DVULKAN_HPP_NO_STRUCT_CONSTRUCTORS', language: 'cpp')
+add_project_arguments('-DVP_USE_OBJECT', language: 'cpp')
 add_project_arguments('-DGLM_FORCE_RADIANS', language: 'cpp')
 add_project_arguments('-DGLM_FORCE_DEPTH_ZERO_TO_ONE', language: 'cpp')
 
@@ -45,6 +46,7 @@ endif
 cli11 = dependency('CLI11', required: true)
 glm = dependency('glm', required: true)
 sdl3 = dependency('sdl3', required: true)
+sdl3pp = dependency('sdl3pp', required: true)
 slang = dependency('slang', required: true)
 spdlog = dependency('spdlog', required: true)
 tinyobjloader = dependency('tinyobjloader', required: true)
@@ -67,9 +69,6 @@ src = files(
     'src/lisa/graphics/commands/Queue.h',
     'src/lisa/graphics/commands/Queue.cpp',
 
-    'src/lisa/graphics/memory/MemoryAllocator.h',
-    'src/lisa/graphics/memory/MemoryAllocator.cpp',
-
     'src/lisa/graphics/device/Instance.h',
     'src/lisa/graphics/device/Instance.cpp',
     'src/lisa/graphics/device/PhysicalDevice.h',
@@ -77,13 +76,28 @@ src = files(
     'src/lisa/graphics/device/LogicalDevice.h',
     'src/lisa/graphics/device/LogicalDevice.cpp',
 
-    'src/lisa/graphics/vk/vk.h',
-    'src/lisa/graphics/vk/vk.cpp',
+    'src/lisa/graphics/images/Image.h',
+    'src/lisa/graphics/images/Image.cpp',
+    'src/lisa/graphics/images/ImageFormat.h',
+    'src/lisa/graphics/images/ImageFormat.cpp',
+
+    'src/lisa/graphics/memory/MemoryAllocator.h',
+    'src/lisa/graphics/memory/MemoryAllocator.cpp',
+
+    'src/lisa/graphics/swapchain/Surface.h',
+    'src/lisa/graphics/swapchain/Surface.cpp',
+    'src/lisa/graphics/swapchain/Swapchain.h',
+    'src/lisa/graphics/swapchain/Swapchain.cpp',
 
     'src/lisa/utils/chk.h',
     'src/lisa/utils/defer.h',
     'src/lisa/utils/logging.h',
-    'src/lisa/utils/logging.cpp'
+    'src/lisa/utils/logging.cpp',
+
+    'src/lisa/window/context.h',
+    'src/lisa/window/context.cpp',
+    'src/lisa/window/Window.h',
+    'src/lisa/window/Window.cpp',
 )
 inc = include_directories('src/lisa')
 
@@ -94,14 +108,14 @@ lisa_library = library(
     'lisa',
     sources: src,
     include_directories: inc,
-    dependencies: [glm, sdl3, slang, spdlog, tinyobjloader, vulkan, vma, vma_hpp],
+    dependencies: [glm, sdl3, sdl3pp, slang, spdlog, tinyobjloader, vulkan, vma, vma_hpp],
     cpp_pch: 'src/lisa/pch/pch.h'
 )
 
 lisa_dep = declare_dependency(
     include_directories: include_directories('src/lisa'),
     link_with: lisa_library,
-    dependencies: [glm, sdl3, slang, spdlog, tinyobjloader, vulkan, vma, vma_hpp]
+    dependencies: [glm, sdl3, sdl3pp, slang, spdlog, tinyobjloader, vulkan, vma, vma_hpp]
 )
 
 ###############################################################################

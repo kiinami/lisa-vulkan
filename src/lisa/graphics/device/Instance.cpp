@@ -4,27 +4,36 @@
 
 #include "Instance.h"
 
-#include "graphics/vk/vk.h"
+#include "graphics/constants.h"
 #include "utils/chk.h"
 #include "utils/logging.h"
 
-#include <SDL3/SDL_init.h>
-#include <SDL3/SDL_vulkan.h>
-#include <spdlog/spdlog.h>
+#include <SDL3pp/SDL3pp_init.h>
+#include <SDL3pp/SDL3pp_vulkan.h>
 
 namespace lisa::graphics {
+  bool Instance::supports_profile() {
+    auto supported = vk::False;
+
+    utils::chk(vpGetInstanceProfileSupport(
+      constants::capabilities(), nullptr, &constants::PROFILE, &supported
+    ));
+
+    return static_cast<bool>(supported);
+  }
+
   std::vector<const char*> Instance::get_instance_extensions() {
-    uint32_t count = 0;
-    const char* const* sdl_extensions =
-      SDL_Vulkan_GetInstanceExtensions(&count);
-    std::vector extensions(sdl_extensions, sdl_extensions + count);
+    auto sdl_extensions = SDL::Vulkan_GetInstanceExtensions();
+    std::vector extensions(sdl_extensions.begin(), sdl_extensions.end());
     if (logging::debug_enabled())
-      extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+      extensions.push_back(vk::EXTDebugUtilsExtensionName);
     return extensions;
   }
 
   std::vector<const char*> Instance::get_validation_layers() {
-    const auto& vlayers = logging::debug_enabled() ? VLAYERS_DEBUG : VLAYERS;
+    const auto& vlayers = logging::debug_enabled()
+                            ? constants::VALIDATION_LAYERS_DEBUG
+                            : constants::VALIDATION_LAYERS;
 
     std::vector<const char*> return_layers;
     const auto available_layers = vk::enumerateInstanceLayerProperties();
@@ -39,8 +48,7 @@ namespace lisa::graphics {
         }
       }
 
-      if (!found)
-        logging::abort("Validation layer not found: {}", layer);
+      if (!found) logging::abort("Validation layer not found: {}", layer);
     }
 
     return return_layers;
@@ -63,11 +71,13 @@ namespace lisa::graphics {
   }
 
   Instance::Instance(const vk::raii::Context& ctx) {
-    init_sdl();
+    if (!supports_profile())
+      logging::abort("Profile not supported at instance level");
 
-    vk::ApplicationInfo app_info{ .pApplicationName = "lisa",
-                                  .pEngineName = "lisa",
-                                  .apiVersion = VK_API_VERSION_1_3 };
+    vk::ApplicationInfo app_info{ .pApplicationName =
+                                    constants::APPLICATION_NAME,
+                                  .pEngineName = constants::APPLICATION_NAME,
+                                  .apiVersion = constants::API_VERSION };
 
     auto extensions = get_instance_extensions();
     auto layers = get_validation_layers();
@@ -80,17 +90,22 @@ namespace lisa::graphics {
       .ppEnabledExtensionNames = extensions.data(),
     };
 
-    instance_ = ctx.createInstance(instance_ci, nullptr);
+    const VpInstanceCreateInfo vp_instance_ci{
+      .pCreateInfo = instance_ci,
+      .enabledFullProfileCount = 1,
+      .pEnabledFullProfiles = &constants::PROFILE
+    };
+
+    VkInstance instance = VK_NULL_HANDLE;
+    utils::chk(vpCreateInstance(constants::capabilities(), &vp_instance_ci, nullptr, &instance));
+    instance_ = vk::raii::Instance(ctx, instance);
 
     if (logging::debug_enabled()) add_debug_messenger();
 
     logging::debug("Vulkan instance initiated");
   }
 
-  Instance::~Instance() {
-    SDL_QuitSubSystem(SDL_INIT_VIDEO);
-    SDL_Quit();
-  }
+  Instance::~Instance() {}
 
   std::vector<PhysicalDevice> Instance::physical_devices() const {
     auto devices = instance_.enumeratePhysicalDevices();
@@ -118,7 +133,7 @@ namespace lisa::graphics {
     for (const auto& pd : devices) {
       uint32 score = 0;
 
-      if (!pd.supports_features()) continue;
+      if (!pd.supports_profile()) continue;
 
       if (pd.is_discrete()) score += 1000;
       score += pd.max_image_dimensions();
