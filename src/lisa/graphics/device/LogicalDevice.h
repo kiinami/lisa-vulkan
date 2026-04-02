@@ -16,14 +16,18 @@ namespace lisa::graphics {
 
     operator const vk::raii::Device&() const { return device_; }
 
-    const Queue& queue() { return queue_.value(); }
+    const vk::raii::Queue& queue() { return queue_; }
+
+    const vk::raii::CommandPool& command_pool() { return command_pool_; }
 
     vk::raii::ImageView
       create_image_view(const vk::ImageViewCreateInfo& view_ci) const;
 
   private:
     vk::raii::Device device_ = nullptr;
-    std::optional<Queue> queue_;
+    vk::raii::Queue queue_ = nullptr;
+    vk::raii::CommandPool command_pool_ = nullptr;
+    std::vector<vk::raii::CommandBuffer> command_buffers_;
   };
 }
 

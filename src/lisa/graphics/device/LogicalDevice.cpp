@@ -57,7 +57,19 @@ namespace lisa::graphics {
 
     logging::debug("Logical device created");
 
-    queue_ = Queue(device_.getQueue(queue_index, 0));
+    queue_ = device_.getQueue(queue_index, 0);
+
+    const vk::CommandPoolCreateInfo pool_ci{
+      .flags = vk::CommandPoolCreateFlagBits::eResetCommandBuffer,
+      .queueFamilyIndex = queue_index
+    };
+    command_pool_ = device_.createCommandPool(pool_ci);
+
+    const vk::CommandBufferAllocateInfo command_buffers_ai{
+      .commandPool = command_pool_,
+      .commandBufferCount = constants::MAX_FRAMES_IN_FLIGHT
+    };
+    command_buffers_ = device_.allocateCommandBuffers(command_buffers_ai);
   }
 
   LogicalDevice::~LogicalDevice() { device_.waitIdle(); }

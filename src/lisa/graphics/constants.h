@@ -37,6 +37,8 @@ namespace lisa::graphics::constants {
     }();
     return caps;
   }
+
+  static constexpr uint32 MAX_FRAMES_IN_FLIGHT = 2;
 }
 
 #endif // LISA_VULKAN_CONSTANTS_H

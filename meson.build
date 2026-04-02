@@ -69,9 +69,6 @@ src = files(
     'src/lisa/graphics/buffer/Buffer.h',
     'src/lisa/graphics/buffer/Buffer.cpp',
 
-    'src/lisa/graphics/commands/Queue.h',
-    'src/lisa/graphics/commands/Queue.cpp',
-
     'src/lisa/graphics/device/Instance.h',
     'src/lisa/graphics/device/Instance.cpp',
     'src/lisa/graphics/device/PhysicalDevice.h',
