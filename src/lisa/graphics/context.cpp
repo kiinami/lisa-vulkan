@@ -8,6 +8,7 @@
 #include "device/LogicalDevice.h"
 #include "swapchain/Surface.h"
 #include "swapchain/Swapchain.h"
+#include "utils/logging.h"
 #include "window/context.h"
 
 #include <memory>
@@ -36,6 +37,8 @@ namespace lisa::graphics::context {
       window::context::window(), *instance_, *physical_device_
     );
     swapchain_ = std::make_unique<Swapchain>(*surface_, *device_);
+
+    logging::debug("Graphics context initiated");
   }
 
   void destroy() {

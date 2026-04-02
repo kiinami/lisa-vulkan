@@ -23,5 +23,7 @@ namespace lisa::window {
     );
     assert(window_);
     Window::size();
+
+    logging::debug("Window with size {}x{} created", size_.x, size_.y);
   }
 }

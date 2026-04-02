@@ -19,6 +19,8 @@ namespace lisa::graphics {
     SDL::Vulkan_CreateSurface(window, instance, nullptr, &c_surface);
     surface_ = vk::raii::SurfaceKHR(instance, c_surface);
     capabilities_ = physical_device.surface_capabilities(surface_);
+
+    logging::debug("Surface created");
   }
 
   std::pair<ImageFormat, vk::ColorSpaceKHR>

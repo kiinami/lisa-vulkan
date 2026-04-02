@@ -5,6 +5,7 @@
 #include "context.h"
 
 #include "SDL3pp/SDL3pp_vulkan.h"
+#include "utils/logging.h"
 
 #include <memory>
 
@@ -19,6 +20,8 @@ namespace lisa::window::context {
 
     Window::WindowSize size{width, height};
     window_ = std::make_unique<Window>(size);
+
+    logging::debug("Window context initiated");
   }
 
   void destroy() {

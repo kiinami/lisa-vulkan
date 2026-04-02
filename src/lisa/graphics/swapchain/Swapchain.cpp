@@ -5,6 +5,7 @@
 #include "Swapchain.h"
 
 #include "graphics/context.h"
+#include "utils/logging.h"
 #include "window/Window.h"
 #include "window/context.h"
 
@@ -56,6 +57,7 @@ namespace lisa::graphics {
     };
 
     swapchain_ = vk::raii::SwapchainKHR(device, swapchain_ci);
+    logging::debug("Swapchain created");
 
     vec3 size_vec{ static_cast<float>(extent.width),
                    static_cast<float>(extent.height),
@@ -65,5 +67,6 @@ namespace lisa::graphics {
       images_.emplace_back(
         img, color_format_, size_vec, vk::ImageUsageFlagBits::eColorAttachment
       );
+    logging::debug("Got {} images from the swapchain", images_.size());
   }
 }
