@@ -45,6 +45,7 @@ endif
 
 cli11 = dependency('CLI11', required: true)
 glm = dependency('glm', required: true)
+ktx = dependency('ktx', required: true)
 sdl3 = dependency('sdl3', required: true)
 sdl3pp = dependency('sdl3pp', required: true)
 slang = dependency('slang', required: true)
@@ -112,14 +113,14 @@ lisa_library = library(
     'lisa',
     sources: src,
     include_directories: inc,
-    dependencies: [glm, sdl3, sdl3pp, slang, spdlog, tinyobjloader, vulkan, vma, vma_hpp],
+    dependencies: [glm, ktx, sdl3, sdl3pp, slang, spdlog, tinyobjloader, vulkan, vma, vma_hpp],
     cpp_pch: 'src/lisa/pch/pch.h'
 )
 
 lisa_dep = declare_dependency(
     include_directories: include_directories('src/lisa'),
     link_with: lisa_library,
-    dependencies: [glm, sdl3, sdl3pp, slang, spdlog, tinyobjloader, vulkan, vma, vma_hpp]
+    dependencies: [glm, ktx, sdl3, sdl3pp, slang, spdlog, tinyobjloader, vulkan, vma, vma_hpp]
 )
 
 ###############################################################################

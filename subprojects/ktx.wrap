@@ -1,0 +1,9 @@
+[wrap-file]
+directory = KTX-Software-4.4.2-Linux-x86_64
+source_url = https://github.com/KhronosGroup/KTX-Software/releases/download/v4.4.2/KTX-Software-4.4.2-Linux-x86_64.tar.bz2
+source_filename = KTX-Software-4.4.2-Linux-x86_64.tar.bz2
+source_hash = a8781bad05f9624edbf910b7f258cd0a4ba7d3e63b49ecc0a0ab440bf6a0a245
+patch_directory = ktx
+
+[provide]
+ktx = ktx_dep
