@@ -3,6 +3,7 @@
 //
 
 #include "lisa/graphics/context.h"
+#include "lisa/meshes/Mesh.h"
 #include "lisa/utils/logging.h"
 #include "window/context.h"
 
@@ -45,6 +46,11 @@ int main(int argc, char** argv) {
   {
     window::context::init(1280, 720);
     graphics::context::init();
+
+    {
+      auto suzanne_path = std::filesystem::path("assets/models/suzanne.obj");
+      auto suzanne = meshes::Mesh(suzanne_path);
+    }
 
     graphics::context::destroy();
     window::context::destroy();

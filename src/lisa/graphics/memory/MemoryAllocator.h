@@ -29,6 +29,16 @@ namespace lisa::graphics {
         .usage = vma::MemoryUsage::eAuto }
     ) const;
 
+    vma::raii::Buffer create_buffer(
+      const vk::BufferCreateInfo& buffer_ci,
+      const vma::AllocationCreateInfo& allocation_ci = {
+        .flags =
+          vma::AllocationCreateFlagBits::eHostAccessSequentialWrite |
+          vma::AllocationCreateFlagBits::eHostAccessAllowTransferInstead |
+          vma::AllocationCreateFlagBits::eMapped,
+        .usage = vma::MemoryUsage::eAuto }
+    ) const;
+
   private:
     vma::raii::Allocator allocator_;
   };

@@ -9,6 +9,7 @@
 #include "utils/common.h"
 #include "vk_mem_alloc_raii.hpp"
 
+#include <unordered_map>
 #include <variant>
 #include <vulkan/vulkan_raii.hpp>
 

@@ -29,4 +29,11 @@ namespace lisa::graphics {
   ) const {
     return allocator_.createImage(image_ci, allocation_ci);
   }
+
+  vma::raii::Buffer MemoryAllocator::create_buffer(
+    const vk::BufferCreateInfo& buffer_ci,
+    const vma::AllocationCreateInfo& allocation_ci
+  ) const {
+    return allocator_.createBuffer(buffer_ci, allocation_ci);
+  }
 }

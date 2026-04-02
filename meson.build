@@ -66,6 +66,9 @@ src = files(
     'src/lisa/graphics/utils.h',
     'src/lisa/graphics/utils.cpp',
 
+    'src/lisa/graphics/buffer/Buffer.h',
+    'src/lisa/graphics/buffer/Buffer.cpp',
+
     'src/lisa/graphics/commands/Queue.h',
     'src/lisa/graphics/commands/Queue.cpp',
 
@@ -88,6 +91,10 @@ src = files(
     'src/lisa/graphics/swapchain/Surface.cpp',
     'src/lisa/graphics/swapchain/Swapchain.h',
     'src/lisa/graphics/swapchain/Swapchain.cpp',
+
+    'src/lisa/meshes/Mesh.h',
+    'src/lisa/meshes/Mesh.cpp',
+    'src/lisa/meshes/Vertex.h',
 
     'src/lisa/utils/chk.h',
     'src/lisa/utils/defer.h',
@@ -126,4 +133,16 @@ lisa = executable(
     'src/main.cpp',
     install: true,
     dependencies: [cli11, lisa_dep]
+)
+
+###############################################################################
+# Assets
+###############################################################################
+install_subdir('assets', install_dir: get_option('bindir') / 'assets')
+
+run_command(
+    'cp', '-r',
+    meson.project_source_root() / 'assets',
+    meson.project_build_root() / 'assets',
+    check: false
 )
