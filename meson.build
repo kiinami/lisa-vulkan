@@ -70,6 +70,9 @@ src = files(
     'src/lisa/graphics/buffer/Buffer.h',
     'src/lisa/graphics/buffer/Buffer.cpp',
 
+    'src/lisa/graphics/descriptors/DescriptorContainer.h',
+    'src/lisa/graphics/descriptors/DescriptorContainer.cpp',
+
     'src/lisa/graphics/device/Instance.h',
     'src/lisa/graphics/device/Instance.cpp',
     'src/lisa/graphics/device/PhysicalDevice.h',
@@ -81,6 +84,8 @@ src = files(
     'src/lisa/graphics/images/Image.cpp',
     'src/lisa/graphics/images/ImageFormat.h',
     'src/lisa/graphics/images/ImageFormat.cpp',
+    'src/lisa/graphics/images/Texture.h',
+    'src/lisa/graphics/images/Texture.cpp',
 
     'src/lisa/graphics/memory/MemoryAllocator.h',
     'src/lisa/graphics/memory/MemoryAllocator.cpp',

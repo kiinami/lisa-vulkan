@@ -21,6 +21,7 @@ namespace lisa::graphics {
       image_(std::move(image)),
       sampler_(std::move(sampler)) {}
 
+    vk::DescriptorImageInfo descriptor();
   private:
     Image image_;
     vk::raii::Sampler sampler_;

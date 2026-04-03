@@ -12,7 +12,9 @@
 #include <ktxvulkan.h>
 
 namespace lisa::graphics {
-  Texture Texture::load_ktx(const std::filesystem::path& filename, const CommandBuffer& cmd_buffer) {
+  Texture Texture::load_ktx(
+    const std::filesystem::path& filename, const CommandBuffer& cmd_buffer
+  ) {
     ktxTexture* texture;
     ktxTexture_CreateFromNamedFile(
       filename.c_str(), KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &texture
@@ -111,5 +113,20 @@ namespace lisa::graphics {
     ktxTexture_Destroy(texture);
 
     return Texture(std::move(image), std::move(sampler));
+  }
+
+  vk::DescriptorImageInfo Texture::descriptor() {
+    return {
+      .sampler = sampler_,
+      .imageView = image_.view(
+        {.type = vk::ImageViewType::e2D,
+         .format = image_.format(),
+         .range =
+           {.aspectMask = vk::ImageAspectFlagBits::eColor,
+            .levelCount = image_.mipmaps(),
+            .layerCount = 1}}
+      ),
+      .imageLayout = vk::ImageLayout::eReadOnlyOptimal
+    };
   }
 }
