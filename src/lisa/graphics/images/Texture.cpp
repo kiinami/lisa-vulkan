@@ -34,10 +34,6 @@ namespace lisa::graphics {
       auto buffer =
         Buffer(texture->dataSize, vk::BufferUsageFlagBits::eTransferSrc);
 
-      cmd_buffer->begin(
-        {.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit}
-      );
-
       const vk::ImageMemoryBarrier2 barrier_info{
         .srcStageMask = vk::PipelineStageFlagBits2::eNone,
         .srcAccessMask = vk::AccessFlagBits2::eNone,
@@ -96,8 +92,8 @@ namespace lisa::graphics {
       };
       dependency_i.pImageMemoryBarriers = &barrier_read_info;
       cmd_buffer->pipelineBarrier2(dependency_i);
-
-      cmd_buffer->end();
+      
+      cmd_buffer.keep_alive(std::move(buffer));
     }
 
     const vk::SamplerCreateInfo sampler_ci{

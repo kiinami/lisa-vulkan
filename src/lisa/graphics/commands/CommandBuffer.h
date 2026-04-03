@@ -5,6 +5,7 @@
 #ifndef LISA_VULKAN_COMMANDBUFFER_H
 #define LISA_VULKAN_COMMANDBUFFER_H
 
+#include <any>
 #include <vulkan/vulkan_raii.hpp>
 
 namespace lisa::graphics {
@@ -30,8 +31,15 @@ namespace lisa::graphics {
 
     operator const vk::CommandBuffer*() const { return &*buffer_; }
 
+    template<typename T> void keep_alive(T&& object) const {
+      dependencies_.emplace_back(
+        std::make_shared<std::decay_t<T>>(std::forward<T>(object))
+      );
+    }
+
   private:
     vk::raii::CommandBuffer buffer_ = nullptr;
+    mutable std::vector<std::shared_ptr<void>> dependencies_;
   };
 
 }

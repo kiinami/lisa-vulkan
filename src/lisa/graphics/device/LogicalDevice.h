@@ -27,7 +27,7 @@ namespace lisa::graphics {
     vk::raii::ImageView
       create_image_view(const vk::ImageViewCreateInfo& view_ci) const;
 
-    const CommandBuffer& cmd_buffer() const;
+    CommandBuffer cmd_buffer() const;
     void submit_cmd_buffer_with_fence(const CommandBuffer& cmd_buffer) const;
 
   private:

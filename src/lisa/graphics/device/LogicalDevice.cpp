@@ -82,7 +82,7 @@ namespace lisa::graphics {
     return device_.createImageView(view_ci);
   }
 
-  const CommandBuffer& LogicalDevice::cmd_buffer() const {
+  CommandBuffer LogicalDevice::cmd_buffer() const {
     return CommandBuffer(
       std::move(device_.allocateCommandBuffers(
         {.commandPool = command_pool_, .commandBufferCount = 1}

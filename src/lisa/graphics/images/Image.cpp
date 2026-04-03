@@ -28,10 +28,14 @@ namespace lisa::graphics {
     const vk::ImageCreateInfo image_ci{
       .imageType = type_,
       .format = format_,
-      .extent = vk::Extent3D{ static_cast<uint32_t>(size_.x),
-                              static_cast<uint32_t>(size_.y),
-                              static_cast<uint32_t>(size_.z) },
+      .extent =
+        vk::Extent3D{
+          static_cast<uint32_t>(size_.x),
+          static_cast<uint32_t>(size_.y),
+          static_cast<uint32_t>(size_.z)
+        },
       .mipLevels = mips_,
+      .arrayLayers = 1,
       .samples = vk::SampleCountFlagBits::e1,
       .tiling = vk::ImageTiling::eOptimal,
       .usage = usage_,

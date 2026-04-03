@@ -22,9 +22,9 @@ namespace lisa::graphics {
     Buffer(Buffer&&) noexcept = default;
     Buffer& operator=(Buffer&&) noexcept = default;
 
-    operator const vma::raii::Buffer&() { return buffer_; }
+    operator const vma::raii::Buffer&() const { return buffer_; }
 
-    operator const vk::Buffer&() { return buffer_; }
+    operator const vk::Buffer&() const { return *buffer_; }
 
     const vma::raii::Allocation& allocation() const {
       return buffer_.getAllocation();

@@ -242,9 +242,8 @@ tutorial/.github/**
 
 .idea
 cmake-build*
+AGENTS.md
 
 subprojects/*
 !subprojects/*.wrap
 !subprojects/packagefiles
-
-vulkansdk.ini

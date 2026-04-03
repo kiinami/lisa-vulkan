@@ -6,6 +6,7 @@
 
 #include "device/Instance.h"
 #include "device/LogicalDevice.h"
+#include "images/Texture.h"
 #include "shaders/Shader.h"
 #include "swapchain/Surface.h"
 #include "swapchain/Swapchain.h"
@@ -38,6 +39,21 @@ namespace lisa::graphics::context {
       window::context::window(), *instance_, *physical_device_
     );
     swapchain_ = std::make_unique<Swapchain>(*surface_, *device_);
+
+    {
+      const auto& cmd_buffer = device_->cmd_buffer();
+
+      cmd_buffer->begin(
+        {.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit}
+      );
+
+      auto t0 = Texture::load_ktx(path("assets/textures/suzanne0.ktx"), cmd_buffer);
+      auto t1 = Texture::load_ktx(path("assets/textures/suzanne1.ktx"), cmd_buffer);
+      auto t2 = Texture::load_ktx(path("assets/textures/suzanne2.ktx"), cmd_buffer);
+
+      cmd_buffer->end();
+      device_->submit_cmd_buffer_with_fence(cmd_buffer);
+    }
 
     logging::debug("Graphics context initiated");
   }
