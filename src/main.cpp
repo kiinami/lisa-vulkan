@@ -3,8 +3,11 @@
 //
 
 #include "lisa/graphics/context.h"
-#include "lisa/meshes/Mesh.h"
+#include "lisa/resources/Mesh.h"
+#include "lisa/resources/Shader.h"
+#include "lisa/resources/Texture.h"
 #include "lisa/utils/logging.h"
+#include "systems/resources/ResourceManager.h"
 #include "window/context.h"
 
 #include <CLI/CLI.hpp>
@@ -12,7 +15,7 @@
 using namespace lisa;
 
 namespace {
-  CLI::App app{ "lisa" };
+  CLI::App app{"lisa"};
   str log_level = "debug";
   int device = 0;
 }
@@ -26,7 +29,7 @@ static int cli_args(int argc, char** argv) {
     )
     ->check(
       CLI::IsMember(
-        { "trace", "debug", "info", "warning", "error", "critical" },
+        {"trace", "debug", "info", "warning", "error", "critical"},
         CLI::ignore_case
       )
     );
@@ -48,8 +51,15 @@ int main(int argc, char** argv) {
     graphics::context::init();
 
     {
-      auto suzanne_path = std::filesystem::path("assets/models/suzanne.obj");
-      auto suzanne = meshes::Mesh(suzanne_path);
+      systems::resources::ResourceManager resource_manager;
+
+      auto t0 = resource_manager.load<resources::Texture>("suzanne0");
+      auto t1 = resource_manager.load<resources::Texture>("suzanne1");
+      auto t2 = resource_manager.load<resources::Texture>("suzanne2");
+
+      auto mesh = resource_manager.load<resources::Mesh>("suzanne");
+
+      auto shader = resource_manager.load<resources::Shader>("shader");
     }
 
     graphics::context::destroy();

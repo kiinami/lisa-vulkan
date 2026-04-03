@@ -90,7 +90,9 @@ namespace lisa::graphics {
     );
   }
 
-  void LogicalDevice::submit_cmd_buffer_with_fence(const CommandBuffer& cmd_buffer) const {
+  void LogicalDevice::submit_cmd_buffer_with_fence(
+    const CommandBuffer& cmd_buffer
+  ) const {
     auto fence = device_.createFence({});
     const vk::SubmitInfo submit_info{
       .commandBufferCount = 1, .pCommandBuffers = cmd_buffer

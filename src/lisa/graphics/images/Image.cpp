@@ -14,13 +14,15 @@ namespace lisa::graphics {
     const vec3& size,
     vk::ImageType type,
     uint32 mips,
+    vk::ImageLayout initial_layout,
     const vma::AllocationCreateInfo& allocation_ci
   ) :
     size_(size),
     mips_(mips),
     format_(format),
     usage_(usage),
-    type_(type) {
+    type_(type),
+    initial_layout_(initial_layout) {
     allocate(allocation_ci);
   }
 
@@ -39,7 +41,8 @@ namespace lisa::graphics {
       .samples = vk::SampleCountFlagBits::e1,
       .tiling = vk::ImageTiling::eOptimal,
       .usage = usage_,
-      .initialLayout = vk::ImageLayout::eUndefined
+      .sharingMode = vk::SharingMode::eExclusive,
+      .initialLayout = initial_layout_
     };
     image_ = context::allocator().create_image(image_ci, allocation_ci);
   }

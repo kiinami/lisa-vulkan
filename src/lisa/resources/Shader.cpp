@@ -4,34 +4,10 @@
 
 #include "Shader.h"
 
+#include "constants.h"
 #include "graphics/context.h"
-#include "utils/common.h"
-#include "utils/logging.h"
 
-#include <array>
-
-namespace lisa::graphics {
-  Shader::Shader(
-    const std::filesystem::path& filepath, const str& module_name
-  ) {
-    const auto session = create_session();
-    const auto slang_module = session->loadModuleFromSource(
-      module_name.c_str(), filepath.c_str(), nullptr, nullptr
-    );
-
-    Slang::ComPtr<ISlangBlob> spirv;
-    slang_module->getTargetCode(0, spirv.writeRef());
-
-    const vk::ShaderModuleCreateInfo module_ci{
-      .codeSize = spirv->getBufferSize(),
-      .pCode = (uint32*) spirv->getBufferPointer()
-    };
-    module_ = context::device()->createShaderModule(module_ci);
-    logging::trace("Loaded shader at path '{}'", filepath.c_str());
-  }
-
-  Shader::~Shader() {}
-
+namespace lisa::resources {
   const Slang::ComPtr<slang::IGlobalSession>& Shader::get_global_session() {
     static auto s = []() {
       Slang::ComPtr<slang::IGlobalSession> global_session;
@@ -45,7 +21,8 @@ namespace lisa::graphics {
     const auto& global_session = get_global_session();
 
     auto targets = std::to_array<slang::TargetDesc>(
-      {{.format = SLANG_SPIRV, .profile = global_session->findProfile("spirv_1_4")}}
+      {{.format = SLANG_SPIRV,
+        .profile = global_session->findProfile("spirv_1_4")}}
     );
     auto options = std::to_array<slang::CompilerOptionEntry>(
       {{slang::CompilerOptionName::EmitSpirvDirectly,
@@ -64,4 +41,26 @@ namespace lisa::graphics {
 
     return session;
   }
+
+  bool Shader::load_function() {
+    const path filepath = constants::SHADERS_PATH / (id_ + ".slang");
+
+    const auto session = create_session();
+    const auto module = session->loadModuleFromSource(
+      id_.c_str(), filepath.c_str(), nullptr, nullptr
+    );
+
+    Slang::ComPtr<ISlangBlob> spirv;
+    module->getTargetCode(0, spirv.writeRef());
+
+    const vk::ShaderModuleCreateInfo module_ci{
+      .codeSize = spirv->getBufferSize(),
+      .pCode = (uint32*) spirv->getBufferPointer()
+    };
+    module_ = graphics::context::device()->createShaderModule(module_ci);
+
+    return true;
+  }
+
+  bool Shader::unload_function() { return true; }
 }

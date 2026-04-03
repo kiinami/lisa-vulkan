@@ -5,9 +5,10 @@
 #ifndef LISA_VULKAN_COMMANDBUFFER_H
 #define LISA_VULKAN_COMMANDBUFFER_H
 
+#include "utils/common.h"
+
 #include <any>
 #include <vulkan/vulkan_raii.hpp>
-#include "utils/common.h"
 
 namespace lisa::graphics {
 
@@ -37,6 +38,9 @@ namespace lisa::graphics {
         std::make_shared<std::decay_t<T>>(std::forward<T>(object))
       );
     }
+
+    void reset() const;
+    void begin_onetime() const;
 
   private:
     vk::raii::CommandBuffer buffer_ = nullptr;

@@ -23,26 +23,21 @@ namespace lisa::logging {
   spdlog::level::level_enum get_level() { return spdlog::get_level(); }
 
   void set_level(const str& level) {
-    if (level == "trace") {
+    if (level == "trace")
       spdlog::set_level(spdlog::level::trace);
-    } else if (level == "debug") {
+    else if (level == "debug")
       spdlog::set_level(spdlog::level::debug);
-    } else if (level == "info") {
+    else if (level == "info")
       spdlog::set_level(spdlog::level::info);
-    } else if (level == "warning") {
+    else if (level == "warning")
       spdlog::set_level(spdlog::level::warn);
-    } else if (level == "error") {
+    else if (level == "error")
       spdlog::set_level(spdlog::level::err);
-    } else if (level == "critical") {
+    else if (level == "critical")
       spdlog::set_level(spdlog::level::critical);
-    }
   }
 
-  bool debug_enabled() {
-    return get_level() <= spdlog::level::debug;
-  }
-
-
+  bool debug_enabled() { return get_level() <= spdlog::level::debug; }
 
   VKAPI_ATTR vk::Bool32 VKAPI_CALL vulkanDebugCallback(
     vk::DebugUtilsMessageSeverityFlagBitsEXT severity,

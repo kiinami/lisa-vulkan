@@ -13,7 +13,7 @@ namespace lisa::window {
       int x;
       int y;
 
-      operator SDL::Point() const { return { x, y }; }
+      operator SDL::Point() const { return {x, y}; }
     };
 
     explicit Window(WindowSize size);

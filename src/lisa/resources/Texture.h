@@ -1,0 +1,38 @@
+//
+// Created by kinami on 4/3/26.
+//
+
+#ifndef LISA_VULKAN_TEXTURE_H
+#define LISA_VULKAN_TEXTURE_H
+#include "graphics/images/Image.h"
+#include "graphics/images/Sampler.h"
+#include "systems/resources/Resource.h"
+#include "utils/common.h"
+
+#include <ktx.h>
+
+namespace lisa::resources {
+
+  class Texture : public systems::resources::Resource {
+  public:
+    explicit Texture(const str& id) : Resource(id) {}
+
+    ~Texture() override { unload(); }
+
+  protected:
+    bool load_function() override;
+    bool unload_function() override;
+
+    str type_name() override { return "Texture"; }
+
+  private:
+    graphics::Image image_;
+    graphics::Sampler sampler_;
+
+    static ktxTexture* load_from_file(const path& filepath);
+    static void copy(ktxTexture* texture, const graphics::Image& image);
+  };
+
+}
+
+#endif // LISA_VULKAN_TEXTURE_H

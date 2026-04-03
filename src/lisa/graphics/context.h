@@ -5,9 +5,9 @@
 #ifndef LISA_GRAPHICS_H
 #define LISA_GRAPHICS_H
 
-#include "utils/common.h"
 #include "device/Instance.h"
 #include "memory/MemoryAllocator.h"
+#include "utils/common.h"
 
 namespace lisa::graphics::context {
   void init();

@@ -18,7 +18,7 @@ namespace lisa::window {
   Window::Window(WindowSize size) {
     window_ = SDL::CreateWindow(
       "lisa",
-      SDL::Point{ size.x, size.y },
+      SDL::Point{size.x, size.y},
       SDL::WINDOW_VULKAN | SDL::WINDOW_RESIZABLE
     );
     assert(window_);

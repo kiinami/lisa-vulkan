@@ -34,7 +34,7 @@ namespace lisa::graphics {
       image_format(const vk::raii::PhysicalDevice& device) const;
 
   private:
-    vk::raii::SurfaceKHR surface_{ nullptr };
+    vk::raii::SurfaceKHR surface_{nullptr};
     vk::SurfaceCapabilitiesKHR capabilities_;
   };
 

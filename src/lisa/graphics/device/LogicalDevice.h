@@ -5,9 +5,9 @@
 #ifndef LISA_VULKAN_LOGICALDEVICE_H
 #define LISA_VULKAN_LOGICALDEVICE_H
 #include "graphics/commands/CommandBuffer.h"
+#include "utils/common.h"
 
 #include <vulkan/vulkan_raii.hpp>
-#include "utils/common.h"
 
 namespace lisa::graphics {
   class LogicalDevice {

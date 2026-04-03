@@ -6,7 +6,7 @@
 #define LISA_VULKAN_VERTEX_H
 #include "utils/common.h"
 
-namespace lisa::meshes {
+namespace lisa::resources {
   struct Vertex {
     vec3 pos;
     vec3 normal;

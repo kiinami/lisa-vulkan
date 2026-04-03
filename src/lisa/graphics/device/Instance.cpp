@@ -24,7 +24,9 @@ namespace lisa::graphics {
 
   vector<const char*> Instance::get_instance_extensions() {
     auto sdl_extensions = SDL::Vulkan_GetInstanceExtensions();
-    vector<const char*> extensions(sdl_extensions.begin(), sdl_extensions.end());
+    vector<const char*> extensions(
+      sdl_extensions.begin(), sdl_extensions.end()
+    );
     if (logging::debug_enabled())
       extensions.push_back(vk::EXTDebugUtilsExtensionName);
     return extensions;
@@ -74,10 +76,11 @@ namespace lisa::graphics {
     if (!supports_profile())
       logging::abort("Profile not supported at instance level");
 
-    vk::ApplicationInfo app_info{ .pApplicationName =
-                                    constants::APPLICATION_NAME,
-                                  .pEngineName = constants::APPLICATION_NAME,
-                                  .apiVersion = constants::API_VERSION };
+    vk::ApplicationInfo app_info{
+      .pApplicationName = constants::APPLICATION_NAME,
+      .pEngineName = constants::APPLICATION_NAME,
+      .apiVersion = constants::API_VERSION
+    };
 
     auto extensions = get_instance_extensions();
     auto layers = get_validation_layers();
@@ -97,7 +100,9 @@ namespace lisa::graphics {
     };
 
     VkInstance instance = VK_NULL_HANDLE;
-    utils::chk(vpCreateInstance(constants::capabilities(), &vp_instance_ci, nullptr, &instance));
+    utils::chk(vpCreateInstance(
+      constants::capabilities(), &vp_instance_ci, nullptr, &instance
+    ));
     instance_ = vk::raii::Instance(ctx, instance);
 
     if (logging::debug_enabled()) add_debug_messenger();

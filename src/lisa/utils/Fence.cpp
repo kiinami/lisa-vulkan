@@ -4,4 +4,5 @@
 
 #include "Fence.h"
 
-namespace lisa::graphics::utils {}
+namespace lisa::graphics::utils {
+}

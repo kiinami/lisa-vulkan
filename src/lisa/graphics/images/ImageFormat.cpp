@@ -4,4 +4,5 @@
 
 #include "ImageFormat.h"
 
-namespace lisa::graphics {}
+namespace lisa::graphics {
+}

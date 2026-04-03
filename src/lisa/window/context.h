@@ -13,4 +13,4 @@ namespace lisa::window::context {
   const Window& window();
 }
 
-#endif //LISA_VULKAN_CONTEXT_H
+#endif // LISA_VULKAN_CONTEXT_H

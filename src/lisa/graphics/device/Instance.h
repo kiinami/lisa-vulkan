@@ -5,10 +5,10 @@
 #ifndef LISA_INSTANCE_H
 #define LISA_INSTANCE_H
 #include "PhysicalDevice.h"
-
-#include <vulkan/vulkan_raii.hpp>
-#include <vulkan/vulkan_profiles.hpp>
 #include "utils/common.h"
+
+#include <vulkan/vulkan_profiles.hpp>
+#include <vulkan/vulkan_raii.hpp>
 
 namespace lisa::graphics {
   class Instance {

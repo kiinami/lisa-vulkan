@@ -52,7 +52,8 @@ namespace lisa::graphics {
 
   class Image {
   public:
-    Image() = default;
+    Image() {}
+
     ~Image() = default;
 
     Image(
@@ -61,6 +62,7 @@ namespace lisa::graphics {
       const vec3& size,
       vk::ImageType type = vk::ImageType::e2D,
       uint32 mips = 1,
+      vk::ImageLayout initial_layout = vk::ImageLayout::eUndefined,
       const vma::AllocationCreateInfo& allocation_ci = DEFAULT_ALLOCATION_CI
     );
 
@@ -74,7 +76,8 @@ namespace lisa::graphics {
       size_(size),
       format_(format),
       usage_(usage),
-      type_(vk::ImageType::e2D) {}
+      type_(vk::ImageType::e2D),
+      initial_layout_(vk::ImageLayout::eUndefined) {}
 
     Image(const Image&) = delete;
     Image& operator=(const Image&) = delete;
@@ -99,18 +102,20 @@ namespace lisa::graphics {
 
     vk::ImageUsageFlags usage() const { return usage_; }
 
+    vk::ImageLayout initial_layout() const { return initial_layout_; }
+
   protected:
     std::variant<vma::raii::Image, vk::Image> image_ = vk::Image(nullptr);
 
-    umap<ImageViewDesc, vk::raii::ImageView, ImageViewDescHash>
-      views_;
+    umap<ImageViewDesc, vk::raii::ImageView, ImageViewDescHash> views_;
 
     vec3 size_;
     uint32 mips_ = 1;
 
-    ImageFormat format_;
-    vk::ImageUsageFlags usage_{ 0 };
-    vk::ImageType type_;
+    ImageFormat format_{vk::Format::eUndefined};
+    vk::ImageUsageFlags usage_{0};
+    vk::ImageType type_{};
+    vk::ImageLayout initial_layout_{};
 
     void allocate(
       const vma::AllocationCreateInfo& allocation_ci = DEFAULT_ALLOCATION_CI

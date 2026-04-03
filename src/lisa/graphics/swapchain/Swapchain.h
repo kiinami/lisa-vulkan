@@ -32,10 +32,7 @@ namespace lisa::graphics {
 
   class Swapchain {
   public:
-    explicit Swapchain(
-      const Surface& surface,
-      const LogicalDevice& device
-    );
+    explicit Swapchain(const Surface& surface, const LogicalDevice& device);
     ~Swapchain() = default;
 
   private:

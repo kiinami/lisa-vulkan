@@ -59,9 +59,9 @@ namespace lisa::graphics {
     swapchain_ = vk::raii::SwapchainKHR(device, swapchain_ci);
     logging::debug("Swapchain created");
 
-    vec3 size_vec{ static_cast<float>(extent.width),
-                   static_cast<float>(extent.height),
-                   1.0f };
+    vec3 size_vec{
+      static_cast<float>(extent.width), static_cast<float>(extent.height), 1.0f
+    };
 
     for (const auto img : swapchain_.getImages())
       images_.emplace_back(

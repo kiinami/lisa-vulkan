@@ -18,7 +18,8 @@ namespace lisa::graphics {
   ) :
     allocator_(
       vma::raii::Allocator{
-        instance, device, vma::AllocatorCreateInfo{ {}, physical_device } }
+        instance, device, vma::AllocatorCreateInfo{{}, physical_device}
+      }
     ) {
     logging::debug("Memory allocator created");
   }
