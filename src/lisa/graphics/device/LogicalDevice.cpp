@@ -52,7 +52,7 @@ namespace lisa::graphics {
       .pEnabledFullProfiles = &constants::PROFILE
     };
     VkDevice dev;
-    utils::chk(vpCreateDevice(
+    lisa::utils::chk(vpCreateDevice(
       constants::capabilities(), *physical_device, &device_ci, nullptr, &dev
     ));
     device_ = vk::raii::Device{physical_device, vk::Device{dev}};

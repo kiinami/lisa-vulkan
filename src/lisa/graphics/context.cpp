@@ -6,6 +6,7 @@
 
 #include "device/Instance.h"
 #include "device/LogicalDevice.h"
+#include "shaders/Shader.h"
 #include "swapchain/Surface.h"
 #include "swapchain/Swapchain.h"
 #include "utils/logging.h"

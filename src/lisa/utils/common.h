@@ -1,6 +1,8 @@
 #pragma once
-#include <vulkan/vulkan_raii.hpp>
+
+#include <filesystem>
 #include <glm/glm.hpp>
+#include <vulkan/vulkan_raii.hpp>
 
 namespace lisa {
   typedef int8_t int8;
@@ -10,6 +12,8 @@ namespace lisa {
   typedef uint16_t uint16;
   typedef uint32_t uint32;
   typedef uint64_t uint64;
+
+  typedef std::filesystem::path path;
 
   typedef glm::vec2 vec2;
   typedef glm::vec3 vec3;

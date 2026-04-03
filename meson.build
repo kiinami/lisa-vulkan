@@ -43,15 +43,23 @@ if sdk_path != ''
 endif
 
 
+cpp = meson.get_compiler('cpp')
+
+if sdk_path != ''
+    slang = cpp.find_library('slang', dirs: sdk_path / 'lib', required: true)
+    vulkan = cpp.find_library('vulkan', dirs: sdk_path / 'lib', required: true)
+else
+    slang = dependency('slang', required: true)
+    vulkan = dependency('vulkan', required: true)
+endif
+
 cli11 = dependency('CLI11', required: true)
 glm = dependency('glm', required: true)
 ktx = dependency('ktx', required: true)
 sdl3 = dependency('sdl3', required: true)
 sdl3pp = dependency('sdl3pp', required: true)
-slang = dependency('slang', required: true)
 spdlog = dependency('spdlog', required: true)
 tinyobjloader = dependency('tinyobjloader', required: true)
-vulkan = dependency('vulkan', required: true)
 vma = dependency('VulkanMemoryAllocator', required: true)
 vma_hpp = dependency('VulkanMemoryAllocator-Hpp', required: true)
 
@@ -64,8 +72,6 @@ src = files(
 
     'src/lisa/graphics/context.h',
     'src/lisa/graphics/context.cpp',
-    'src/lisa/graphics/utils.h',
-    'src/lisa/graphics/utils.cpp',
 
     'src/lisa/graphics/buffer/Buffer.h',
     'src/lisa/graphics/buffer/Buffer.cpp',
@@ -89,6 +95,9 @@ src = files(
 
     'src/lisa/graphics/memory/MemoryAllocator.h',
     'src/lisa/graphics/memory/MemoryAllocator.cpp',
+
+    'src/lisa/graphics/shaders/Shader.h',
+    'src/lisa/graphics/shaders/Shader.cpp',
 
     'src/lisa/graphics/swapchain/Surface.h',
     'src/lisa/graphics/swapchain/Surface.cpp',

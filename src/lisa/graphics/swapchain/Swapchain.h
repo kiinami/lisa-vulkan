@@ -40,8 +40,8 @@ namespace lisa::graphics {
 
   private:
     vk::raii::SwapchainKHR swapchain_ = nullptr;
-    ImageFormat color_format_{};
-    vk::ColorSpaceKHR color_space_{};
+    ImageFormat color_format_{vk::Format::eUndefined};
+    vk::ColorSpaceKHR color_space_;
 
     std::vector<SwapchainImage> images_;
   };
