@@ -14,7 +14,7 @@ namespace lisa::logging {
     auto vulkan_logger_ = spdlog::stdout_color_mt("vulkan");
   }
 
-  void init(const std::string& level) {
+  void init(const str& level) {
     spdlog::set_default_logger(main_logger_);
     set_level(level);
     spdlog::set_pattern("[%H:%M:%S] [%^---%L---%$] [%n] %v");
@@ -22,7 +22,7 @@ namespace lisa::logging {
 
   spdlog::level::level_enum get_level() { return spdlog::get_level(); }
 
-  void set_level(const std::string& level) {
+  void set_level(const str& level) {
     if (level == "trace") {
       spdlog::set_level(spdlog::level::trace);
     } else if (level == "debug") {

@@ -21,7 +21,7 @@ namespace lisa::graphics {
     [[nodiscard]]
     uint8 vulkan_version() const;
     [[nodiscard]]
-    std::string name() const;
+    str name() const;
     [[nodiscard]]
     bool supports_profile() const;
     [[nodiscard]]

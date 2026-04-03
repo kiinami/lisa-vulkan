@@ -13,7 +13,7 @@ using namespace lisa;
 
 namespace {
   CLI::App app{ "lisa" };
-  std::string log_level = "debug";
+  str log_level = "debug";
   int device = 0;
 }
 

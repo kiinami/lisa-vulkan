@@ -18,7 +18,7 @@ namespace lisa::graphics {
 
   uint8 PhysicalDevice::vulkan_version() const { return props_.apiVersion; }
 
-  std::string PhysicalDevice::name() const { return props_.deviceName; }
+  str PhysicalDevice::name() const { return props_.deviceName; }
 
   bool PhysicalDevice::supports_profile() const {
     vk::Bool32 supported;

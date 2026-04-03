@@ -12,7 +12,7 @@
 
 namespace lisa::graphics {
   Shader::Shader(
-    const std::filesystem::path& filepath, const std::string& module_name
+    const std::filesystem::path& filepath, const str& module_name
   ) {
     const auto session = create_session();
     const auto slang_module = session->loadModuleFromSource(

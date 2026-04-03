@@ -6,14 +6,15 @@
 #define LISA_LOGGING_H
 #pragma once
 
+#include "utils/common.h"
+
 #include <spdlog/spdlog.h>
-#include <string>
 #include <vulkan/vulkan_profiles.hpp>
 #include <vulkan/vulkan_raii.hpp>
 
 namespace lisa::logging {
-  void init(const std::string& level);
-  void set_level(const std::string& level);
+  void init(const str& level);
+  void set_level(const str& level);
   spdlog::level::level_enum get_level();
   bool debug_enabled();
   VKAPI_ATTR vk::Bool32 VKAPI_CALL vulkanDebugCallback(

@@ -19,6 +19,7 @@ namespace lisa {
   template<typename K, typename V, typename H = std::hash<K>>
   using umap = std::unordered_map<K, V, H>;
   template<typename T, typename U> using pair = std::pair<T, U>;
+  typedef std::string str;
   typedef std::filesystem::path path;
 
   typedef glm::vec2 vec2;
