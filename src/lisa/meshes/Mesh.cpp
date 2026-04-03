@@ -16,8 +16,8 @@ namespace lisa::meshes {
 
   void Mesh::load_obj(const std::filesystem::path& filename) {
     tinyobj::attrib_t attrib;
-    std::vector<tinyobj::shape_t> shapes;
-    std::vector<tinyobj::material_t> materials;
+    vector<tinyobj::shape_t> shapes;
+    vector<tinyobj::material_t> materials;
 
     utils::chk(
       tinyobj::LoadObj(
@@ -27,8 +27,8 @@ namespace lisa::meshes {
 
     count_ = shapes[0].mesh.indices.size();
 
-    std::vector<Vertex> vertices{};
-    std::vector<uint16_t> indices{};
+    vector<Vertex> vertices{};
+    vector<uint16_t> indices{};
     for (const auto& [vertex_index, normal_index, texcoord_index] :
          shapes[0].mesh.indices) {
       Vertex v{ .pos = { attrib.vertices[vertex_index * 3],

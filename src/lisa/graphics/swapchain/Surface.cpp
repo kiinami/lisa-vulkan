@@ -23,7 +23,7 @@ namespace lisa::graphics {
     logging::debug("Surface created");
   }
 
-  std::pair<ImageFormat, vk::ColorSpaceKHR>
+  pair<ImageFormat, vk::ColorSpaceKHR>
     Surface::image_format(const vk::raii::PhysicalDevice& device) const {
     for (const auto [format, colorSpace] : device.getSurfaceFormatsKHR(surface_))
       if (format == vk::Format::eB8G8R8A8Srgb) return {ImageFormat(format), colorSpace};

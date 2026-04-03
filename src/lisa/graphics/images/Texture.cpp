@@ -53,7 +53,7 @@ namespace lisa::graphics {
       };
       cmd_buffer->pipelineBarrier2(dependency_i);
 
-      std::vector<vk::BufferImageCopy> copy_regions;
+      vector<vk::BufferImageCopy> copy_regions;
       for (auto i = 0; i < texture->numLevels; i++) {
         ktx_size_t offset = 0;
         ktxTexture_GetImageOffset(texture, i, 0, 0, &offset);
@@ -92,7 +92,7 @@ namespace lisa::graphics {
       };
       dependency_i.pImageMemoryBarriers = &barrier_read_info;
       cmd_buffer->pipelineBarrier2(dependency_i);
-      
+
       cmd_buffer.keep_alive(std::move(buffer));
     }
 

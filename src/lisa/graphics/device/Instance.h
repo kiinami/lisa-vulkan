@@ -8,6 +8,7 @@
 
 #include <vulkan/vulkan_raii.hpp>
 #include <vulkan/vulkan_profiles.hpp>
+#include "utils/common.h"
 
 namespace lisa::graphics {
   class Instance {
@@ -27,10 +28,10 @@ namespace lisa::graphics {
     vk::raii::Instance instance_ = nullptr;
     vk::raii::DebugUtilsMessengerEXT debug_messenger_ = nullptr;
     bool supports_profile();
-    static std::vector<const char*> get_instance_extensions();
-    static std::vector<const char*> get_validation_layers();
+    static vector<const char*> get_instance_extensions();
+    static vector<const char*> get_validation_layers();
     void add_debug_messenger();
-    std::vector<PhysicalDevice> physical_devices() const;
+    vector<PhysicalDevice> physical_devices() const;
   };
 }
 

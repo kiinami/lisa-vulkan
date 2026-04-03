@@ -7,6 +7,7 @@
 
 #include <any>
 #include <vulkan/vulkan_raii.hpp>
+#include "utils/common.h"
 
 namespace lisa::graphics {
 
@@ -39,7 +40,7 @@ namespace lisa::graphics {
 
   private:
     vk::raii::CommandBuffer buffer_ = nullptr;
-    mutable std::vector<std::shared_ptr<void>> dependencies_;
+    mutable vector<std::shared_ptr<void>> dependencies_;
   };
 
 }

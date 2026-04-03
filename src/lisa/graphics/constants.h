@@ -9,8 +9,8 @@
 #include <vulkan/vulkan_raii.hpp>
 
 namespace lisa::graphics::constants {
-  static constexpr std::vector<const char*> VALIDATION_LAYERS = {};
-  static const std::vector VALIDATION_LAYERS_DEBUG = {
+  static constexpr vector<const char*> VALIDATION_LAYERS = {};
+  static const vector VALIDATION_LAYERS_DEBUG = {
     "VK_LAYER_KHRONOS_validation"
   };
 

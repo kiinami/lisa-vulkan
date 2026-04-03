@@ -30,7 +30,7 @@ namespace lisa::graphics {
       return capabilities_;
     }
 
-    std::pair<ImageFormat, vk::ColorSpaceKHR>
+    pair<ImageFormat, vk::ColorSpaceKHR>
       image_format(const vk::raii::PhysicalDevice& device) const;
 
   private:

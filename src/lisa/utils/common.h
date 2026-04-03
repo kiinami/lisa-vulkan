@@ -2,6 +2,7 @@
 
 #include <filesystem>
 #include <glm/glm.hpp>
+#include <unordered_map>
 #include <vulkan/vulkan_raii.hpp>
 
 namespace lisa {
@@ -12,7 +13,12 @@ namespace lisa {
   typedef uint16_t uint16;
   typedef uint32_t uint32;
   typedef uint64_t uint64;
+  typedef size_t size;
 
+  template<typename T> using vector = std::vector<T>;
+  template<typename K, typename V, typename H = std::hash<K>>
+  using umap = std::unordered_map<K, V, H>;
+  template<typename T, typename U> using pair = std::pair<T, U>;
   typedef std::filesystem::path path;
 
   typedef glm::vec2 vec2;

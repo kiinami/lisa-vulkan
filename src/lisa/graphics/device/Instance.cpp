@@ -22,20 +22,20 @@ namespace lisa::graphics {
     return static_cast<bool>(supported);
   }
 
-  std::vector<const char*> Instance::get_instance_extensions() {
+  vector<const char*> Instance::get_instance_extensions() {
     auto sdl_extensions = SDL::Vulkan_GetInstanceExtensions();
-    std::vector extensions(sdl_extensions.begin(), sdl_extensions.end());
+    vector<const char*> extensions(sdl_extensions.begin(), sdl_extensions.end());
     if (logging::debug_enabled())
       extensions.push_back(vk::EXTDebugUtilsExtensionName);
     return extensions;
   }
 
-  std::vector<const char*> Instance::get_validation_layers() {
+  vector<const char*> Instance::get_validation_layers() {
     const auto& vlayers = logging::debug_enabled()
                             ? constants::VALIDATION_LAYERS_DEBUG
                             : constants::VALIDATION_LAYERS;
 
-    std::vector<const char*> return_layers;
+    vector<const char*> return_layers;
     const auto available_layers = vk::enumerateInstanceLayerProperties();
     for (auto layer : vlayers) {
       bool found = false;
@@ -107,10 +107,10 @@ namespace lisa::graphics {
 
   Instance::~Instance() {}
 
-  std::vector<PhysicalDevice> Instance::physical_devices() const {
+  vector<PhysicalDevice> Instance::physical_devices() const {
     auto devices = instance_.enumeratePhysicalDevices();
 
-    std::vector<PhysicalDevice> wrapped;
+    vector<PhysicalDevice> wrapped;
     wrapped.reserve(devices.size());
 
     std::ranges::transform(

@@ -43,7 +43,7 @@ namespace lisa::graphics {
     ImageFormat color_format_{vk::Format::eUndefined};
     vk::ColorSpaceKHR color_space_;
 
-    std::vector<SwapchainImage> images_;
+    vector<SwapchainImage> images_;
   };
 
 }

@@ -7,6 +7,7 @@
 #include "graphics/commands/CommandBuffer.h"
 
 #include <vulkan/vulkan_raii.hpp>
+#include "utils/common.h"
 
 namespace lisa::graphics {
   class LogicalDevice {
@@ -34,7 +35,7 @@ namespace lisa::graphics {
     vk::raii::Device device_ = nullptr;
     vk::raii::Queue queue_ = nullptr;
     vk::raii::CommandPool command_pool_ = nullptr;
-    std::vector<vk::raii::CommandBuffer> command_buffers_;
+    vector<vk::raii::CommandBuffer> command_buffers_;
   };
 }
 

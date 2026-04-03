@@ -102,7 +102,7 @@ namespace lisa::graphics {
   protected:
     std::variant<vma::raii::Image, vk::Image> image_ = vk::Image(nullptr);
 
-    std::unordered_map<ImageViewDesc, vk::raii::ImageView, ImageViewDescHash>
+    umap<ImageViewDesc, vk::raii::ImageView, ImageViewDescHash>
       views_;
 
     vec3 size_;
