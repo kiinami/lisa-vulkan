@@ -61,15 +61,6 @@ namespace lisa::systems::render {
 
     for (size i = 0; i < passes_.size(); i++)
       if (!visited[i]) visit(i);
-
-    // Semaphore creation
-    for (size i = 0; i < passes_.size(); i++)
-      for (auto dep : dependencies[i]) {
-        semaphores_.emplace_back(
-          graphics::context::device()->createSemaphore({})
-        );
-        semaphore_signal_pairs_.emplace_back(dep, i);
-      }
   }
 
   RenderResource* Rendergraph::get_resource(const str& name) {
@@ -89,29 +80,23 @@ namespace lisa::systems::render {
       const auto& pass = passes_[pass_id];
       vector<vk::ImageMemoryBarrier> barriers;
 
-      auto transition_resource = [&](
-                                   const str& resource_id,
-                                   const vk::ImageLayout target_layout,
-                                   const vk::AccessFlags target_access,
-                                   const vk::PipelineStageFlags target_stage
-                                 ) {
-        auto& [source_layout, source_access, source_stage] =
-          states[resource_id];
-        auto& resource = resources_.at(resource_id);
+      auto transition_resource = [&](const RenderPass::ResourceUsage& res) {
+        auto& [source_layout, source_access, source_stage] = states[res.id];
+        auto& resource = resources_.at(res.id);
 
         if (
           source_layout !=
-          target_layout ||
+          res.layout ||
           (source_access & vk::AccessFlagBits::eMemoryWrite)
         ) {
           const vk::ImageMemoryBarrier barrier{
             .srcAccessMask = source_access,
-            .dstAccessMask = target_access,
+            .dstAccessMask = res.access,
             .oldLayout = source_layout,
-            .newLayout = target_layout,
+            .newLayout = res.layout,
             .image = resource.image(),
             .subresourceRange = {
-              .aspectMask = vk::ImageAspectFlagBits::eColor,
+              .aspectMask = res.aspect,
               .baseMipLevel = 0,
               .levelCount = 1,
               .baseArrayLayer = 0,
@@ -121,34 +106,24 @@ namespace lisa::systems::render {
 
           cmd_buffer->pipelineBarrier(
             source_stage,
-            target_stage,
+            res.stage,
             vk::DependencyFlagBits::eByRegion,
             nullptr,
             nullptr,
             barrier
           );
 
-          source_layout = target_layout;
-          source_access = target_access;
-          source_stage = target_stage;
+          source_layout = res.layout;
+          source_access = res.access;
+          source_stage = res.stage;
         }
       };
 
       for (const auto& input : pass.inputs())
-        transition_resource(
-          input,
-          vk::ImageLayout::eShaderReadOnlyOptimal,
-          vk::AccessFlagBits::eShaderRead,
-          vk::PipelineStageFlagBits::eFragmentShader
-        );
+        transition_resource(input);
 
       for (const auto& output : pass.outputs())
-        transition_resource(
-          output,
-          vk::ImageLayout::eColorAttachmentOptimal,
-          vk::AccessFlagBits::eColorAttachmentWrite,
-          vk::PipelineStageFlagBits::eColorAttachmentOutput
-        );
+        transition_resource(output);
 
       pass.render_function(cmd_buffer);
     }

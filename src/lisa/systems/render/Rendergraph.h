@@ -32,9 +32,6 @@ namespace lisa::systems::render {
     umap<str, RenderResource> resources_;
     vector<RenderPass> passes_;
     vector<size> order_;
-
-    vector<vk::raii::Semaphore> semaphores_;
-    vector<pair<size, size>> semaphore_signal_pairs_;
   };
 
 }

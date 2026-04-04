@@ -14,19 +14,27 @@ namespace lisa::systems::render {
 
   class RenderPass {
   public:
+    struct ResourceUsage {
+      str id;
+      vk::ImageLayout layout;
+      vk::AccessFlags access;
+      vk::PipelineStageFlags stage;
+      vk::ImageAspectFlags aspect;
+    };
+
     RenderPass() = default;
     ~RenderPass() = default;
 
     std::function<void(const graphics::CommandBuffer&)> render_function;
 
-    const vector<str>& inputs() const { return inputs_; }
+    const vector<ResourceUsage>& inputs() const { return inputs_; }
 
-    const vector<str>& outputs() const { return outputs_; }
+    const vector<ResourceUsage>& outputs() const { return outputs_; }
 
   private:
     str name;
-    vector<str> inputs_;
-    vector<str> outputs_;
+    vector<ResourceUsage> inputs_;
+    vector<ResourceUsage> outputs_;
   };
 
 }

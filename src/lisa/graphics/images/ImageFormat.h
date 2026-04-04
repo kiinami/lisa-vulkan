@@ -27,6 +27,9 @@ namespace lisa::graphics {
 
     operator uint32() const { return static_cast<uint32>(format_); }
 
+    bool is_depth() const;
+    bool is_stencil() const;
+    vk::ImageAspectFlags aspect_mask() const;
   private:
     vk::Format format_;
   };
