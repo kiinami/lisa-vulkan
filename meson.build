@@ -93,6 +93,11 @@ src = files(
     'src/lisa/graphics/images/Image.cpp',
     'src/lisa/graphics/images/ImageFormat.h',
     'src/lisa/graphics/images/ImageFormat.cpp',
+    'src/lisa/graphics/images/Sampler.h',
+    'src/lisa/graphics/images/Sampler.cpp',
+
+    'src/lisa/graphics/sync/Fence.h',
+    'src/lisa/graphics/sync/Fence.cpp',
 
     'src/lisa/graphics/memory/MemoryAllocator.h',
     'src/lisa/graphics/memory/MemoryAllocator.cpp',

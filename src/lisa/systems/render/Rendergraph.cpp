@@ -11,7 +11,7 @@
 
 namespace lisa::systems::render {
   void Rendergraph::add_resource(RenderResource res) {
-    resources_[res.name()] = std::move(res);
+    resources_.insert_or_assign(res.name(), std::move(res));
   }
 
   void Rendergraph::add_pass(const RenderPass& pass) {
@@ -73,7 +73,7 @@ namespace lisa::systems::render {
   }
 
   RenderResource* Rendergraph::get_resource(const str& name) {
-    return resources_.contains(name) ? &resources_[name] : nullptr;
+    return resources_.contains(name) ? &resources_.at(name) : nullptr;
   }
 
   void Rendergraph::render(const graphics::CommandBuffer& cmd_buffer) {
@@ -97,7 +97,7 @@ namespace lisa::systems::render {
                                  ) {
         auto& [source_layout, source_access, source_stage] =
           states[resource_id];
-        auto& resource = resources_[resource_id];
+        auto& resource = resources_.at(resource_id);
 
         if (
           source_layout !=

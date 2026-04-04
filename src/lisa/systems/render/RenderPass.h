@@ -8,15 +8,16 @@
 #include "graphics/commands/CommandBuffer.h"
 #include "utils/common.h"
 
+#include <functional>
+
 namespace lisa::systems::render {
 
   class RenderPass {
   public:
-    RenderPass();
-    ~RenderPass();
+    RenderPass() = default;
+    ~RenderPass() = default;
 
-    virtual void
-      render_function(const graphics::CommandBuffer& cmd_buffer) const;
+    std::function<void(const graphics::CommandBuffer&)> render_function;
 
     const vector<str>& inputs() const { return inputs_; }
 
