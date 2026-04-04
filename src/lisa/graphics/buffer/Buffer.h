@@ -30,6 +30,8 @@ namespace lisa::graphics {
       return buffer_.getAllocation();
     }
 
+    vk::DeviceAddress address() const;
+
   private:
     vma::raii::Buffer buffer_ = nullptr;
   };

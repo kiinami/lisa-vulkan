@@ -37,7 +37,7 @@ namespace lisa::graphics {
           vma::AllocationCreateFlagBits::eHostAccessSequentialWrite |
           vma::AllocationCreateFlagBits::eHostAccessAllowTransferInstead |
           vma::AllocationCreateFlagBits::eMapped,
-        .usage = vma::MemoryUsage::eAuto
+        .usage = vma::MemoryUsage::eAuto,
       }
     ) const;
 
