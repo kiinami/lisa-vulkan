@@ -6,6 +6,7 @@
 
 #include "constants.h"
 #include "graphics/context.h"
+#include "utils/logging.h"
 
 namespace lisa::resources {
   const Slang::ComPtr<slang::IGlobalSession>& Shader::get_global_session() {
@@ -58,6 +59,40 @@ namespace lisa::resources {
       .pCode = (uint32*) spirv->getBufferPointer()
     };
     module_ = graphics::context::device()->createShaderModule(module_ci);
+
+    slang::ShaderReflection* reflection = module->getLayout();
+    uint32 entry_point_count = reflection->getEntryPointCount();
+
+    stages_.reserve(entry_point_count);
+
+    for (uint32 i = 0; i < entry_point_count; i++) {
+      slang::EntryPointReflection* entry_point =
+        reflection->getEntryPointByIndex(i);
+
+      SlangStage slang_stage = entry_point->getStage();
+      const char* entry_name = entry_point->getNameOverride();
+      vk::ShaderStageFlagBits vk_stage;
+      switch (slang_stage) {
+        case SLANG_STAGE_VERTEX:
+          vk_stage = vk::ShaderStageFlagBits::eVertex;
+          break;
+        case SLANG_STAGE_FRAGMENT:
+          vk_stage = vk::ShaderStageFlagBits::eFragment;
+          break;
+        case SLANG_STAGE_COMPUTE:
+          vk_stage = vk::ShaderStageFlagBits::eCompute;
+          break;
+        case SLANG_STAGE_GEOMETRY:
+          vk_stage = vk::ShaderStageFlagBits::eGeometry;
+          break;
+        case SLANG_STAGE_RAY_GENERATION:
+          vk_stage = vk::ShaderStageFlagBits::eRaygenKHR;
+          break;
+        default: logging::abort("Shader stage of entry point '{}' not supported", entry_name);
+      }
+
+      stages_.push_back({.stage = vk_stage, .entry_point = entry_name});
+    }
 
     return true;
   }

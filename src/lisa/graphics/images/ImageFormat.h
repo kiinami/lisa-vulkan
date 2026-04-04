@@ -25,11 +25,14 @@ namespace lisa::graphics {
 
     operator const vk::Format&() const { return format_; }
 
+    const vk::Format* operator*() const { return &format_; }
+
     operator uint32() const { return static_cast<uint32>(format_); }
 
     bool is_depth() const;
     bool is_stencil() const;
     vk::ImageAspectFlags aspect_mask() const;
+
   private:
     vk::Format format_;
   };
