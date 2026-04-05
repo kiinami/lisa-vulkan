@@ -13,7 +13,6 @@ namespace lisa::systems::render {
   ) :
     name_(name),
     image_(graphics::Image(format, usage, size)) {
-    // Pre-generate view
     image_.view(
       {.type = vk::ImageViewType::e2D,
        .format = image_.format(),

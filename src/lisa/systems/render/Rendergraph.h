@@ -9,6 +9,8 @@
 #include "utils/common.h"
 
 namespace lisa::systems::render {
+  template<typename T>
+  concept RenderPassDerived = std::derived_from<T, RenderPass>;
 
   class Rendergraph {
   public:
@@ -20,11 +22,21 @@ namespace lisa::systems::render {
     Rendergraph& operator=(const Rendergraph&) = delete;
 
     void add_resource(RenderResource res);
-    void add_pass(const RenderPass& pass);
+
+    template<RenderPassDerived T> void add_pass(const str& name) {
+      auto resource = std::make_unique<T>(name);
+      passes_.push_back(std::move(resource));
+    }
+
     void compile();
     RenderResource* get_resource(const str& name);
 
-    void render(const graphics::CommandBuffer& cmd_buffer);
+    void render(
+      const graphics::CommandBuffer& cmd_buffer,
+      const scene::Scene& scene,
+      vk::DeviceAddress global_bda,
+      vk::DeviceAddress object_bda
+    );
 
   private:
     struct ResourceState {
@@ -34,7 +46,7 @@ namespace lisa::systems::render {
     };
 
     umap<str, RenderResource> resources_;
-    vector<RenderPass> passes_;
+    vector<std::unique_ptr<RenderPass>> passes_;
     vector<size> order_;
   };
 

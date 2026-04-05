@@ -13,6 +13,7 @@
 #include "graphics/swapchain/Swapchain.h"
 #include "graphics/sync/Fence.h"
 #include "graphics/sync/Semaphore.h"
+#include "scene/Scene.h"
 #include "utils/common.h"
 
 #include <vulkan/vulkan_raii.hpp>
@@ -24,7 +25,7 @@ namespace lisa::systems::render {
     explicit Renderer(Rendergraph&& graph);
     ~Renderer() = default;
 
-    void render();
+    void render(const scene::Scene& scene);
 
     uint32 current_frame() const { return current_frame_; }
 
@@ -54,6 +55,7 @@ namespace lisa::systems::render {
       finished_s_;
 
     uint32 current_frame_ = 0;
+    float time_ = 0.0f;
 
     void reset() const;
     void submit_to_queue() const;

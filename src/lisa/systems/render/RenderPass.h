@@ -9,9 +9,9 @@
 #include "graphics/buffer/Buffer.h"
 #include "graphics/commands/CommandBuffer.h"
 #include "graphics/pipeline/Pipeline.h"
+#include "scene/Scene.h"
+#include "systems/resources/ResourceManager.h"
 #include "utils/common.h"
-
-#include <functional>
 
 namespace lisa::systems::render {
 
@@ -31,20 +31,14 @@ namespace lisa::systems::render {
       uint32 height;
       vk::Extent2D extent = {width, height};
       std::unordered_map<str, vk::ImageView> image_views;
+      const scene::Scene& scene;
+      vk::DeviceAddress global_bda = 0;
+      vk::DeviceAddress object_bda = 0;
     };
 
-    RenderPass(
-      const str& name,
-      const std::function<void(const RenderPassInput&)>& render_function,
-      const vector<ResourceUsage>& inputs,
-      const vector<ResourceUsage>& outputs
-    ) :
-      name_(name),
-      render_function_(render_function),
-      inputs_(inputs),
-      outputs_(outputs) {}
+    explicit RenderPass(const str& name) : name_(name) {}
 
-    ~RenderPass() = default;
+    virtual ~RenderPass() = default;
     RenderPass(RenderPass&&) = default;
     RenderPass& operator=(RenderPass&&) = default;
     RenderPass(const RenderPass&) = default;
@@ -58,13 +52,10 @@ namespace lisa::systems::render {
 
     void add_output(const ResourceUsage& usage) { outputs_.push_back(usage); }
 
-    void render(const RenderPassInput& render_info) const {
-      return render_function_(render_info);
-    }
+    virtual void render(const RenderPassInput& in) = 0;
 
-  private:
+  protected:
     str name_;
-    std::function<void(const RenderPassInput&)> render_function_;
     vector<ResourceUsage> inputs_;
     vector<ResourceUsage> outputs_;
   };

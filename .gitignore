@@ -243,6 +243,7 @@ tutorial/.github/**
 .idea
 cmake-build*
 AGENTS.md
+docs
 
 subprojects/*
 !subprojects/*.wrap

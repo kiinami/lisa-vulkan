@@ -96,23 +96,25 @@ src = files(
     'src/lisa/graphics/images/Sampler.h',
     'src/lisa/graphics/images/Sampler.cpp',
 
-    'src/lisa/graphics/pipeline/Pipeline.h',
-    'src/lisa/graphics/pipeline/Pipeline.cpp',
-
-    'src/lisa/graphics/sync/Fence.h',
-    'src/lisa/graphics/sync/Fence.cpp',
-    'src/lisa/graphics/sync/Semaphore.h',
-    'src/lisa/graphics/sync/Semaphore.cpp',
-
     'src/lisa/graphics/memory/MemoryAllocator.h',
     'src/lisa/graphics/memory/MemoryAllocator.cpp',
+
+    'src/lisa/graphics/pipeline/Pipeline.h',
+    'src/lisa/graphics/pipeline/Pipeline.cpp',
 
     'src/lisa/graphics/swapchain/Surface.h',
     'src/lisa/graphics/swapchain/Surface.cpp',
     'src/lisa/graphics/swapchain/Swapchain.h',
     'src/lisa/graphics/swapchain/Swapchain.cpp',
 
+    'src/lisa/graphics/sync/Fence.h',
+    'src/lisa/graphics/sync/Fence.cpp',
+    'src/lisa/graphics/sync/Semaphore.h',
+    'src/lisa/graphics/sync/Semaphore.cpp',
+
     'src/lisa/resources/constants.h',
+    'src/lisa/resources/context.h',
+    'src/lisa/resources/context.cpp',
     'src/lisa/resources/Mesh.h',
     'src/lisa/resources/Mesh.cpp',
     'src/lisa/resources/Shader.h',
@@ -120,6 +122,12 @@ src = files(
     'src/lisa/resources/Texture.h',
     'src/lisa/resources/Texture.cpp',
     'src/lisa/resources/Vertex.h',
+
+    'src/lisa/passes/DefaultPass.h',
+    'src/lisa/passes/DefaultPass.cpp',
+
+    'src/lisa/scene/Scene.h',
+    'src/lisa/scene/Scene.cpp',
 
     'src/lisa/systems/render/Renderer.h',
     'src/lisa/systems/render/Renderer.cpp',

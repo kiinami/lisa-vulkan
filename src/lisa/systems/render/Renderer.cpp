@@ -7,6 +7,8 @@
 #include "ShaderData.h"
 #include "graphics/context.h"
 
+#include <glm/gtc/matrix_transform.hpp>
+
 namespace lisa::systems::render {
   Renderer::Renderer(Rendergraph&& graph) :
     graph_(std::move(graph)),
@@ -54,13 +56,40 @@ namespace lisa::systems::render {
     graphics::context::device().queue().submit(submit_info, *fence_);
   }
 
-  void Renderer::render() {
+  void Renderer::render(const scene::Scene& scene) {
     reset();
 
     cmd_buffer_.begin_onetime();
 
-    graph_.render(cmd_buffer_);
-    auto swapchain_image = swapchain_.copy(
+    auto* global_data = static_cast<GlobalViewData*>(
+      global_view_buffers_[current_frame_].mapped_data()
+    );
+    global_data->view = scene.camera().view;
+    global_data->projection = scene.camera().projection;
+    global_data->view_projection = global_data->projection * global_data->view;
+    global_data->camera_position = vec4(0.0f, 0.0f, -5.0f, 1.0f);
+
+    auto* object_data = static_cast<ObjectData*>(
+      object_data_buffers_[current_frame_].mapped_data()
+    );
+
+    uint32 i = 0;
+    for (const auto& entity : scene.entities()) {
+      object_data[i].model =
+        entity.model * glm::rotate(mat4(1.0f), time_, vec3(0.0f, 1.0f, 0.0f));
+      object_data[i].color = vec4(1.0f);
+      object_data[i].texture_index = i;
+      i++;
+    }
+
+    graph_.render(
+      cmd_buffer_,
+      scene,
+      global_view_buffers_[current_frame_].address(),
+      object_data_buffers_[current_frame_].address()
+    );
+
+    const auto swapchain_image = swapchain_.copy(
       graph_.get_resource("FinalTarget")->image(),
       cmd_buffer_,
       available_s_[current_frame_]

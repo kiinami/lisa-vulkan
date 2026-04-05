@@ -2,8 +2,8 @@
 // Created by kinami on 4/1/26.
 //
 
-#ifndef LISA_VULKAN_CONTEXT_H
-#define LISA_VULKAN_CONTEXT_H
+#ifndef LISA_VULKAN_WINDOW_CONTEXT_H
+#define LISA_VULKAN_WINDOW_CONTEXT_H
 #include "Window.h"
 #include "utils/common.h"
 
@@ -19,4 +19,4 @@ namespace lisa::window::context {
   void poll_events();
 }
 
-#endif // LISA_VULKAN_CONTEXT_H
+#endif // LISA_VULKAN_WINDOW_CONTEXT_H

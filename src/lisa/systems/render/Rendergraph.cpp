@@ -15,10 +15,6 @@ namespace lisa::systems::render {
     resources_.insert_or_assign(res.name(), std::move(res));
   }
 
-  void Rendergraph::add_pass(const RenderPass& pass) {
-    passes_.push_back(pass);
-  }
-
   // https://github.khronos.org/Vulkan-Site/tutorial/latest/Building_a_Simple_Engine/Engine_Architecture/05_rendering_pipeline.html#_rendergraph_dependency_analysis_and_execution_ordering
   void Rendergraph::compile() {
     vector<vector<size>> dependencies(passes_.size());
@@ -29,14 +25,14 @@ namespace lisa::systems::render {
     for (size i = 0; i < passes_.size(); i++) {
       const auto& pass = passes_[i];
 
-      for (const auto& input : pass.inputs()) {
+      for (const auto& input : pass->inputs()) {
         if (auto it = writers.find(input.id); it != writers.end()) {
           dependencies[i].push_back(it->second);
           dependents[it->second].push_back(i);
         }
       }
 
-      for (const auto& output : pass.outputs())
+      for (const auto& output : pass->outputs())
         writers[output.id] = i;
     }
 
@@ -68,7 +64,12 @@ namespace lisa::systems::render {
     return resources_.contains(name) ? &resources_.at(name) : nullptr;
   }
 
-  void Rendergraph::render(const graphics::CommandBuffer& cmd_buffer) {
+  void Rendergraph::render(
+    const graphics::CommandBuffer& cmd_buffer,
+    const scene::Scene& scene,
+    vk::DeviceAddress global_bda,
+    vk::DeviceAddress object_bda
+  ) {
     umap<str, ResourceState> states(resources_.size());
     for (auto& [id, res] : resources_)
       states[id] = {
@@ -78,7 +79,7 @@ namespace lisa::systems::render {
       };
 
     for (const auto pass_id : order_) {
-      const auto& pass = passes_[pass_id];
+      auto& pass = passes_[pass_id];
       vector<vk::ImageMemoryBarrier> barriers;
 
       auto transition_resource = [&](const RenderPass::ResourceUsage& res) {
@@ -120,19 +121,22 @@ namespace lisa::systems::render {
         }
       };
 
-      for (const auto& input : pass.inputs())
+      for (const auto& input : pass->inputs())
         transition_resource(input);
 
-      for (const auto& output : pass.outputs())
+      for (const auto& output : pass->outputs())
         transition_resource(output);
 
       RenderPass::RenderPassInput input{
         .cmd_buffer = cmd_buffer,
         .width = window::context::window_width(),
-        .height = window::context::window_height()
+        .height = window::context::window_height(),
+        .scene = scene,
+        .global_bda = global_bda,
+        .object_bda = object_bda
       };
 
-      for (const auto& usage : pass.inputs()) {
+      for (const auto& usage : pass->inputs()) {
         auto& resource = resources_.at(usage.id);
         input.image_views.insert(
           {usage.id,
@@ -150,7 +154,7 @@ namespace lisa::systems::render {
         );
       }
 
-      for (const auto& usage : pass.outputs()) {
+      for (const auto& usage : pass->outputs()) {
         auto& resource = resources_.at(usage.id);
         input.image_views.insert(
           {usage.id,
@@ -168,7 +172,7 @@ namespace lisa::systems::render {
         );
       }
 
-      pass.render(input);
+      pass->render(input);
     }
   }
 }
