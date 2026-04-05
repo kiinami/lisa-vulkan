@@ -244,7 +244,7 @@ tutorial/.github/**
 cmake-build*
 AGENTS.md
 docs
-example
+examples
 
 subprojects/*
 !subprojects/*.wrap
