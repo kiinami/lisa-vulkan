@@ -41,8 +41,12 @@ namespace lisa::graphics {
     const vector<SwapchainImage>& images() const { return images_; }
 
     uint32 acquire_next_image(const vk::raii::Semaphore& semaphore) const;
-    void
-      present(uint32 image_index, const vk::raii::Semaphore& semaphore) const;
+    uint32 copy(
+      const Image& image,
+      const CommandBuffer& cmd_buffer,
+      const vk::raii::Semaphore& semaphore
+    ) const;
+    void present(uint32 image, const vk::raii::Semaphore& semaphore) const;
 
   private:
     vk::raii::SwapchainKHR swapchain_ = nullptr;
@@ -50,8 +54,6 @@ namespace lisa::graphics {
     vk::ColorSpaceKHR color_space_;
 
     vector<SwapchainImage> images_;
-
-
   };
 
 }

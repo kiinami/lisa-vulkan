@@ -55,26 +55,21 @@ int main(int argc, char** argv) {
   {
     window::context::init(1280, 720);
     graphics::context::init();
-    logging::info("After graphics::context::init");
 
     {
       systems::resources::ResourceManager resource_manager;
-      logging::info("Loading textures...");
 
       auto t0 = resource_manager.load<resources::Texture>("suzanne0");
       auto t1 = resource_manager.load<resources::Texture>("suzanne1");
       auto t2 = resource_manager.load<resources::Texture>("suzanne2");
-      logging::info("Textures loaded.");
 
       auto mesh = resource_manager.load<resources::Mesh>("suzanne");
-      logging::info("Mesh loaded.");
 
       auto shader = resource_manager.load<resources::Shader>("shader");
-      logging::info("Shader loaded.");
 
       auto rendergraph = systems::render::Rendergraph();
       rendergraph.add_resource(
-        {"ColorTarget",
+        {"FinalTarget",
          vk::Format::eR8G8B8A8Unorm,
          {window::context::window_width(), window::context::window_height(), 1},
          vk::ImageUsageFlagBits::eColorAttachment |
@@ -90,7 +85,7 @@ int main(int argc, char** argv) {
       auto descriptor_container = graphics::DescriptorContainer(
         3, vk::DescriptorType::eCombinedImageSampler
       );
-      vector<vk::DescriptorImageInfo> image_infos{
+      vector image_infos{
         vk::DescriptorImageInfo{
           .sampler = *t0->sampler(),
           .imageView = *t0->image().view(
@@ -163,7 +158,7 @@ int main(int argc, char** argv) {
       auto pass_render_function =
         [&](const systems::render::RenderPass::RenderPassInput& in) {
           vk::RenderingAttachmentInfo color_attachment{
-            .imageView = in.image_views.at("ColorTarget"),
+            .imageView = in.image_views.at("FinalTarget"),
             .imageLayout = vk::ImageLayout::eColorAttachmentOptimal,
             .loadOp = vk::AttachmentLoadOp::eClear,
             .storeOp = vk::AttachmentStoreOp::eStore,
@@ -237,7 +232,7 @@ int main(int argc, char** argv) {
         };
 
       vector<systems::render::RenderPass::ResourceUsage> pass_outputs = {
-        {.id = "ColorTarget",
+        {.id = "FinalTarget",
          .layout = vk::ImageLayout::eColorAttachmentOptimal,
          .access = vk::AccessFlagBits::eColorAttachmentWrite,
          .stage = vk::PipelineStageFlagBits::eColorAttachmentOutput,
@@ -260,12 +255,9 @@ int main(int argc, char** argv) {
         std::make_unique<systems::render::Renderer>(std::move(rendergraph));
 
       float time = 0.0f;
-      int frame_count = 0;
       while (!window::context::should_close()) {
-        frame_count++;
         window::context::poll_events();
 
-        // Update GlobalViewData
         auto* global_data = static_cast<systems::render::GlobalViewData*>(
           renderer->global_view_buffer().mapped_data()
         );
@@ -281,7 +273,6 @@ int main(int argc, char** argv) {
           global_data->projection * global_data->view;
         global_data->camera_position = vec4(0.0f, 0.0f, -5.0f, 1.0f);
 
-        // Update ObjectData
         auto* object_data = static_cast<systems::render::ObjectData*>(
           renderer->object_data_buffer().mapped_data()
         );

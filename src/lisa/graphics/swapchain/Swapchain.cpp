@@ -87,15 +87,105 @@ namespace lisa::graphics {
     return utils::chkv(context::device()->acquireNextImage2KHR(info));
   }
 
+  uint32 Swapchain::copy(
+    const Image& image,
+    const CommandBuffer& cmd_buffer,
+    const vk::raii::Semaphore& semaphore
+  ) const {
+    const auto image_index = acquire_next_image(semaphore);
+    auto& swapchain_image = images_[image_index];
+
+    const vk::ImageMemoryBarrier barrier_color_target{
+      .srcAccessMask = vk::AccessFlagBits::eColorAttachmentWrite,
+      .dstAccessMask = vk::AccessFlagBits::eTransferRead,
+      .oldLayout = vk::ImageLayout::eColorAttachmentOptimal,
+      .newLayout = vk::ImageLayout::eTransferSrcOptimal,
+      .image = image,
+      .subresourceRange = {
+        .aspectMask = vk::ImageAspectFlagBits::eColor,
+        .levelCount = 1,
+        .layerCount = 1
+      }
+    };
+    const vk::ImageMemoryBarrier barrier_swapchain_image{
+      .srcAccessMask = vk::AccessFlagBits::eNone,
+      .dstAccessMask = vk::AccessFlagBits::eTransferWrite,
+      .oldLayout = vk::ImageLayout::eUndefined,
+      .newLayout = vk::ImageLayout::eTransferDstOptimal,
+      .image = swapchain_image,
+      .subresourceRange = {
+        .aspectMask = vk::ImageAspectFlagBits::eColor,
+        .levelCount = 1,
+        .layerCount = 1
+      }
+    };
+    cmd_buffer->pipelineBarrier(
+      vk::PipelineStageFlagBits::eColorAttachmentOutput,
+      vk::PipelineStageFlagBits::eTransfer,
+      vk::DependencyFlagBits::eByRegion,
+      nullptr,
+      nullptr,
+      {barrier_color_target, barrier_swapchain_image}
+    );
+
+    const std::array offsets = {
+      vk::Offset3D{0, 0, 0},
+      vk::Offset3D{
+        static_cast<int32>(swapchain_image.size().x),
+        static_cast<int32>(swapchain_image.size().y),
+        1
+      }
+    };
+    const vk::ImageBlit blit{
+      .srcSubresource =
+        {.aspectMask = vk::ImageAspectFlagBits::eColor, .layerCount = 1},
+      .srcOffsets = offsets,
+      .dstSubresource =
+        {.aspectMask = vk::ImageAspectFlagBits::eColor, .layerCount = 1},
+      .dstOffsets = offsets,
+    };
+    cmd_buffer->blitImage(
+      image,
+      vk::ImageLayout::eTransferSrcOptimal,
+      swapchain_image,
+      vk::ImageLayout::eTransferDstOptimal,
+      blit,
+      vk::Filter::eLinear
+    );
+
+    const vk::ImageMemoryBarrier barrier_present{
+      .srcAccessMask = vk::AccessFlagBits::eTransferWrite,
+      .dstAccessMask = vk::AccessFlagBits::eNone,
+      .oldLayout = vk::ImageLayout::eTransferDstOptimal,
+      .newLayout = vk::ImageLayout::ePresentSrcKHR,
+      .image = swapchain_image,
+      .subresourceRange = {
+        .aspectMask = vk::ImageAspectFlagBits::eColor,
+        .levelCount = 1,
+        .layerCount = 1
+      }
+    };
+    cmd_buffer->pipelineBarrier(
+      vk::PipelineStageFlagBits::eTransfer,
+      vk::PipelineStageFlagBits::eBottomOfPipe,
+      vk::DependencyFlagBits::eByRegion,
+      nullptr,
+      nullptr,
+      barrier_present
+    );
+
+    return image_index;
+  }
+
   void Swapchain::present(
-    uint32 image_index, const vk::raii::Semaphore& semaphore
+    uint32 image, const vk::raii::Semaphore& semaphore
   ) const {
     const vk::PresentInfoKHR present_info{
       .waitSemaphoreCount = 1,
       .pWaitSemaphores = &*semaphore,
       .swapchainCount = 1,
       .pSwapchains = &(*swapchain_),
-      .pImageIndices = &image_index
+      .pImageIndices = &image
     };
 
     utils::chk(context::device().queue().presentKHR(present_info));
