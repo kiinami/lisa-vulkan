@@ -58,6 +58,7 @@ namespace lisa::systems::render {
     str name_;
     vector<ResourceUsage> inputs_;
     vector<ResourceUsage> outputs_;
+    std::unique_ptr<graphics::Pipeline> pipeline_;
   };
 
 }

@@ -19,7 +19,6 @@ namespace lisa::passes {
 
   private:
     std::unique_ptr<graphics::DescriptorContainer> descriptor_container_;
-    std::unique_ptr<graphics::Pipeline> pipeline_;
   };
 
 }
