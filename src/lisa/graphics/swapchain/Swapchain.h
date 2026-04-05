@@ -9,6 +9,7 @@
 #include "graphics/device/LogicalDevice.h"
 #include "graphics/images/Image.h"
 #include "graphics/images/ImageFormat.h"
+#include "graphics/sync/Semaphore.h"
 
 #include <vulkan/vulkan_raii.hpp>
 
@@ -35,12 +36,22 @@ namespace lisa::graphics {
     explicit Swapchain(const Surface& surface, const LogicalDevice& device);
     ~Swapchain() = default;
 
+    operator const vk::raii::SwapchainKHR&() { return swapchain_; }
+
+    const vector<SwapchainImage>& images() const { return images_; }
+
+    uint32 acquire_next_image(const vk::raii::Semaphore& semaphore) const;
+    void
+      present(uint32 image_index, const vk::raii::Semaphore& semaphore) const;
+
   private:
     vk::raii::SwapchainKHR swapchain_ = nullptr;
     ImageFormat color_format_{vk::Format::eUndefined};
     vk::ColorSpaceKHR color_space_;
 
     vector<SwapchainImage> images_;
+
+
   };
 
 }

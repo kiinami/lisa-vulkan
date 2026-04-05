@@ -13,7 +13,10 @@ namespace lisa::graphics {
 
   class DescriptorContainer {
   public:
-    DescriptorContainer();
+    explicit DescriptorContainer(
+      uint32 size,
+      vk::DescriptorType type = vk::DescriptorType::eCombinedImageSampler
+    );
     ~DescriptorContainer() = default;
 
     const vk::raii::DescriptorPool& pool() { return pool_; }
@@ -33,6 +36,7 @@ namespace lisa::graphics {
 
     static vk::raii::DescriptorSetLayout create_layout(
       uint32 size,
+      vk::DescriptorType type,
       vk::ShaderStageFlags shader_stage = vk::ShaderStageFlagBits::eAll
     );
 

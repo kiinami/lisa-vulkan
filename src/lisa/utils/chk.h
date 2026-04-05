@@ -10,18 +10,39 @@
 #include <SDL3/SDL_error.h>
 
 namespace lisa::utils {
-  inline void chk(const vk::Result result) {
+  inline void chk(
+    const vk::Result result,
+    const char* file = __builtin_FILE(),
+    int line = __builtin_LINE()
+  ) {
     if (result != vk::Result::eSuccess)
-      logging::error("Vulkan call returned an error");
+      logging::error(
+        "Vulkan call returned an error {} at {}:{}",
+        vk::to_string(result),
+        file,
+        line
+      );
   }
 
-  template<typename RV> auto chkv(RV&& rv) {
+  template<typename RV>
+  auto chkv(
+    RV&& rv, const char* file = __builtin_FILE(), int line = __builtin_LINE()
+  ) {
     if constexpr (std::is_class_v<std::decay_t<RV>> && requires {
                     rv.result;
                     rv.value;
                   }) {
-      if (rv.result != vk::Result::eSuccess)
-        logging::error("Vulkan call returned an error");
+      if (
+        rv.result !=
+        vk::Result::eSuccess &&
+        rv.result != vk::Result::eSuboptimalKHR
+      )
+        logging::error(
+          "Vulkan call returned an error {} at {}:{}",
+          vk::to_string(rv.result),
+          file,
+          line
+        );
       return std::forward<RV>(rv).value;
     } else {
       return std::forward<RV>(rv);

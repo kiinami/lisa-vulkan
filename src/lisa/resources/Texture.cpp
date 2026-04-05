@@ -7,6 +7,7 @@
 #include "constants.h"
 #include "graphics/buffer/Buffer.h"
 
+#include <cstring>
 #include <ktxvulkan.h>
 
 namespace lisa::resources {
@@ -24,7 +25,14 @@ namespace lisa::resources {
     cmd_buffer.begin_onetime();
 
     auto transfer_buffer = graphics::Buffer(
-      texture->dataSize, vk::BufferUsageFlagBits::eTransferSrc
+      texture->dataSize,
+      vk::BufferUsageFlagBits::eTransferSrc,
+      {.flags = vma::AllocationCreateFlagBits::eMapped |
+                vma::AllocationCreateFlagBits::eHostAccessSequentialWrite,
+       .usage = vma::MemoryUsage::eAuto}
+    );
+    std::memcpy(
+      transfer_buffer.mapped_data(), texture->pData, texture->dataSize
     );
 
     const vk::ImageMemoryBarrier2 barrier_info{

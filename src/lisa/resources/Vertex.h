@@ -12,17 +12,20 @@ namespace lisa::resources {
     vec3 normal;
     vec2 uv;
 
-    static vector<vk::VertexInputAttributeDescription> attribute_descriptions(const uint32 binding) {
-      constexpr vk::VertexInputAttributeDescription pos_attribute = {
-        .location = 0, .binding = binding, .format = vk::Format::eR32G32B32Sfloat
+    static vector<vk::VertexInputAttributeDescription>
+      attribute_descriptions(const uint32 binding) {
+      const vk::VertexInputAttributeDescription pos_attribute = {
+        .location = 0,
+        .binding = binding,
+        .format = vk::Format::eR32G32B32Sfloat
       };
-      constexpr vk::VertexInputAttributeDescription normal_attribute = {
+      const vk::VertexInputAttributeDescription normal_attribute = {
         .location = 1,
         .binding = binding,
         .format = vk::Format::eR32G32B32Sfloat,
         .offset = offsetof(Vertex, normal)
       };
-      constexpr vk::VertexInputAttributeDescription uv_attribute = {
+      const vk::VertexInputAttributeDescription uv_attribute = {
         .location = 2,
         .binding = binding,
         .format = vk::Format::eR32G32Sfloat,

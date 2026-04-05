@@ -22,6 +22,8 @@ namespace lisa::graphics {
 
     operator const vk::raii::Fence&() { return fence_; }
 
+    vk::Fence operator*() const { return *fence_; }
+
     void wait() const;
 
     void reset() const;

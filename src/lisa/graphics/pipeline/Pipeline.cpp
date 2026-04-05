@@ -27,7 +27,7 @@ namespace lisa::graphics {
     const vk::PushConstantRange push_constant_range,
     const resources::Shader& shader,
     bool is_stencil,
-    graphics::ImageFormat format
+    ImageFormat format
   ) {
     layout_ = create_layout(descriptor_set_layout, push_constant_range);
 
@@ -40,10 +40,10 @@ namespace lisa::graphics {
       resources::Vertex::attribute_descriptions(vertex_binding.binding);
 
     const vk::PipelineVertexInputStateCreateInfo vertex_input_state{
-      .vertexBindingDescriptionCount =
-        static_cast<uint32_t>(vertex_attributes.size()),
+      .vertexBindingDescriptionCount = 1,
       .pVertexBindingDescriptions = &vertex_binding,
-      .vertexAttributeDescriptionCount = 1,
+      .vertexAttributeDescriptionCount =
+        static_cast<uint32_t>(vertex_attributes.size()),
       .pVertexAttributeDescriptions = vertex_attributes.data()
     };
 
@@ -51,12 +51,16 @@ namespace lisa::graphics {
       .topology = vk::PrimitiveTopology::eTriangleList
     };
 
+    vector<str> entry_names;
     vector<vk::PipelineShaderStageCreateInfo> shader_stages;
+    entry_names.reserve(shader.stages().size());
+    shader_stages.reserve(shader.stages().size());
+
     for (const auto& [stage, entry_point] : shader.stages()) {
       shader_stages.push_back(
-        {.stage = stage,
-         .module = shader.module(),
-         .pName = (shader.id() + "::" + entry_point).c_str()}
+        vk::PipelineShaderStageCreateInfo{
+          .stage = stage, .module = shader.module(), .pName = entry_point
+        }
       );
     }
 
@@ -93,13 +97,16 @@ namespace lisa::graphics {
                         vk::ColorComponentFlagBits::eA
     };
     const vk::PipelineColorBlendStateCreateInfo color_blend_state{
-      .attachmentCount = 1,
-      .pAttachments = &blend_attachment
+      .attachmentCount = 1, .pAttachments = &blend_attachment
     };
+
+    vk::Format depth_format =
+      is_stencil ? vk::Format::eD32Sfloat : vk::Format::eUndefined;
 
     const vk::PipelineRenderingCreateInfo rendering_ci{
       .colorAttachmentCount = 1,
-      .pColorAttachmentFormats = *format
+      .pColorAttachmentFormats = *format,
+      .depthAttachmentFormat = depth_format
     };
 
     const vk::GraphicsPipelineCreateInfo pipeline_ci{

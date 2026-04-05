@@ -8,10 +8,15 @@
 #include "utils/chk.h"
 
 namespace lisa::graphics {
-  Fence::Fence() { fence_ = context::device()->createFence({}); }
+  Fence::Fence() {
+    vk::FenceCreateInfo create_info{
+      .flags = vk::FenceCreateFlagBits::eSignaled
+    };
+    fence_ = context::device()->createFence(create_info);
+  }
 
   void Fence::wait() const {
-    utils::chk(context::device()->waitForFences(*fence_, vk::True, UINT32_MAX));
+    utils::chk(context::device()->waitForFences(*fence_, vk::True, UINT64_MAX));
   }
 
   void Fence::reset() const { context::device()->resetFences(*fence_); }

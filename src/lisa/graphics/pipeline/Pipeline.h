@@ -5,6 +5,7 @@
 #ifndef LISA_VULKAN_PIPELINE_H
 #define LISA_VULKAN_PIPELINE_H
 
+#include "graphics/images/ImageFormat.h"
 #include "resources/Shader.h"
 #include "utils/common.h"
 
@@ -18,15 +19,27 @@ namespace lisa::graphics {
       vk::DescriptorSetLayout descriptor_set_layout,
       vk::PushConstantRange push_constant_range,
       const resources::Shader& shader,
-      bool is_stencil
+      bool is_stencil,
+      ImageFormat format
     );
     ~Pipeline() = default;
+
+    operator const vk::raii::Pipeline&() { return pipeline_; }
+
+    operator vk::Pipeline() const { return *pipeline_; }
+
+    vk::Pipeline operator*() const { return *pipeline_; }
+
+    const vk::raii::PipelineLayout& layout() const { return layout_; }
 
   private:
     vk::raii::PipelineLayout layout_ = nullptr;
     vk::raii::Pipeline pipeline_ = nullptr;
 
-    static vk::raii::PipelineLayout create_layout();
+    static vk::raii::PipelineLayout create_layout(
+      vk::DescriptorSetLayout descriptor_set_layout,
+      vk::PushConstantRange push_constant_range
+    );
   };
 
 }

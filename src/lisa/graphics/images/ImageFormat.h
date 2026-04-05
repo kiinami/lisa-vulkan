@@ -13,10 +13,10 @@ namespace lisa::graphics {
 
   class ImageFormat {
   public:
-    explicit ImageFormat(const vk::Format format = vk::Format::eUndefined) :
+    ImageFormat(const vk::Format format = vk::Format::eUndefined) :
       format_(format) {}
 
-    explicit ImageFormat(const VkFormat format = VK_FORMAT_UNDEFINED) :
+    ImageFormat(const VkFormat format = VK_FORMAT_UNDEFINED) :
       format_(static_cast<vk::Format>(format)) {}
 
     ImageFormat(const ImageFormat&) = default;

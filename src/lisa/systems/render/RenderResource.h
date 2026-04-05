@@ -26,9 +26,11 @@ namespace lisa::systems::render {
     RenderResource(RenderResource&&) noexcept = default;
     RenderResource& operator=(RenderResource&&) noexcept = default;
 
-    const str& name() { return name_; }
+    const str& name() const { return name_; }
 
-    const graphics::Image& image() { return image_; }
+    graphics::Image& image() { return image_; }
+
+    const graphics::Image& image() const { return image_; }
 
   private:
     str name_;

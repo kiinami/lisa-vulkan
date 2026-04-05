@@ -6,6 +6,7 @@
 #define LISA_VULKAN_CONSTANTS_H
 #include "utils/common.h"
 
+#include <vulkan/vulkan_profiles.hpp>
 #include <vulkan/vulkan_raii.hpp>
 
 namespace lisa::graphics::constants {

@@ -13,7 +13,11 @@ namespace lisa::graphics {
   class Buffer {
   public:
     Buffer() = default;
-    Buffer(vk::DeviceSize size, vk::BufferUsageFlags usage);
+    Buffer(
+      vk::DeviceSize size,
+      vk::BufferUsageFlags usage,
+      const vma::AllocationCreateInfo& allocation_ci = {}
+    );
     ~Buffer() = default;
 
     Buffer(const Buffer&) = delete;
@@ -31,7 +35,7 @@ namespace lisa::graphics {
     }
 
     vk::DeviceAddress address() const;
-
+    void* mapped_data() const;
   private:
     vma::raii::Buffer buffer_ = nullptr;
   };

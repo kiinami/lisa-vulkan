@@ -14,6 +14,10 @@ namespace lisa::systems::render {
   public:
     Rendergraph() = default;
     ~Rendergraph() = default;
+    Rendergraph(Rendergraph&&) = default;
+    Rendergraph& operator=(Rendergraph&&) = default;
+    Rendergraph(const Rendergraph&) = delete;
+    Rendergraph& operator=(const Rendergraph&) = delete;
 
     void add_resource(RenderResource res);
     void add_pass(const RenderPass& pass);

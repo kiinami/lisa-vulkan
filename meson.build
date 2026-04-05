@@ -96,8 +96,13 @@ src = files(
     'src/lisa/graphics/images/Sampler.h',
     'src/lisa/graphics/images/Sampler.cpp',
 
+    'src/lisa/graphics/pipeline/Pipeline.h',
+    'src/lisa/graphics/pipeline/Pipeline.cpp',
+
     'src/lisa/graphics/sync/Fence.h',
     'src/lisa/graphics/sync/Fence.cpp',
+    'src/lisa/graphics/sync/Semaphore.h',
+    'src/lisa/graphics/sync/Semaphore.cpp',
 
     'src/lisa/graphics/memory/MemoryAllocator.h',
     'src/lisa/graphics/memory/MemoryAllocator.cpp',

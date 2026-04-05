@@ -5,6 +5,7 @@
 #include "Swapchain.h"
 
 #include "graphics/context.h"
+#include "utils/chk.h"
 #include "utils/logging.h"
 #include "window/Window.h"
 #include "window/context.h"
@@ -50,7 +51,8 @@ namespace lisa::graphics {
       .imageColorSpace = color_space_,
       .imageExtent = extent,
       .imageArrayLayers = 1,
-      .imageUsage = vk::ImageUsageFlagBits::eColorAttachment,
+      .imageUsage = vk::ImageUsageFlagBits::eColorAttachment |
+                    vk::ImageUsageFlagBits::eTransferDst,
       .preTransform = vk::SurfaceTransformFlagBitsKHR::eIdentity,
       .compositeAlpha = vk::CompositeAlphaFlagBitsKHR::eOpaque,
       .presentMode = vk::PresentModeKHR::eFifo
@@ -65,8 +67,37 @@ namespace lisa::graphics {
 
     for (const auto img : swapchain_.getImages())
       images_.emplace_back(
-        img, color_format_, size_vec, vk::ImageUsageFlagBits::eColorAttachment
+        img,
+        color_format_,
+        size_vec,
+        vk::ImageUsageFlagBits::eColorAttachment |
+          vk::ImageUsageFlagBits::eTransferDst
       );
     logging::debug("Got {} images from the swapchain", images_.size());
+  }
+
+  uint32
+    Swapchain::acquire_next_image(const vk::raii::Semaphore& semaphore) const {
+    const vk::AcquireNextImageInfoKHR info{
+      .swapchain = swapchain_,
+      .timeout = UINT64_MAX,
+      .semaphore = semaphore,
+      .deviceMask = 1
+    };
+    return utils::chkv(context::device()->acquireNextImage2KHR(info));
+  }
+
+  void Swapchain::present(
+    uint32 image_index, const vk::raii::Semaphore& semaphore
+  ) const {
+    const vk::PresentInfoKHR present_info{
+      .waitSemaphoreCount = 1,
+      .pWaitSemaphores = &*semaphore,
+      .swapchainCount = 1,
+      .pSwapchains = &(*swapchain_),
+      .pImageIndices = &image_index
+    };
+
+    utils::chk(context::device().queue().presentKHR(present_info));
   }
 }

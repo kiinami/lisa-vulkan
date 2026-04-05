@@ -28,11 +28,13 @@ namespace lisa::graphics {
   }
 
   vk::ImageAspectFlags ImageFormat::aspect_mask() const {
-    if (is_depth())
-      if (is_stencil())
+    if (is_depth()) {
+      if (is_stencil()) {
         return vk::ImageAspectFlagBits::eDepth |
                vk::ImageAspectFlagBits::eStencil;
+      }
       return vk::ImageAspectFlagBits::eDepth;
+    }
     return vk::ImageAspectFlagBits::eColor;
   }
 

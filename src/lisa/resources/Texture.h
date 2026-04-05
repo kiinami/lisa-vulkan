@@ -19,6 +19,14 @@ namespace lisa::resources {
 
     ~Texture() override { unload(); }
 
+    graphics::Image& image() { return image_; }
+
+    const graphics::Image& image() const { return image_; }
+
+    graphics::Sampler& sampler() { return sampler_; }
+
+    const graphics::Sampler& sampler() const { return sampler_; }
+
   protected:
     bool load_function() override;
     bool unload_function() override;

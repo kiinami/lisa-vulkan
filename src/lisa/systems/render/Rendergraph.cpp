@@ -6,6 +6,7 @@
 
 #include "graphics/context.h"
 #include "utils/logging.h"
+#include "window/context.h"
 
 #include <functional>
 
@@ -29,14 +30,14 @@ namespace lisa::systems::render {
       const auto& pass = passes_[i];
 
       for (const auto& input : pass.inputs()) {
-        if (auto it = writers.find(input); it != writers.end()) {
+        if (auto it = writers.find(input.id); it != writers.end()) {
           dependencies[i].push_back(it->second);
           dependents[it->second].push_back(i);
         }
       }
 
       for (const auto& output : pass.outputs())
-        writers[output] = i;
+        writers[output.id] = i;
     }
 
     // Sort dependencies
@@ -125,7 +126,49 @@ namespace lisa::systems::render {
       for (const auto& output : pass.outputs())
         transition_resource(output);
 
-      pass.render_function(cmd_buffer);
+      RenderPass::RenderPassInput input{
+        .cmd_buffer = cmd_buffer,
+        .width = window::context::window_width(),
+        .height = window::context::window_height()
+      };
+
+      for (const auto& usage : pass.inputs()) {
+        auto& resource = resources_.at(usage.id);
+        input.image_views.insert(
+          {usage.id,
+           *resource.image().view(
+             {.type = vk::ImageViewType::e2D,
+              .format = resource.image().format(),
+              .range = {
+                .aspectMask = usage.aspect,
+                .baseMipLevel = 0,
+                .levelCount = 1,
+                .baseArrayLayer = 0,
+                .layerCount = 1
+              }}
+           )}
+        );
+      }
+
+      for (const auto& usage : pass.outputs()) {
+        auto& resource = resources_.at(usage.id);
+        input.image_views.insert(
+          {usage.id,
+           *resource.image().view(
+             {.type = vk::ImageViewType::e2D,
+              .format = resource.image().format(),
+              .range = {
+                .aspectMask = usage.aspect,
+                .baseMipLevel = 0,
+                .levelCount = 1,
+                .baseArrayLayer = 0,
+                .layerCount = 1
+              }}
+           )}
+        );
+      }
+
+      pass.render(input);
     }
   }
 }

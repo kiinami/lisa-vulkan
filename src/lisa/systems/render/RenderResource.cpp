@@ -18,7 +18,7 @@ namespace lisa::systems::render {
       {.type = vk::ImageViewType::e2D,
        .format = image_.format(),
        .range = {
-         .aspectMask = vk::ImageAspectFlagBits::eColor,
+         .aspectMask = format.aspect_mask(),
          .baseMipLevel = 0,
          .levelCount = 1,
          .baseArrayLayer = 0,

@@ -15,7 +15,7 @@ namespace lisa::window {
     return size_;
   }
 
-  Window::Window(WindowSize size) {
+  Window::Window(const WindowSize size) {
     window_ = SDL::CreateWindow(
       "lisa",
       SDL::Point{size.x, size.y},

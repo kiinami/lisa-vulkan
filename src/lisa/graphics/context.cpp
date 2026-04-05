@@ -58,4 +58,8 @@ namespace lisa::graphics::context {
   const LogicalDevice& device() { return *device_; }
 
   const MemoryAllocator& allocator() { return *allocator_; }
+
+  const Surface& surface() { return *surface_; }
+
+  Swapchain& swapchain() { return *swapchain_; }
 }

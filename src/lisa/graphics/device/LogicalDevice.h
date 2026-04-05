@@ -21,7 +21,7 @@ namespace lisa::graphics {
 
     operator const vk::raii::Device&() const { return device_; }
 
-    const vk::raii::Queue& queue() { return queue_; }
+    const vk::raii::Queue& queue() const { return queue_; }
 
     const vk::raii::CommandPool& command_pool() { return command_pool_; }
 

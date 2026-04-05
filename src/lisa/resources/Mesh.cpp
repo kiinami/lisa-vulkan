@@ -6,9 +6,11 @@
 
 #include "Vertex.h"
 #include "constants.h"
+#include "graphics/context.h"
 #include "tiny_obj_loader.h"
 #include "utils/chk.h"
 
+#include <cstring>
 #include <vulkan/vulkan_raii.hpp>
 
 namespace lisa::resources {
@@ -49,18 +51,41 @@ namespace lisa::resources {
       indices.push_back(indices.size());
     }
 
+    vertex_count_ = vertices.size();
+    index_count_ = indices.size();
+
     const auto v_size = sizeof(Vertex) * vertices.size();
     const auto i_size = sizeof(uint16_t) * indices.size();
     const auto size = v_size + i_size;
 
+    auto transfer_buffer = graphics::Buffer(
+      size,
+      vk::BufferUsageFlagBits::eTransferSrc,
+      {.flags = vma::AllocationCreateFlagBits::eMapped |
+                vma::AllocationCreateFlagBits::eHostAccessSequentialWrite,
+       .usage = vma::MemoryUsage::eAuto}
+    );
+    std::memcpy(transfer_buffer.mapped_data(), vertices.data(), v_size);
+    std::memcpy(
+      static_cast<char*>(transfer_buffer.mapped_data()) + v_size,
+      indices.data(),
+      i_size
+    );
+
     vertex_buffer_ = graphics::Buffer(
       size,
       vk::BufferUsageFlagBits::eVertexBuffer |
-        vk::BufferUsageFlagBits::eIndexBuffer
+        vk::BufferUsageFlagBits::eIndexBuffer |
+        vk::BufferUsageFlagBits::eTransferDst,
+      {.usage = vma::MemoryUsage::eAuto}
     );
 
-    vertex_buffer_.allocation().copyFromMemory(vertices.data(), 0, v_size);
-    vertex_buffer_.allocation().copyFromMemory(indices.data(), v_size, i_size);
+    auto cmd_buffer = graphics::context::device().cmd_buffer();
+    cmd_buffer.begin_onetime();
+    const vk::BufferCopy copy_region{.size = size};
+    cmd_buffer->copyBuffer(transfer_buffer, vertex_buffer_, copy_region);
+    cmd_buffer->end();
+    graphics::context::device().submit_cmd_buffer_with_fence(cmd_buffer);
 
     return true;
   }

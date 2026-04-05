@@ -7,7 +7,12 @@
 
 #include "device/Instance.h"
 #include "memory/MemoryAllocator.h"
+#include "swapchain/Surface.h"
 #include "utils/common.h"
+
+namespace lisa::graphics {
+  class Swapchain;
+}
 
 namespace lisa::graphics::context {
   void init();
@@ -17,6 +22,8 @@ namespace lisa::graphics::context {
   const PhysicalDevice& physical_device();
   const LogicalDevice& device();
   const MemoryAllocator& allocator();
+  const Surface& surface();
+  Swapchain& swapchain();
 }
 
 #endif

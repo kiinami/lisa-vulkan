@@ -38,6 +38,8 @@ namespace lisa::graphics {
 
     operator const vk::raii::Sampler&() { return sampler_; }
 
+    vk::Sampler operator*() const { return *sampler_; }
+
     Sampler(const Sampler&) = delete;
     Sampler& operator=(const Sampler&) = delete;
 
