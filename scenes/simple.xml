@@ -1,21 +1,21 @@
 <scene>
     <entity name="monkey0">
         <transform>
-            <translate>0, 0, 0</translate>
+            <translate value="0, 0, 0"/>
         </transform>
         <mesh type="obj" path="./models/suzanne.obj"/>
         <texture path="./textures/suzanne0.ktx"/>
     </entity>
     <entity name="monkey1">
         <transform>
-            <translate>2, 0, 0</translate>
+            <translate value="2, 0, 0"/>
         </transform>
         <mesh type="obj" path="./models/suzanne.obj"/>
         <texture path="./textures/suzanne1.ktx"/>
     </entity>
     <entity name="monkey2">
         <transform>
-            <translate>-2, 0, 0</translate>
+            <translate value="-2, 0, 0"/>
         </transform>
         <mesh type="obj" path="./models/suzanne.obj"/>
         <texture path="./textures/suzanne2.ktx"/>
