@@ -79,6 +79,8 @@ src = files(
     'src/lisa/graphics/buffer/Buffer.h',
     'src/lisa/graphics/buffer/Buffer.cpp',
 
+    'src/lisa/graphics/descriptors/DescriptorAllocator.h',
+    'src/lisa/graphics/descriptors/DescriptorAllocator.cpp',
     'src/lisa/graphics/descriptors/DescriptorContainer.h',
     'src/lisa/graphics/descriptors/DescriptorContainer.cpp',
 

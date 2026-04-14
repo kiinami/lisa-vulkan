@@ -118,6 +118,23 @@ namespace lisa::resources {
 
     sampler_ = graphics::Sampler(static_cast<float>(texture->numLevels));
 
+    const vk::DescriptorImageInfo image_info{
+      .sampler = *sampler_,
+      .imageView = image_.view(
+        {.type = vk::ImageViewType::e2D,
+         .format = image_.format(),
+         .range =
+           {.aspectMask = vk::ImageAspectFlagBits::eColor,
+            .baseMipLevel = 0,
+            .levelCount = image_.mipmaps(),
+            .baseArrayLayer = 0,
+            .layerCount = 1}}
+      ),
+      .imageLayout = vk::ImageLayout::eReadOnlyOptimal
+    };
+    descriptor_index_ =
+      graphics::context::descriptor_container().write(image_info);
+
     ktxTexture_Destroy(texture);
     return true;
   }

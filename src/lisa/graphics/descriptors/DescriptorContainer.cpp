@@ -8,12 +8,29 @@
 
 namespace lisa::graphics {
   DescriptorContainer::DescriptorContainer(
-    uint32 size, vk::DescriptorType type
+    const uint32 size, const vk::DescriptorType type
   ) :
     size_(size),
+    type_(type),
+    index_allocator_(size),
     pool_(create_pool(size, type)),
     layout_(create_layout(size, type)),
     set_(create_set(pool_, layout_, size)) {}
+
+  DescriptorIndex
+    DescriptorContainer::write(const vk::DescriptorImageInfo& image_info) {
+    const auto index = index_allocator_.allocate();
+    const vk::WriteDescriptorSet write_desc{
+      .dstSet = set_,
+      .dstBinding = 0,
+      .dstArrayElement = index,
+      .descriptorCount = 1,
+      .descriptorType = type_,
+      .pImageInfo = &image_info
+    };
+    context::device()->updateDescriptorSets(write_desc, nullptr);
+    return index;
+  }
 
   vk::raii::DescriptorPool DescriptorContainer::create_pool(
     const uint32 descriptor_count, const vk::DescriptorType type
@@ -77,4 +94,5 @@ namespace lisa::graphics {
     };
     return std::move(context::device()->allocateDescriptorSets(set_ai)[0]);
   }
+
 }

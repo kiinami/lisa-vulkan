@@ -7,6 +7,7 @@
 #include "ShaderData.h"
 #include "components/CameraComponent.h"
 #include "components/MeshComponent.h"
+#include "components/TextureComponent.h"
 #include "components/TransformComponent.h"
 #include "components/context.h"
 #include "graphics/context.h"
@@ -86,19 +87,21 @@ namespace lisa::systems::render {
       object_data_buffers_[current_frame_].mapped_data()
     );
 
-    auto transform_view = components::context::registry()
-                            ->view<
-                              const components::MeshComponent,
-                              const components::TransformComponent>();
+    const auto view = components::context::registry()
+                        ->view<
+                          const components::TransformComponent,
+                          const components::MeshComponent,
+                          const components::TextureComponent>();
 
     uint32 i = 0;
-    for (auto [entity, mesh_component, transform_component] :
-         transform_view.each()) {
+    for (auto [entity, transform_component, mesh_component, texture_component] :
+         view.each()) {
       object_data[i].model =
         transform_component.matrix *
         glm::rotate(mat4(1.0f), time_, vec3(0.0f, 1.0f, 0.0f));
       object_data[i].color = vec4(1.0f);
-      object_data[i].texture_index = i;
+      object_data[i].texture_index =
+        texture_component.resource()->descriptor_index();
       i++;
     }
 

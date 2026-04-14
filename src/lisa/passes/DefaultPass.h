@@ -15,9 +15,6 @@ namespace lisa::passes {
     ~DefaultPass() override = default;
 
     void render(const RenderPassInput& in) override;
-
-  private:
-    std::unique_ptr<graphics::DescriptorContainer> descriptor_container_;
   };
 
 }

@@ -4,6 +4,7 @@
 
 #ifndef LISA_VULKAN_DESCRIPTORCONTAINER_H
 #define LISA_VULKAN_DESCRIPTORCONTAINER_H
+#include "DescriptorAllocator.h"
 #include "graphics/device/LogicalDevice.h"
 #include "utils/common.h"
 
@@ -25,8 +26,12 @@ namespace lisa::graphics {
 
     const vk::raii::DescriptorSet& set() { return set_; }
 
+    DescriptorIndex write(const vk::DescriptorImageInfo& image_info);
+
   private:
     uint32 size_;
+    vk::DescriptorType type_;
+    DescriptorAllocator index_allocator_;
     vk::raii::DescriptorPool pool_ = nullptr;
     vk::raii::DescriptorSetLayout layout_ = nullptr;
     vk::raii::DescriptorSet set_ = nullptr;

@@ -4,7 +4,6 @@
 
 #ifndef LISA_VULKAN_SEMAPHORE_H
 #define LISA_VULKAN_SEMAPHORE_H
-#include "graphics/context.h"
 
 #include <vulkan/vulkan_raii.hpp>
 
@@ -12,8 +11,7 @@ namespace lisa::graphics {
 
   class Semaphore {
   public:
-    explicit Semaphore(const vk::SemaphoreCreateFlags flags = {}) :
-      semaphore_(context::device()->createSemaphore({.flags = flags})) {}
+    explicit Semaphore(const vk::SemaphoreCreateFlags flags = {});
 
     ~Semaphore() = default;
 

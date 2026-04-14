@@ -4,6 +4,7 @@
 
 #ifndef LISA_VULKAN_TEXTURE_H
 #define LISA_VULKAN_TEXTURE_H
+#include "graphics/descriptors/DescriptorAllocator.h"
 #include "graphics/images/Image.h"
 #include "graphics/images/Sampler.h"
 #include "systems/resources/Resource.h"
@@ -27,6 +28,8 @@ namespace lisa::resources {
 
     const graphics::Sampler& sampler() const { return sampler_; }
 
+    DescriptorIndex descriptor_index() const { return descriptor_index_; }
+
   protected:
     bool load_function() override;
     bool unload_function() override;
@@ -36,6 +39,7 @@ namespace lisa::resources {
   private:
     graphics::Image image_;
     graphics::Sampler sampler_;
+    DescriptorIndex descriptor_index_ = 0;
 
     static ktxTexture* load_from_file(const path& filepath);
     static void copy(ktxTexture* texture, const graphics::Image& image);

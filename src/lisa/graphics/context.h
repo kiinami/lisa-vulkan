@@ -5,10 +5,12 @@
 #ifndef LISA_GRAPHICS_H
 #define LISA_GRAPHICS_H
 
+#include "descriptors/DescriptorContainer.h"
 #include "device/Instance.h"
+#include "device/LogicalDevice.h"
 #include "memory/MemoryAllocator.h"
 #include "swapchain/Surface.h"
-#include "utils/common.h"
+#include "swapchain/Swapchain.h"
 
 namespace lisa::graphics {
   class Swapchain;
@@ -24,6 +26,7 @@ namespace lisa::graphics::context {
   const MemoryAllocator& allocator();
   const Surface& surface();
   Swapchain& swapchain();
+  DescriptorContainer& descriptor_container();
 }
 
 #endif

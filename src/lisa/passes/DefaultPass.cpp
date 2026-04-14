@@ -34,12 +34,8 @@ namespace lisa::passes {
     const auto shader =
       resources::context::manager().load<resources::Shader>("shader");
 
-    descriptor_container_ = std::make_unique<graphics::DescriptorContainer>(
-      1000, vk::DescriptorType::eCombinedImageSampler
-    );
-
     pipeline_ = std::make_unique<graphics::Pipeline>(
-      descriptor_container_->layout(),
+      graphics::context::descriptor_container().layout(),
       vk::PushConstantRange{
         .stageFlags =
           vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment,
@@ -90,50 +86,28 @@ namespace lisa::passes {
       vk::PipelineBindPoint::eGraphics,
       pipeline_->layout(),
       0,
-      {*descriptor_container_->set()},
+      {*graphics::context::descriptor_container().set()},
       {}
     );
 
-    auto view = components::context::registry()
-                  ->view<
-                    const components::MeshComponent,
-                    const components::TextureComponent>();
+    const auto view = components::context::registry()
+                        ->view<
+                          const components::TransformComponent,
+                          const components::MeshComponent,
+                          const components::TextureComponent>();
 
     uint32 i = 0;
-    for (auto [entity, mesh_component, texture_component] : view.each()) {
+    for (auto [entity, transform, mesh_component, texture_component] :
+         view.each()) {
       const auto mesh = mesh_component.resource();
-      const auto texture = texture_component.resource();
 
       vk::DeviceSize offset = 0;
-      in.cmd->bindVertexBuffers(0, {mesh->vertex_buffer()}, offset);
+      in.cmd->bindVertexBuffers(
+        0, static_cast<const vk::Buffer&>(mesh->vertex_buffer()), offset
+      );
       in.cmd->bindIndexBuffer(
         mesh->index_buffer(), mesh->index_offset(), vk::IndexType::eUint16
       );
-
-      vk::DescriptorImageInfo image_info{
-        .sampler = *texture->sampler(),
-        .imageView = *texture->image().view(
-          {.type = vk::ImageViewType::e2D,
-           .format = texture->image().format(),
-           .range =
-             {.aspectMask = vk::ImageAspectFlagBits::eColor,
-              .baseMipLevel = 0,
-              .levelCount = texture->image().mipmaps(),
-              .baseArrayLayer = 0,
-              .layerCount = 1}}
-        ),
-        .imageLayout = vk::ImageLayout::eReadOnlyOptimal
-      };
-
-      vk::WriteDescriptorSet write_desc{
-        .dstSet = descriptor_container_->set(),
-        .dstBinding = 0,
-        .dstArrayElement = i,
-        .descriptorCount = 1,
-        .descriptorType = vk::DescriptorType::eCombinedImageSampler,
-        .pImageInfo = &image_info
-      };
-      graphics::context::device()->updateDescriptorSets(write_desc, nullptr);
 
       auto push_constants = systems::render::PushConstants{
         .global_bda = in.global_bda,

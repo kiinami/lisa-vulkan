@@ -4,10 +4,6 @@
 
 #include "context.h"
 
-#include "device/Instance.h"
-#include "device/LogicalDevice.h"
-#include "swapchain/Surface.h"
-#include "swapchain/Swapchain.h"
 #include "utils/logging.h"
 #include "window/context.h"
 
@@ -22,6 +18,7 @@ namespace lisa::graphics::context {
     std::unique_ptr<MemoryAllocator> allocator_;
     std::unique_ptr<Surface> surface_;
     std::unique_ptr<Swapchain> swapchain_;
+    std::unique_ptr<DescriptorContainer> descriptor_container_;
   }
 
   void init() {
@@ -37,11 +34,15 @@ namespace lisa::graphics::context {
       window::context::window(), *instance_, *physical_device_
     );
     swapchain_ = std::make_unique<Swapchain>(*surface_, *device_);
+    descriptor_container_ = std::make_unique<DescriptorContainer>(
+      10000, vk::DescriptorType::eCombinedImageSampler
+    );
 
     logging::debug("Graphics context initiated");
   }
 
   void destroy() {
+    descriptor_container_.reset();
     swapchain_.reset();
     surface_.reset();
     allocator_.reset();
@@ -63,4 +64,6 @@ namespace lisa::graphics::context {
   const Surface& surface() { return *surface_; }
 
   Swapchain& swapchain() { return *swapchain_; }
+
+  DescriptorContainer& descriptor_container() { return *descriptor_container_; }
 }
