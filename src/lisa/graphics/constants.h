@@ -38,6 +38,10 @@ namespace lisa::graphics::constants {
   }
 
   static constexpr uint32 MAX_FRAMES_IN_FLIGHT = 2;
+  static constexpr size MAX_OBJECTS = 1024;
+  static constexpr size MAX_POINT_LIGHTS = 1024;
+  static constexpr size MAX_DIR_LIGHTS = 1024;
+
 }
 
 #endif // LISA_VULKAN_CONSTANTS_H

@@ -1,21 +1,42 @@
-/* Copyright (c) 2025-2026, Sascha Willems
- *
- * SPDX-License-Identifier: MIT
- *
- */
+//
+// Created by kinami on 14/4/26.
+//
 
-struct VSInput {
-    float3 Pos;
-    float3 Normal;
-    float2 UV;
+struct Input {
+    float3 position;
+    float3 normal;
+    float2 uv;
 };
 
 Sampler2D textures[];
 
-struct GlobalViewData {
+struct PointLight {
+    float3 position;
+    float intensity;
+    float3 color;
+    float radius;
+}
+
+struct DirLight {
+  float3 direction;
+  float intensity;
+  float3 color;
+  float padding;
+}
+
+struct GlobalData {
     float4x4 view_projection;
     float4x4 projection;
     float4x4 view;
+
+    PointLight* point_lights;
+    uint32_t point_lights_count;
+
+    DirLight* dir_lights;
+    uint32_t dir_lights_count;
+
+    float3 camera_position;
+    float padding;
 };
 
 struct ObjectData {
@@ -25,51 +46,86 @@ struct ObjectData {
 };
 
 struct PushConstants {
-    GlobalViewData* globalData;
-    ObjectData* objectData;
+    GlobalData* global_data;
+    ObjectData* object_data;
 };
 
 [[vk::push_constant]]
-ConstantBuffer<PushConstants> pushConstants;
+ConstantBuffer<PushConstants> push_constants;
 
-struct VSOutput {
-    float4 Pos : SV_POSITION;
-    float3 Normal;
-    float2 UV;
-    float3 LightVec;
-    float3 ViewVec;
+struct Vertex2Fragment {
+    float4 position : SV_POSITION;
+    float3 normal;
+    float3 world_position;
+    float2 uv;
     uint32_t texture_index;
 };
 
 [shader("vertex")]
-VSOutput vertexMain(VSInput input) {
-    VSOutput output;
-    float4x4 modelMat = pushConstants.objectData->model;
-    float4x4 viewMat = pushConstants.globalData->view;
-    float4x4 projMat = pushConstants.globalData->projection;
+Vertex2Fragment vertex(Input input) {
+    Vertex2Fragment output;
 
-    output.Normal = mul((float3x3)mul(viewMat, modelMat), input.Normal);
-    output.UV = input.UV;
-    output.Pos = mul(projMat, mul(viewMat, mul(modelMat, float4(input.Pos.xyz, 1.0))));
-    output.texture_index = pushConstants.objectData->texture_index;
+    float4x4 model = push_constants.object_data->model;
+    float4x4 view = push_constants.global_data->view;
+    float4x4 view_projection = push_constants.global_data->view_projection;
 
-    float4 fragPos = mul(mul(viewMat, modelMat), float4(input.Pos.xyz, 1.0));
-    // Hardcoded light pos for now or put in globalData
-    float4 lightPos = float4(0.0, 5.0, 0.0, 1.0);
-    output.LightVec = lightPos.xyz - fragPos.xyz;
-    output.ViewVec = -fragPos.xyz;
+    float4 world_pos = mul(model, float4(input.position, 1.0));
+
+    output.position = mul(view_projection, world_pos);
+    output.world_position = world_pos.xyz;
+    output.normal = mul((float3x3) model, input.normal);
+    output.uv = input.uv;
+    output.texture_index = push_constants.object_data->texture_index;
+
     return output;
 }
 
 [shader("fragment")]
-float4 fragmentMain(VSOutput input) {
-    float3 N = normalize(input.Normal);
-    float3 L = normalize(input.LightVec);
-    float3 V = normalize(input.ViewVec);
-    float3 R = reflect(-L, N);
-    float3 diffuse = max(dot(N, L), 0.0025);
-    float3 specular = pow(max(dot(R, V), 0.0), 16.0) * 0.75;
+float4 fragmentMain(Vertex2Fragment input) {
+  float3 N = normalize(input.normal);
+  float3 V = normalize(push_constants.global_data.camera_position - input.world_position);
 
-    float3 color = textures[input.texture_index].Sample(input.UV).rgb;
-    return float4(diffuse * color.rgb + specular, 1.0);
+  float3 shading = float3(0.0);
+  float3 albedo = textures[input.texture_index].Sample(input.uv).rgb;
+
+  // Point lights
+  for (uint32_t i = 0; i < push_constants.global_data.point_lights_count; i++) {
+    PointLight light = push_constants.global_data->point_lights[i];
+
+    float3 L = light.position - input.world_position;
+    float distance = length(L);
+    L = normalize(L);
+
+    float attenuation = 1.0 / (1.0 + (distance * distance));
+    float window = clamp(1.0 - pow(distance / light.radius, 4.0), 0.0, 1.0);
+    attenuation *= window * window;
+
+    if (attenuation > 0.0) {
+      float3 R = reflect(-L, N);
+
+      float diffuse = max(dot(N, L), 0.0);
+      float specular = pow(max(dot(R, V), 0.0), 16.0) * 0.75;
+      float3 radiance = light.color * light.intensity * attenuation;
+
+      shading += (diffuse * albedo * specular) * radiance;
+    }
+  }
+
+  // Directional lights
+  for (uint32_t i = 0; i < push_constants.global_data.point_lights_count; i++) {
+    DirLight light = push_constants.global_data->dir_lights[i];
+
+    float3 L = normalize(-light.direction);
+    float3 R = reflect(-L, N);
+
+    float diffuse = max(dot(N, L), 0.0);
+    float specular = pow(max(dot(R, V), 0.0), 16.0) * 0.75;
+    float3 radiance = light.color * light.intensity;
+
+    shading += (diffuse * albedo * specular) * radiance;
+  }
+
+  float3 ambient = albedo * 0.02;
+
+  return float4(shading + ambient, 1.0);
 }

@@ -152,6 +152,10 @@ src = files(
     'src/lisa/components/TextureComponent.cpp',
     'src/lisa/components/CameraComponent.h',
     'src/lisa/components/CameraComponent.cpp',
+    'src/lisa/components/PointLightComponent.h',
+    'src/lisa/components/PointLightComponent.cpp',
+    'src/lisa/components/DirectionalLightComponent.h',
+    'src/lisa/components/DirectionalLightComponent.cpp',
 
     'src/lisa/systems/render/Renderer.h',
     'src/lisa/systems/render/Renderer.cpp',

@@ -30,7 +30,7 @@ namespace lisa::systems::render {
     uint32 current_frame() const { return current_frame_; }
 
     graphics::Buffer& global_view_buffer() {
-      return global_view_buffers_[current_frame_];
+      return global_data_buffers_[current_frame_];
     }
 
     graphics::Buffer& object_data_buffer() {
@@ -38,17 +38,21 @@ namespace lisa::systems::render {
     }
 
   private:
-    static constexpr size MAX_OBJECTS = 1000;
-
     Rendergraph graph_;
 
     graphics::Fence fence_;
     graphics::CommandBuffer cmd_buffer_;
     graphics::Swapchain& swapchain_;
+
     array<graphics::Buffer, graphics::constants::MAX_FRAMES_IN_FLIGHT>
-      global_view_buffers_;
+      global_data_buffers_;
     array<graphics::Buffer, graphics::constants::MAX_FRAMES_IN_FLIGHT>
       object_data_buffers_;
+    array<graphics::Buffer, graphics::constants::MAX_FRAMES_IN_FLIGHT>
+      point_lights_buffers_;
+    array<graphics::Buffer, graphics::constants::MAX_FRAMES_IN_FLIGHT>
+      dir_lights_buffers_;
+
     array<graphics::Semaphore, graphics::constants::MAX_FRAMES_IN_FLIGHT>
       available_s_;
     array<graphics::Semaphore, graphics::constants::MAX_FRAMES_IN_FLIGHT>
