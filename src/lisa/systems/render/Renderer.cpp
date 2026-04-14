@@ -5,6 +5,10 @@
 #include "Renderer.h"
 
 #include "ShaderData.h"
+#include "components/CameraComponent.h"
+#include "components/MeshComponent.h"
+#include "components/TransformComponent.h"
+#include "components/context.h"
 #include "graphics/context.h"
 
 #include <glm/gtc/matrix_transform.hpp>
@@ -64,19 +68,35 @@ namespace lisa::systems::render {
     auto* global_data = static_cast<GlobalViewData*>(
       global_view_buffers_[current_frame_].mapped_data()
     );
-    global_data->view = scene.camera().view;
-    global_data->projection = scene.camera().projection;
-    global_data->view_projection = global_data->projection * global_data->view;
-    global_data->camera_position = vec4(0.0f, 0.0f, -5.0f, 1.0f);
+
+    auto cameras_view = components::context::registry()
+                          ->view<
+                            const components::TransformComponent,
+                            const components::CameraComponent>();
+
+    for (auto [camera_entity, camera_transform_component, camera_component] :
+         cameras_view.each()) {
+      global_data->view = glm::inverse(camera_transform_component.matrix);
+      global_data->projection = camera_component.projection_matrix();
+      global_data->view_projection =
+        global_data->projection * global_data->view;
+    }
 
     auto* object_data = static_cast<ObjectData*>(
       object_data_buffers_[current_frame_].mapped_data()
     );
 
+    auto transform_view = components::context::registry()
+                            ->view<
+                              const components::MeshComponent,
+                              const components::TransformComponent>();
+
     uint32 i = 0;
-    for (const auto& entity : scene.entities()) {
+    for (auto [entity, mesh_component, transform_component] :
+         transform_view.each()) {
       object_data[i].model =
-        entity.model * glm::rotate(mat4(1.0f), time_, vec3(0.0f, 1.0f, 0.0f));
+        transform_component.matrix *
+        glm::rotate(mat4(1.0f), time_, vec3(0.0f, 1.0f, 0.0f));
       object_data[i].color = vec4(1.0f);
       object_data[i].texture_index = i;
       i++;

@@ -4,6 +4,10 @@
 
 #include "DefaultPass.h"
 
+#include "components/MeshComponent.h"
+#include "components/TextureComponent.h"
+#include "components/TransformComponent.h"
+#include "components/context.h"
 #include "graphics/context.h"
 #include "resources/Mesh.h"
 #include "resources/Texture.h"
@@ -27,7 +31,8 @@ namespace lisa::passes {
        .aspect = vk::ImageAspectFlagBits::eDepth}
     );
 
-    const auto shader = resources::context::manager().load<resources::Shader>("shader");
+    const auto shader =
+      resources::context::manager().load<resources::Shader>("shader");
 
     descriptor_container_ = std::make_unique<graphics::DescriptorContainer>(
       1000, vk::DescriptorType::eCombinedImageSampler
@@ -47,9 +52,7 @@ namespace lisa::passes {
     );
   }
 
-  void DefaultPass::render(
-    const RenderPassInput& in
-  ) {
+  void DefaultPass::render(const RenderPassInput& in) {
     vk::RenderingAttachmentInfo color_attachment{
       .imageView = in.image_views.at("FinalTarget"),
       .imageLayout = vk::ImageLayout::eColorAttachmentOptimal,
@@ -65,7 +68,7 @@ namespace lisa::passes {
       .clearValue = {.depthStencil = {1.0f, 0}}
     };
 
-    in.cmd_buffer->beginRendering(
+    in.cmd->beginRendering(
       {.renderArea = {.extent = in.extent},
        .layerCount = 1,
        .colorAttachmentCount = 1,
@@ -73,17 +76,17 @@ namespace lisa::passes {
        .pDepthAttachment = &depth_attachment}
     );
 
-    in.cmd_buffer->setViewport(
+    in.cmd->setViewport(
       0,
       {{.width = static_cast<float>(in.width),
         .height = static_cast<float>(in.height),
         .minDepth = 0.0f,
         .maxDepth = 1.0f}}
     );
-    in.cmd_buffer->setScissor(0, {{.extent = in.extent}});
+    in.cmd->setScissor(0, {{.extent = in.extent}});
 
-    in.cmd_buffer->bindPipeline(vk::PipelineBindPoint::eGraphics, **pipeline_);
-    in.cmd_buffer->bindDescriptorSets(
+    in.cmd->bindPipeline(vk::PipelineBindPoint::eGraphics, **pipeline_);
+    in.cmd->bindDescriptorSets(
       vk::PipelineBindPoint::eGraphics,
       pipeline_->layout(),
       0,
@@ -91,15 +94,19 @@ namespace lisa::passes {
       {}
     );
 
+    auto view = components::context::registry()
+                  ->view<
+                    const components::MeshComponent,
+                    const components::TextureComponent>();
+
     uint32 i = 0;
-    for (const auto& entity : in.scene.entities()) {
-      const auto mesh = resources::context::manager().get<resources::Mesh>(entity.mesh_id);
-      const auto texture =
-        resources::context::manager().get<resources::Texture>(entity.texture_id);
+    for (auto [entity, mesh_component, texture_component] : view.each()) {
+      const auto mesh = mesh_component.resource();
+      const auto texture = texture_component.resource();
 
       vk::DeviceSize offset = 0;
-      in.cmd_buffer->bindVertexBuffers(0, {mesh->vertex_buffer()}, offset);
-      in.cmd_buffer->bindIndexBuffer(
+      in.cmd->bindVertexBuffers(0, {mesh->vertex_buffer()}, offset);
+      in.cmd->bindIndexBuffer(
         mesh->index_buffer(), mesh->index_offset(), vk::IndexType::eUint16
       );
 
@@ -133,17 +140,17 @@ namespace lisa::passes {
         .object_bda = in.object_bda + i * sizeof(systems::render::ObjectData)
       };
 
-      in.cmd_buffer->pushConstants<systems::render::PushConstants>(
+      in.cmd->pushConstants<systems::render::PushConstants>(
         pipeline_->layout(),
         vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment,
         0,
         push_constants
       );
 
-      in.cmd_buffer->drawIndexed(mesh->index_count(), 1, 0, 0, 0);
+      in.cmd->drawIndexed(mesh->index_count(), 1, 0, 0, 0);
       i++;
     }
 
-    in.cmd_buffer->endRendering();
+    in.cmd->endRendering();
   }
 }

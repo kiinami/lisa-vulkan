@@ -6,7 +6,6 @@
 
 #include "graphics/constants.h"
 #include "graphics/context.h"
-#include "utils/Fence.h"
 #include "utils/chk.h"
 #include "utils/common.h"
 #include "utils/logging.h"
@@ -98,6 +97,6 @@ namespace lisa::graphics {
       .commandBufferCount = 1, .pCommandBuffers = cmd_buffer
     };
     queue_.submit(submit_info, fence);
-    lisa::utils::chk(device_.waitForFences({fence}, vk::True, UINT64_MAX));
+    utils::chk(device_.waitForFences({fence}, vk::True, UINT64_MAX));
   }
 }

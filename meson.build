@@ -19,6 +19,7 @@ add_project_arguments('-DVULKAN_HPP_NO_STRUCT_CONSTRUCTORS', language: 'cpp')
 add_project_arguments('-DVP_USE_OBJECT', language: 'cpp')
 add_project_arguments('-DGLM_FORCE_RADIANS', language: 'cpp')
 add_project_arguments('-DGLM_FORCE_DEPTH_ZERO_TO_ONE', language: 'cpp')
+add_project_arguments('-DGLM_ENABLE_EXPERIMENTAL', language : 'cpp')
 
 ###############################################################################
 # Dependencies
@@ -54,8 +55,10 @@ else
 endif
 
 cli11 = dependency('CLI11', required: true)
+entt = dependency('entt', required : true)
 glm = dependency('glm', required: true)
 ktx = dependency('ktx', required: true)
+pugixml = dependency('pugixml', required : true)
 sdl3 = dependency('sdl3', required: true)
 sdl3pp = dependency('sdl3pp', required: true)
 spdlog = dependency('spdlog', required: true)
@@ -129,6 +132,25 @@ src = files(
     'src/lisa/scene/Scene.h',
     'src/lisa/scene/Scene.cpp',
 
+    'src/lisa/systems/ecs/Registry.h',
+    'src/lisa/systems/ecs/Registry.cpp',
+    'src/lisa/systems/ecs/Component.h',
+    'src/lisa/systems/ecs/Component.cpp',
+    'src/lisa/systems/ecs/ResourceComponent.h',
+    'src/lisa/systems/ecs/ResourceComponent.cpp',
+    'src/lisa/systems/ecs/meta.h',
+
+    'src/lisa/components/context.h',
+    'src/lisa/components/context.cpp',
+    'src/lisa/components/TransformComponent.h',
+    'src/lisa/components/TransformComponent.cpp',
+    'src/lisa/components/MeshComponent.h',
+    'src/lisa/components/MeshComponent.cpp',
+    'src/lisa/components/TextureComponent.h',
+    'src/lisa/components/TextureComponent.cpp',
+    'src/lisa/components/CameraComponent.h',
+    'src/lisa/components/CameraComponent.cpp',
+
     'src/lisa/systems/render/Renderer.h',
     'src/lisa/systems/render/Renderer.cpp',
     'src/lisa/systems/render/Rendergraph.h',
@@ -164,14 +186,14 @@ lisa_library = library(
     'lisa',
     sources: src,
     include_directories: inc,
-    dependencies: [glm, ktx, sdl3, sdl3pp, slang, spdlog, tinyobjloader, vulkan, vma, vma_hpp],
+    dependencies : [entt, glm, ktx, pugixml, sdl3, sdl3pp, slang, spdlog, tinyobjloader, vulkan, vma, vma_hpp],
     cpp_pch: 'src/lisa/pch/pch.h'
 )
 
 lisa_dep = declare_dependency(
     include_directories: include_directories('src/lisa'),
     link_with: lisa_library,
-    dependencies: [glm, ktx, sdl3, sdl3pp, slang, spdlog, tinyobjloader, vulkan, vma, vma_hpp]
+    dependencies : [entt, glm, ktx, pugixml, sdl3, sdl3pp, slang, spdlog, tinyobjloader, vulkan, vma, vma_hpp]
 )
 
 ###############################################################################

@@ -5,7 +5,6 @@
 #ifndef LISA_VULKAN_DEFAULTPASS_H
 #define LISA_VULKAN_DEFAULTPASS_H
 #include "graphics/descriptors/DescriptorContainer.h"
-#include "graphics/pipeline/Pipeline.h"
 #include "systems/render/RenderPass.h"
 
 namespace lisa::passes {

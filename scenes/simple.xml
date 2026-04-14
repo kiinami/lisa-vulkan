@@ -1,0 +1,29 @@
+<scene>
+    <entity name="monkey0">
+        <transform>
+            <translate>0, 0, 0</translate>
+        </transform>
+        <mesh type="obj" path="./models/suzanne.obj"/>
+        <texture path="./textures/suzanne0.ktx"/>
+    </entity>
+    <entity name="monkey1">
+        <transform>
+            <translate>2, 0, 0</translate>
+        </transform>
+        <mesh type="obj" path="./models/suzanne.obj"/>
+        <texture path="./textures/suzanne1.ktx"/>
+    </entity>
+    <entity name="monkey2">
+        <transform>
+            <translate>-2, 0, 0</translate>
+        </transform>
+        <mesh type="obj" path="./models/suzanne.obj"/>
+        <texture path="./textures/suzanne2.ktx"/>
+    </entity>
+    <entity>
+        <transform>
+            <lookat origin="0, 0, 5" target="0, 0, 0" up="0, 1, 0"/>
+        </transform>
+        <camera/>
+    </entity>
+</scene>

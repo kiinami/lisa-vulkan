@@ -15,18 +15,14 @@ namespace lisa::systems::resources {
     ResourceHandle();
     ResourceHandle(const str& id, ResourceManager* manager);
 
-    // RAII methods
     ~ResourceHandle();
 
-    // Copy semantics
     ResourceHandle(const ResourceHandle& other);
     ResourceHandle& operator=(const ResourceHandle& other);
 
-    // Move semantics
     ResourceHandle(ResourceHandle&& other) noexcept;
     ResourceHandle& operator=(ResourceHandle&& other) noexcept;
 
-    // Accessors
     T* operator->() const;
     T* get() const;
     explicit operator bool() const;

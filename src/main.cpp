@@ -2,6 +2,7 @@
 // Created by kinami on 1/26/26.
 //
 
+#include "components/context.h"
 #include "lisa/graphics/context.h"
 #include "lisa/graphics/descriptors/DescriptorContainer.h"
 #include "lisa/graphics/pipeline/Pipeline.h"
@@ -21,12 +22,17 @@ using namespace lisa;
 
 namespace {
   CLI::App app{"lisa"};
+  path scene_filepath;
   str log_level = "debug";
   int device = 0;
 }
 
 static int cli_args(int argc, char** argv) {
   argv = app.ensure_utf8(argv);
+
+  app.add_option("scene", scene_filepath, "The XML scene file")
+    ->check(CLI::ExistingFile)
+    ->required();
 
   app
     .add_option(
@@ -45,8 +51,8 @@ static int cli_args(int argc, char** argv) {
   return 0;
 }
 
-int main(int argc, char** argv) {
-  auto result = cli_args(argc, argv);
+int main(const int argc, char** argv) {
+  const auto result = cli_args(argc, argv);
   if (result != 0) return result;
 
   logging::init(log_level);
@@ -55,31 +61,10 @@ int main(int argc, char** argv) {
     window::context::init(1280, 720);
     graphics::context::init();
     resources::context::init();
+    components::context::init();
 
     {
-      vector<scene::Entity> entities;
-      for (uint32 i = 0; i < 3; i++) {
-        float x_offset = (i - 1.0f) * 2.0f;
-        entities.push_back(
-          {.mesh_id = "suzanne",
-           .texture_id = "suzanne" + std::to_string(i),
-           .model = glm::translate(mat4(1.0f), vec3(x_offset, 0.0f, 0.0f))}
-        );
-      }
-
-      auto scene = scene::Scene(
-        entities,
-        {.width = window::context::window_width(),
-         .height = window::context::window_height(),
-         .view = glm::translate(mat4(1.0f), vec3(0.0f, 0.0f, -5.0f)),
-         .projection = glm::perspective(
-           glm::radians(45.0f),
-           static_cast<float>(window::context::window_width()) /
-             static_cast<float>(window::context::window_height()),
-           0.1f,
-           100.0f
-         )}
-      );
+      auto scene = scene::Scene(scene_filepath);
 
       auto rendergraph = systems::render::Rendergraph();
       rendergraph.add_resource(
@@ -110,6 +95,7 @@ int main(int argc, char** argv) {
       graphics::context::device()->waitIdle();
     }
 
+    components::context::destroy();
     resources::context::destroy();
     graphics::context::destroy();
     window::context::destroy();

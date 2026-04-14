@@ -26,14 +26,15 @@ namespace lisa::systems::render {
     };
 
     struct RenderPassInput {
-      const graphics::CommandBuffer& cmd_buffer;
+      const scene::Scene& scene;
+      const graphics::CommandBuffer& cmd;
       uint32 width;
       uint32 height;
-      vk::Extent2D extent = {width, height};
       std::unordered_map<str, vk::ImageView> image_views;
-      const scene::Scene& scene;
       vk::DeviceAddress global_bda = 0;
       vk::DeviceAddress object_bda = 0;
+
+      vk::Extent2D extent = {width, height};
     };
 
     explicit RenderPass(const str& name) : name_(name) {}

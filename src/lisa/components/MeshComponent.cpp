@@ -1,0 +1,21 @@
+//
+// Created by kinami on 4/14/26.
+//
+
+#include "MeshComponent.h"
+
+#include "entt/entity/registry.hpp"
+#include "entt/meta/factory.hpp"
+#include "resources/context.h"
+#include "systems/ecs/meta.h"
+
+namespace lisa::components { namespace {
+  const bool registered = [] {
+    using namespace entt::literals;
+
+    systems::ecs::reflect_component<MeshComponent>("mesh"_hs)
+      .data<&MeshComponent::filepath>("path"_hs);
+
+    return true;
+  }();
+}}

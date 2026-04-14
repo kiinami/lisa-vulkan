@@ -49,32 +49,21 @@ namespace lisa::resources {
   }
 
   bool Shader::load_function() {
-    logging::info("Shader::load_function called for id: {}", id_);
     const path filepath = constants::SHADERS_PATH / (id_ + ".slang");
-    logging::info("Shader filepath: {}", filepath.string());
 
     const auto session = create_session();
-    logging::info("Shader session created");
     Slang::ComPtr<ISlangBlob> load_diagnostics;
     const auto module =
       session->loadModule(id_.c_str(), load_diagnostics.writeRef());
-    if (load_diagnostics) {
-      logging::info(
-        "Slang load diagnostics: {}",
-        (const char*) load_diagnostics->getBufferPointer()
-      );
-    }
     if (!module) {
       logging::error("Failed to load shader module: {}", id_);
       return false;
     }
-    logging::info("Shader module loaded");
 
     vector<slang::IComponentType*> components;
     components.push_back(module);
     const SlangInt defined_entry_point_count =
       module->getDefinedEntryPointCount();
-    logging::info("Defined entry point count: {}", defined_entry_point_count);
     vector<Slang::ComPtr<slang::IEntryPoint>> entry_points;
     for (SlangInt i = 0; i < defined_entry_point_count; i++) {
       Slang::ComPtr<slang::IEntryPoint> entry_point;
@@ -84,30 +73,19 @@ namespace lisa::resources {
     }
 
     Slang::ComPtr<slang::IComponentType> program;
-    logging::info("Creating composite component type...");
     session->createCompositeComponentType(
       components.data(), components.size(), program.writeRef()
     );
-    logging::info("Composite component type created");
 
     Slang::ComPtr<ISlangBlob> spirv;
     Slang::ComPtr<ISlangBlob> diagnostics;
-    logging::info("Getting target code...");
     program->getTargetCode(0, spirv.writeRef(), diagnostics.writeRef());
-    if (diagnostics) {
-      logging::info(
-        "Slang diagnostics: {}", (const char*) diagnostics->getBufferPointer()
-      );
-    }
-    logging::info("Target code acquired");
 
     const vk::ShaderModuleCreateInfo module_ci{
       .codeSize = spirv->getBufferSize(),
       .pCode = (uint32*) spirv->getBufferPointer()
     };
-    logging::info("Creating Vulkan shader module...");
     module_ = graphics::context::device()->createShaderModule(module_ci);
-    logging::info("Vulkan shader module created");
 
     slang::ShaderReflection* reflection = program->getLayout();
     uint32 entry_point_count = reflection->getEntryPointCount();

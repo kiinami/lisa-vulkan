@@ -2,6 +2,8 @@
 
 #include <filesystem>
 #include <glm/glm.hpp>
+#include <glm/gtx/quaternion.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include <unordered_map>
 #include <vulkan/vulkan_raii.hpp>
 
@@ -26,8 +28,10 @@ namespace lisa {
   typedef glm::vec2 vec2;
   typedef glm::vec3 vec3;
   typedef glm::vec4 vec4;
+  typedef glm::vec3 rgb;
+  typedef glm::vec4 rgba;
 
-  typedef glm::quat Quaternion;
+  typedef glm::quat quat;
 
   typedef glm::mat3 mat3;
   typedef glm::mat4 mat4;

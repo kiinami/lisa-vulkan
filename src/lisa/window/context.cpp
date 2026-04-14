@@ -31,6 +31,7 @@ namespace lisa::window::context {
     window_.reset();
     SDL::QuitSubSystem(SDL::INIT_VIDEO);
     SDL::Quit();
+    logging::debug("Window context destroyed");
   }
 
   const Window& window() { return *window_; }

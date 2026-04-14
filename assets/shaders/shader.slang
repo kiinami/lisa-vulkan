@@ -16,7 +16,6 @@ struct GlobalViewData {
     float4x4 view_projection;
     float4x4 projection;
     float4x4 view;
-    float4 camera_position;
 };
 
 struct ObjectData {

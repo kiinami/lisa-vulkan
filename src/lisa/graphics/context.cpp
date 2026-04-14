@@ -49,6 +49,7 @@ namespace lisa::graphics::context {
     physical_device_.reset();
     instance_.reset();
     context_.reset();
+    logging::debug("Graphics context destroyed");
   }
 
   const Instance& instance() { return *instance_; }

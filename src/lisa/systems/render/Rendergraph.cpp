@@ -128,10 +128,10 @@ namespace lisa::systems::render {
         transition_resource(output);
 
       RenderPass::RenderPassInput input{
-        .cmd_buffer = cmd_buffer,
+        .scene = scene,
+        .cmd = cmd_buffer,
         .width = window::context::window_width(),
         .height = window::context::window_height(),
-        .scene = scene,
         .global_bda = global_bda,
         .object_bda = object_bda
       };

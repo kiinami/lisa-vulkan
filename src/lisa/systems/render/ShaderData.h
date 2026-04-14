@@ -13,7 +13,6 @@ namespace lisa::systems::render {
     mat4 view_projection;
     mat4 projection;
     mat4 view;
-    vec4 camera_position;
   };
 
   struct alignas(16) ObjectData {
