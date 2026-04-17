@@ -17,7 +17,6 @@ namespace lisa::scene {
     ~Scene() = default;
 
   private:
-    static pugi::xml_document read_xml_file(const path& filepath);
     static void parse_component(entt::entity e, const pugi::xml_node& node);
   };
 

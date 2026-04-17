@@ -177,6 +177,8 @@ src = files(
     'src/lisa/utils/defer.h',
     'src/lisa/utils/logging.h',
     'src/lisa/utils/logging.cpp',
+    'src/lisa/utils/xml.h',
+    'src/lisa/utils/xml.cpp',
 
     'src/lisa/window/context.h',
     'src/lisa/window/context.cpp',

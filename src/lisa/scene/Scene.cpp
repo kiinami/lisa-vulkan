@@ -8,18 +8,14 @@
 #include "components/context.h"
 #include "utils/logging.h"
 #include "utils/parser.h"
+#include "utils/xml.h"
 
 namespace lisa::scene {
 
   Scene::Scene(const path& filepath) {
-    const auto doc = read_xml_file(filepath);
+    const auto doc = utils::xml::read(filepath, "scene");
 
     const auto scene = doc.document_element();
-    if (std::strcmp(scene.name(), "scene") != 0)
-      logging::abort(
-        "Scene definition must contain exactly one <scene></scene> node in the "
-        "top-level"
-      );
 
     auto& reg = components::context::registry();
     for (const auto node : scene.children("entity")) {
@@ -29,22 +25,6 @@ namespace lisa::scene {
     }
 
     logging::debug("Scene loaded successfully with {} entities", reg->size());
-  }
-
-  pugi::xml_document Scene::read_xml_file(const path& filepath) {
-    pugi::xml_document doc;
-
-    if (const auto result = doc.load_file(filepath.c_str())) {
-      logging::debug("XML scene parsed correctly");
-    } else {
-      logging::abort(
-        "Error parsing XML scene file\n\tDescription: {}\n\tAt: {}",
-        result.description(),
-        filepath.c_str() + result.offset
-      );
-    }
-
-    return doc;
   }
 
   void Scene::parse_component(entt::entity e, const pugi::xml_node& node) {

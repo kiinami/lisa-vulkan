@@ -1,0 +1,16 @@
+<rendergraph output="composition.final">
+    <pass id="geometry" type="deferred::GeometryPass">
+        <output id="albedo" type="color"/>
+        <output id="normal" type="color"/>
+        <output id="position" type="color"/>
+        <output id="material" type="color"/>
+        <output id="depth" type="depth"/>
+    </pass>
+    <pass id="composition" type="deferred::CompositionPass">
+        <input id="geometry.albedo"/>
+        <input id="geometry.normal"/>
+        <input id="geometry.position"/>
+        <input id="geometry.material"/>
+        <output id="final" type="color"/>
+    </pass>
+</rendergraph>
