@@ -18,6 +18,8 @@ namespace lisa::scene {
 
   private:
     static void parse_component(entt::entity e, const pugi::xml_node& node);
+    static entt::meta_any
+      parse_value_string(const entt::meta_type& type, const str& value);
   };
 
 }

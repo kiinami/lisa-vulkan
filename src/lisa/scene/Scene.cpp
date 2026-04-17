@@ -7,7 +7,6 @@
 #include "components/TransformComponent.h"
 #include "components/context.h"
 #include "utils/logging.h"
-#include "utils/parser.h"
 #include "utils/xml.h"
 
 namespace lisa::scene {
@@ -44,8 +43,7 @@ namespace lisa::scene {
       for (const auto& attr : node.attributes()) {
         auto prop_id = entt::hashed_string(attr.name());
         if (auto metadata = meta_type.data(prop_id)) {
-          if (auto value =
-                utils::parse_value_string(metadata.type(), attr.value()))
+          if (auto value = parse_value_string(metadata.type(), attr.value()))
             metadata.set(instance, value);
         }
       }
@@ -58,5 +56,21 @@ namespace lisa::scene {
         e,
         instance.as_ref()
       );
+  }
+
+  entt::meta_any
+    Scene::parse_value_string(const entt::meta_type& type, const str& value) {
+    if (type == entt::resolve<float>()) return utils::xml::parse<float>(value);
+    if (type == entt::resolve<int>()) return utils::xml::parse<int>(value);
+    if (type == entt::resolve<bool>()) return utils::xml::parse<bool>(value);
+    if (type == entt::resolve<str>()) return utils::xml::parse<str>(value);
+    if (type == entt::resolve<path>()) return utils::xml::parse<path>(value);
+    if (type == entt::resolve<vec3>()) return utils::xml::parse<vec3>(value);
+    if (type == entt::resolve<rgb>()) return utils::xml::parse<rgb>(value);
+    if (type == entt::resolve<vec4>()) return utils::xml::parse<vec4>(value);
+    if (type == entt::resolve<rgba>()) return utils::xml::parse<rgba>(value);
+    if (type == entt::resolve<mat3>()) return utils::xml::parse<mat3>(value);
+    if (type == entt::resolve<mat4>()) return utils::xml::parse<mat4>(value);
+    return {};
   }
 }

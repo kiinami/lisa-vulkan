@@ -6,10 +6,9 @@
 
 #include "entt/entity/registry.hpp"
 #include "entt/meta/factory.hpp"
-#include "entt/meta/meta.hpp"
 #include "systems/ecs/meta.h"
 #include "utils/logging.h"
-#include "utils/parser.h"
+#include "utils/xml.h"
 
 #include <glm/gtx/matrix_decompose.hpp>
 
@@ -31,22 +30,26 @@ namespace lisa::components {
     for (const auto& op : node.children())
       if (std::strcmp(op.name(), "translate") == 0)
         mat = glm::translate(
-          mat, utils::parse<vec3>(op.attribute("value").value())
+          mat, utils::xml::parse<vec3>(op.attribute("value").value())
         );
       else if (std::strcmp(op.name(), "rotate") == 0) {
         mat *= glm::mat4_cast(
           glm::angleAxis(
-            glm::radians(utils::parse<float>(op.attribute("angle").value())),
-            glm::normalize(utils::parse<vec3>(op.attribute("axis").value()))
+            glm::radians(
+              utils::xml::parse<float>(op.attribute("angle").value())
+            ),
+            glm::normalize(
+              utils::xml::parse<vec3>(op.attribute("axis").value())
+            )
           )
         );
       } else if (std::strcmp(op.name(), "scale") == 0) {
-        mat =
-          glm::scale(mat, utils::parse<vec3>(op.attribute("value").value()));
+        mat = glm::scale(
+          mat, utils::xml::parse<vec3>(op.attribute("value").value()));
       } else if (std::strcmp(op.name(), "lookat") == 0) {
-        auto origin = utils::parse<vec3>(op.attribute("origin").value());
-        auto target = utils::parse<vec3>(op.attribute("target").value());
-        auto up = utils::parse<vec3>(op.attribute("up").value());
+        auto origin = utils::xml::parse<vec3>(op.attribute("origin").value());
+        auto target = utils::xml::parse<vec3>(op.attribute("target").value());
+        auto up = utils::xml::parse<vec3>(op.attribute("up").value());
 
         auto f = glm::normalize(target - origin);
         auto r = glm::normalize(glm::cross(f, up));
@@ -58,7 +61,7 @@ namespace lisa::components {
         mat = glm::translate(mat, origin);
         mat *= glm::mat4_cast(q);
       } else if (std::strcmp(op.name(), "matrix") == 0)
-        mat *= utils::parse<mat4>(op.attribute("value").value());
+        mat *= utils::xml::parse<mat4>(op.attribute("value").value());
       else
         logging::warning(
           "'{}' node of <transform> component not supported, skipping it",
