@@ -4,53 +4,79 @@
 
 #include "Rendergraph.h"
 
+#include "ImageRenderResource.h"
+#include "RenderPassRegistry.h"
+#include "RenderResourceRegistry.h"
 #include "graphics/context.h"
 #include "utils/logging.h"
+#include "utils/xml.h"
 #include "window/context.h"
 
 #include <functional>
 
 namespace lisa::systems::render {
-  void Rendergraph::add_resource(RenderResource res) {
-    resources_.insert_or_assign(res.name(), std::move(res));
+  Rendergraph::Rendergraph(const path& filepath) {
+    const auto doc = utils::xml::read(filepath, "rendergraph");
+    const auto doc_element = doc.document_element();
+    for (const auto& node : doc_element.children("pass"))
+      passes_.push_back(
+        RenderPassRegistry::create(node.attribute("type").value(), node)
+      );
+    output_id_ = doc_element.attribute("output").value();
+    compile();
   }
 
-  // https://github.khronos.org/Vulkan-Site/tutorial/latest/Building_a_Simple_Engine/Engine_Architecture/05_rendering_pipeline.html#_rendergraph_dependency_analysis_and_execution_ordering
   void Rendergraph::compile() {
-    vector<vector<size>> dependencies(passes_.size());
-    vector<vector<size>> dependents(passes_.size());
     umap<str, size> writers;
 
-    // Discover dependencies
     for (size i = 0; i < passes_.size(); i++) {
-      const auto& pass = passes_[i];
-
-      for (const auto& input : pass->inputs()) {
-        if (auto it = writers.find(input.id); it != writers.end()) {
-          dependencies[i].push_back(it->second);
-          dependents[it->second].push_back(i);
-        }
+      const auto& descs = passes_[i]->output_descs();
+      for (const auto& [local_id, global_id] : passes_[i]->output_entries()) {
+        writers[global_id] = i;
+        resources_.emplace(
+          global_id,
+          RenderResourceRegistry::create(
+            descs.at(local_id)->type,
+            global_id.c_str(),
+            vec3(window::context::window_size(), 1.0f)
+          )
+        );
       }
-
-      for (const auto& output : pass->outputs())
-        writers[output.id] = i;
     }
 
-    // Sort dependencies
+    vector dependents(passes_.size(), vector<size>{});
+
+    for (size i = 0; i < passes_.size(); i++) {
+      const auto& descs = passes_[i]->input_descs();
+      for (const auto& [local_id, global_id] : passes_[i]->input_entries()) {
+        auto it = writers.find(global_id);
+        if (it == writers.end())
+          logging::abort("No writer found for resource '{}'", global_id);
+
+        if (resources_.at(global_id)->type() != descs.at(local_id)->type)
+          logging::abort(
+            "Resource type mismatch: pass '{}' expects '{}' for input '{}' but "
+            "got '{}'",
+            passes_[i]->id(),
+            descs.at(local_id)->type,
+            local_id,
+            resources_.at(global_id)->type()
+          );
+
+        dependents[it->second].push_back(i);
+      }
+    }
+
     vector visited(passes_.size(), false);
     vector in_stack(passes_.size(), false);
 
     std::function<void(size)> visit = [&](const size node) {
       if (in_stack[node])
         logging::abort("Rendergraph has a circular dependency");
-
       if (visited[node]) return;
-
       in_stack[node] = true;
-
       for (const auto dep : dependents[node])
         visit(dep);
-
       in_stack[node] = false;
       visited[node] = true;
       order_.push_back(node);
@@ -58,121 +84,58 @@ namespace lisa::systems::render {
 
     for (size i = 0; i < passes_.size(); i++)
       if (!visited[i]) visit(i);
+
+    if (resources_.at(output_id_)->type() != "final") {
+      logging::abort(
+        "Rendergraph output resource '{}' must be of type 'final', got '{}'",
+        output_id_,
+        resources_.at(output_id_)->type()
+      );
+    }
   }
 
-  RenderResource* Rendergraph::get_resource(const str& name) {
-    return resources_.contains(name) ? &resources_.at(name) : nullptr;
+  RenderResource* Rendergraph::get_resource(const str& id) const {
+    return resources_.contains(id) ? resources_.at(id).get() : nullptr;
   }
 
   void Rendergraph::render(
-    const graphics::CommandBuffer& cmd_buffer,
+    const graphics::CommandBuffer& cmdb,
     const scene::Scene& scene,
-    vk::DeviceAddress global_bda,
-    vk::DeviceAddress object_bda
+    const vk::DeviceAddress global_bda,
+    const vk::DeviceAddress object_bda
   ) {
-    umap<str, ResourceState> states(resources_.size());
-    for (auto& [id, res] : resources_)
-      states[id] = {
-        .layout = res.image().initial_layout(),
-        .accessMask = vk::AccessFlagBits::eNone,
-        .stageMask = vk::PipelineStageFlagBits::eTopOfPipe
-      };
-
     for (const auto pass_id : order_) {
-      auto& pass = passes_[pass_id];
-      vector<vk::ImageMemoryBarrier> barriers;
+      const auto& pass = passes_[pass_id];
 
-      auto transition_resource = [&](const RenderPass::ResourceUsage& res) {
-        auto& [source_layout, source_access, source_stage] = states[res.id];
-        auto& resource = resources_.at(res.id);
+      umap<str, RenderResource*> local_resources;
 
-        if (
-          source_layout !=
-          res.layout ||
-          (source_access & vk::AccessFlagBits::eMemoryWrite)
-        ) {
-          const vk::ImageMemoryBarrier barrier{
-            .srcAccessMask = source_access,
-            .dstAccessMask = res.access,
-            .oldLayout = source_layout,
-            .newLayout = res.layout,
-            .image = resource.image(),
-            .subresourceRange = {
-              .aspectMask = res.aspect,
-              .baseMipLevel = 0,
-              .levelCount = 1,
-              .baseArrayLayer = 0,
-              .layerCount = 1
-            }
-          };
-
-          cmd_buffer->pipelineBarrier(
-            source_stage,
-            res.stage,
-            vk::DependencyFlagBits::eByRegion,
-            nullptr,
-            nullptr,
-            barrier
+      for (const auto& [local_id, global_id] : pass->input_entries()) {
+        auto& resource = *resources_.at(global_id);
+        if (auto* img = dynamic_cast<ImageRenderResource*>(&resource))
+          img->transition(
+            cmdb,
+            static_cast<const ImageRenderResourceDesc&>(
+              *pass->input_descs().at(local_id)
+            )
           );
-
-          source_layout = res.layout;
-          source_access = res.access;
-          source_stage = res.stage;
-        }
-      };
-
-      for (const auto& input : pass->inputs())
-        transition_resource(input);
-
-      for (const auto& output : pass->outputs())
-        transition_resource(output);
-
-      RenderPass::RenderPassInput input{
-        .scene = scene,
-        .cmd = cmd_buffer,
-        .width = window::context::window_width(),
-        .height = window::context::window_height(),
-        .global_bda = global_bda,
-        .object_bda = object_bda
-      };
-
-      for (const auto& usage : pass->inputs()) {
-        auto& resource = resources_.at(usage.id);
-        input.image_views.insert(
-          {usage.id,
-           *resource.image().view(
-             {.type = vk::ImageViewType::e2D,
-              .format = resource.image().format(),
-              .range = {
-                .aspectMask = usage.aspect,
-                .baseMipLevel = 0,
-                .levelCount = 1,
-                .baseArrayLayer = 0,
-                .layerCount = 1
-              }}
-           )}
-        );
+        local_resources[local_id] = &resource;
       }
 
-      for (const auto& usage : pass->outputs()) {
-        auto& resource = resources_.at(usage.id);
-        input.image_views.insert(
-          {usage.id,
-           *resource.image().view(
-             {.type = vk::ImageViewType::e2D,
-              .format = resource.image().format(),
-              .range = {
-                .aspectMask = usage.aspect,
-                .baseMipLevel = 0,
-                .levelCount = 1,
-                .baseArrayLayer = 0,
-                .layerCount = 1
-              }}
-           )}
-        );
+      for (const auto& [local_id, global_id] : pass->output_entries()) {
+        auto& resource = *resources_.at(global_id);
+        if (auto* img = dynamic_cast<ImageRenderResource*>(&resource))
+          img->transition(
+            cmdb,
+            static_cast<const ImageRenderResourceDesc&>(
+              *pass->output_descs().at(local_id)
+            )
+          );
+        local_resources[local_id] = &resource;
       }
 
-      pass->render(input);
+      RenderContext ctx{scene, cmdb, local_resources, global_bda, object_bda};
+
+      pass->render(ctx);
     }
   }
 }

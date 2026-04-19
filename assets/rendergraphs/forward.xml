@@ -1,0 +1,6 @@
+<rendergraph output="forward.final">
+    <pass id="forward" type="forward">
+        <output id="final" maps_to="color"/>
+        <output id="depth" maps_to="depth"/>
+    </pass>
+</rendergraph>

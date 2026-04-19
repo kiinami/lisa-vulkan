@@ -128,8 +128,15 @@ src = files(
     'src/lisa/resources/Texture.cpp',
     'src/lisa/resources/Vertex.h',
 
-    'src/lisa/passes/DefaultPass.h',
-    'src/lisa/passes/DefaultPass.cpp',
+    'src/lisa/render/passes/ForwardPass.h',
+    'src/lisa/render/passes/ForwardPass.cpp',
+
+    'src/lisa/render/resources/ColorRenderResource.h',
+    'src/lisa/render/resources/ColorRenderResource.cpp',
+    'src/lisa/render/resources/FinalRenderResource.h',
+    'src/lisa/render/resources/FinalRenderResource.cpp',
+    'src/lisa/render/resources/DepthRenderResource.h',
+    'src/lisa/render/resources/DepthRenderResource.cpp',
 
     'src/lisa/scene/Scene.h',
     'src/lisa/scene/Scene.cpp',
@@ -163,8 +170,13 @@ src = files(
     'src/lisa/systems/render/Rendergraph.cpp',
     'src/lisa/systems/render/RenderPass.h',
     'src/lisa/systems/render/RenderPass.cpp',
+    'src/lisa/systems/render/RenderPassRegistry.h',
     'src/lisa/systems/render/RenderResource.h',
     'src/lisa/systems/render/RenderResource.cpp',
+    'src/lisa/systems/render/ImageRenderResource.h',
+    'src/lisa/systems/render/ImageRenderResource.cpp',
+    'src/lisa/systems/render/RenderResourceRegistry.h',
+    'src/lisa/systems/render/ShaderData.h',
 
     'src/lisa/systems/resources/Resource.h',
     'src/lisa/systems/resources/Resource.cpp',
@@ -179,6 +191,8 @@ src = files(
     'src/lisa/utils/logging.cpp',
     'src/lisa/utils/xml.h',
     'src/lisa/utils/xml.cpp',
+    'src/lisa/utils/Registry.h',
+    'src/lisa/utils/Registry.cpp',
 
     'src/lisa/window/context.h',
     'src/lisa/window/context.cpp',

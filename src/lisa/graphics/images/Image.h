@@ -92,7 +92,7 @@ namespace lisa::graphics {
       return std::get<vk::Image>(image_);
     }
 
-    const vk::raii::ImageView& view(const ImageViewDesc& desc);
+    const vk::raii::ImageView& view(const ImageViewDesc& desc) const;
 
     const vec3& size() const { return size_; }
 
@@ -107,7 +107,7 @@ namespace lisa::graphics {
   protected:
     std::variant<vma::raii::Image, vk::Image> image_ = vk::Image(nullptr);
 
-    umap<ImageViewDesc, vk::raii::ImageView, ImageViewDescHash> views_;
+    mutable umap<ImageViewDesc, vk::raii::ImageView, ImageViewDescHash> views_;
 
     vec3 size_;
     uint32 mips_ = 1;

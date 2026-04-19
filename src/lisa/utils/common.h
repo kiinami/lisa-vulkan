@@ -2,9 +2,10 @@
 
 #include <filesystem>
 #include <glm/glm.hpp>
-#include <glm/gtx/quaternion.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/quaternion.hpp>
 #include <unordered_map>
+#include <unordered_set>
 #include <vulkan/vulkan_raii.hpp>
 
 namespace lisa {
@@ -24,6 +25,8 @@ namespace lisa {
   template<typename T, typename U> using pair = std::pair<T, U>;
   template<typename T, size S> using array = std::array<T, S>;
   typedef std::filesystem::path path;
+  template<typename T> using uptr = std::unique_ptr<T>;
+  template<typename T> using uset = std::unordered_set<T>;
 
   typedef glm::vec2 vec2;
   typedef glm::vec3 vec3;

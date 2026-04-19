@@ -47,7 +47,7 @@ namespace lisa::graphics {
     image_ = context::allocator().create_image(image_ci, allocation_ci);
   }
 
-  const vk::raii::ImageView& Image::view(const ImageViewDesc& desc) {
+  const vk::raii::ImageView& Image::view(const ImageViewDesc& desc) const {
     if (const auto it = views_.find(desc); it != views_.end())
       return it->second;
 

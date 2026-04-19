@@ -5,6 +5,7 @@
 #ifndef LISA_VULKAN_RENDERPASS_H
 #define LISA_VULKAN_RENDERPASS_H
 
+#include "RenderResource.h"
 #include "ShaderData.h"
 #include "graphics/buffer/Buffer.h"
 #include "graphics/commands/CommandBuffer.h"
@@ -13,53 +14,79 @@
 #include "systems/resources/ResourceManager.h"
 #include "utils/common.h"
 
+#include <pugixml.hpp>
+
 namespace lisa::systems::render {
+
+  struct RenderContext {
+    const scene::Scene& scene;
+    const graphics::CommandBuffer& cmdb;
+    const umap<str, RenderResource*> resources;
+    vk::DeviceAddress global_bda = 0;
+    vk::DeviceAddress object_bda = 0;
+  };
 
   class RenderPass {
   public:
-    struct ResourceUsage {
-      str id;
-      vk::ImageLayout layout;
-      vk::AccessFlags access;
-      vk::PipelineStageFlags stage;
-      vk::ImageAspectFlags aspect;
-    };
+    using GlobalResourceID = str;
+    using LocalResourceID = str;
 
-    struct RenderPassInput {
-      const scene::Scene& scene;
-      const graphics::CommandBuffer& cmd;
-      uint32 width;
-      uint32 height;
-      std::unordered_map<str, vk::ImageView> image_views;
-      vk::DeviceAddress global_bda = 0;
-      vk::DeviceAddress object_bda = 0;
-
-      vk::Extent2D extent = {width, height};
-    };
-
-    explicit RenderPass(const str& name) : name_(name) {}
-
+    explicit RenderPass(
+      const pugi::xml_node& node,
+      const umap<LocalResourceID, const RenderResourceDesc*>& valid_inputs,
+      const umap<LocalResourceID, const RenderResourceDesc*>& valid_outputs,
+      const str& shader_id
+    );
     virtual ~RenderPass() = default;
-    RenderPass(RenderPass&&) = default;
-    RenderPass& operator=(RenderPass&&) = default;
-    RenderPass(const RenderPass&) = default;
-    RenderPass& operator=(const RenderPass&) = default;
 
-    const vector<ResourceUsage>& inputs() const { return inputs_; }
+    const str& id() { return id_; }
 
-    const vector<ResourceUsage>& outputs() const { return outputs_; }
+    umap<LocalResourceID, GlobalResourceID> input_entries() const {
+      umap<LocalResourceID, GlobalResourceID> result;
+      for (const auto& [local_id, id] : inputs_map_)
+        result[local_id] = id_ + "." + id;
+      return result;
+    }
 
-    void add_input(const ResourceUsage& usage) { inputs_.push_back(usage); }
+    umap<LocalResourceID, GlobalResourceID> output_entries() const {
+      umap<LocalResourceID, GlobalResourceID> result;
+      for (const auto& [local_id, id] : outputs_map_)
+        result[local_id] = id_ + "." + id;
+      return result;
+    }
 
-    void add_output(const ResourceUsage& usage) { outputs_.push_back(usage); }
+    const umap<LocalResourceID, str>& input_types() const {
+      return input_types_;
+    }
 
-    virtual void render(const RenderPassInput& in) = 0;
+    const umap<LocalResourceID, str>& output_types() const {
+      return output_types_;
+    }
+
+    const umap<LocalResourceID, const RenderResourceDesc*>&
+      input_descs() const {
+      return input_descs_;
+    }
+
+    const umap<LocalResourceID, const RenderResourceDesc*>&
+      output_descs() const {
+      return output_descs_;
+    }
+
+    void render(const RenderContext& ctx);
+
+    virtual void do_render(const RenderContext& ctx) = 0;
 
   protected:
-    str name_;
-    vector<ResourceUsage> inputs_;
-    vector<ResourceUsage> outputs_;
-    std::unique_ptr<graphics::Pipeline> pipeline_;
+    str id_;
+    umap<LocalResourceID, str> input_types_;
+    umap<LocalResourceID, str> output_types_;
+    umap<LocalResourceID, GlobalResourceID> inputs_map_;
+    umap<LocalResourceID, GlobalResourceID> outputs_map_;
+    umap<LocalResourceID, const RenderResourceDesc*> input_descs_;
+    umap<LocalResourceID, const RenderResourceDesc*> output_descs_;
+    resources::ResourceHandle<lisa::resources::Shader> shader_;
+    uptr<graphics::Pipeline> pipeline_;
   };
 
 }

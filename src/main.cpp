@@ -7,7 +7,6 @@
 #include "lisa/graphics/descriptors/DescriptorContainer.h"
 #include "lisa/graphics/pipeline/Pipeline.h"
 #include "lisa/utils/logging.h"
-#include "passes/DefaultPass.h"
 #include "resources/context.h"
 #include "scene/Scene.h"
 #include "systems/render/Renderer.h"
@@ -66,26 +65,9 @@ int main(const int argc, char** argv) {
     {
       auto scene = scene::Scene(scene_filepath);
 
-      auto rendergraph = systems::render::Rendergraph();
-      rendergraph.add_resource(
-        {"FinalTarget",
-         vk::Format::eR8G8B8A8Unorm,
-         {window::context::window_width(), window::context::window_height(), 1},
-         vk::ImageUsageFlagBits::eColorAttachment |
-           vk::ImageUsageFlagBits::eTransferSrc}
+      auto renderer = std::make_unique<systems::render::Renderer>(
+        "assets/rendergraphs/forward.xml"
       );
-      rendergraph.add_resource(
-        {"DepthTarget",
-         vk::Format::eD32Sfloat,
-         {window::context::window_width(), window::context::window_height(), 1},
-         vk::ImageUsageFlagBits::eDepthStencilAttachment}
-      );
-
-      rendergraph.add_pass<passes::DefaultPass>("GeometryPass");
-      rendergraph.compile();
-
-      auto renderer =
-        std::make_unique<systems::render::Renderer>(std::move(rendergraph));
 
       while (!window::context::should_close()) {
         window::context::poll_events();

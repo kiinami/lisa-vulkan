@@ -4,6 +4,7 @@
 
 #ifndef LISA_VULKAN_RENDERGRAPH_H
 #define LISA_VULKAN_RENDERGRAPH_H
+#include "ImageRenderResource.h"
 #include "RenderPass.h"
 #include "RenderResource.h"
 #include "utils/common.h"
@@ -21,33 +22,30 @@ namespace lisa::systems::render {
     Rendergraph(const Rendergraph&) = delete;
     Rendergraph& operator=(const Rendergraph&) = delete;
 
-    void add_resource(RenderResource res);
+    explicit Rendergraph(const path& filepath);
 
-    template<RenderPassDerived T> void add_pass(const str& name) {
-      auto resource = std::make_unique<T>(name);
-      passes_.push_back(std::move(resource));
+    RenderResource* get_resource(const str& id) const;
+
+    const ImageRenderResource* output_resource() const {
+      return static_cast<const ImageRenderResource*>(
+        resources_.at(output_id_).get()
+      );
     }
 
-    void compile();
-    RenderResource* get_resource(const str& name);
-
     void render(
-      const graphics::CommandBuffer& cmd_buffer,
+      const graphics::CommandBuffer& cmdb,
       const scene::Scene& scene,
       vk::DeviceAddress global_bda,
       vk::DeviceAddress object_bda
     );
 
   private:
-    struct ResourceState {
-      vk::ImageLayout layout = vk::ImageLayout::eUndefined;
-      vk::AccessFlags accessMask = vk::AccessFlagBits::eNone;
-      vk::PipelineStageFlags stageMask = vk::PipelineStageFlagBits::eTopOfPipe;
-    };
-
-    umap<str, RenderResource> resources_;
-    vector<std::unique_ptr<RenderPass>> passes_;
+    umap<str, uptr<RenderResource>> resources_;
+    vector<uptr<RenderPass>> passes_;
     vector<size> order_;
+    str output_id_;
+
+    void compile();
   };
 
 }

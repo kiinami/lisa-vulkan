@@ -48,6 +48,11 @@ namespace lisa::graphics {
     ) const;
     void present(uint32 image, const vk::raii::Semaphore& semaphore) const;
 
+    vk::Extent2D extent() const {
+      const auto& size = images_.front().size();
+      return {static_cast<uint32>(size.x), static_cast<uint32>(size.y)};
+    }
+
   private:
     vk::raii::SwapchainKHR swapchain_ = nullptr;
     ImageFormat color_format_{vk::Format::eUndefined};

@@ -8,7 +8,7 @@
 
 namespace lisa::components::context {
   namespace {
-    std::unique_ptr<systems::ecs::Registry> registry_;
+    uptr<systems::ecs::Registry> registry_;
   }
 
   void init() {

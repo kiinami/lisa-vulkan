@@ -165,13 +165,25 @@ namespace lisa::graphics {
         .layerCount = 1
       }
     };
+    const vk::ImageMemoryBarrier barrier_color_restore{
+      .srcAccessMask = vk::AccessFlagBits::eTransferRead,
+      .dstAccessMask = vk::AccessFlagBits::eNone,
+      .oldLayout = vk::ImageLayout::eTransferSrcOptimal,
+      .newLayout = vk::ImageLayout::eColorAttachmentOptimal,
+      .image = image,
+      .subresourceRange = {
+        .aspectMask = vk::ImageAspectFlagBits::eColor,
+        .levelCount = 1,
+        .layerCount = 1
+      }
+    };
     cmd_buffer->pipelineBarrier(
       vk::PipelineStageFlagBits::eTransfer,
       vk::PipelineStageFlagBits::eBottomOfPipe,
       vk::DependencyFlagBits::eByRegion,
       nullptr,
       nullptr,
-      barrier_present
+      {barrier_present, barrier_color_restore}
     );
 
     return image_index;

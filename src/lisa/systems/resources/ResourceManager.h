@@ -36,13 +36,12 @@ namespace lisa::systems::resources {
 
   private:
     struct ResourceData {
-      std::unique_ptr<Resource> resource;
+      uptr<Resource> resource;
       int references = 0;
     };
 
-    std::unordered_map<std::type_index, std::unordered_map<str, ResourceData>>
-      resources_;
-    std::vector<std::unique_ptr<Resource>> dead_resources_;
+    umap<std::type_index, umap<str, ResourceData>> resources_;
+    vector<uptr<Resource>> dead_resources_;
   };
 
   template<ResourceDerived T>

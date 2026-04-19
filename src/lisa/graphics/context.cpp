@@ -11,14 +11,14 @@
 
 namespace lisa::graphics::context {
   namespace {
-    std::unique_ptr<vk::raii::Context> context_;
-    std::unique_ptr<Instance> instance_;
-    std::unique_ptr<PhysicalDevice> physical_device_;
-    std::unique_ptr<LogicalDevice> device_;
-    std::unique_ptr<MemoryAllocator> allocator_;
-    std::unique_ptr<Surface> surface_;
-    std::unique_ptr<Swapchain> swapchain_;
-    std::unique_ptr<DescriptorContainer> descriptor_container_;
+    uptr<vk::raii::Context> context_;
+    uptr<Instance> instance_;
+    uptr<PhysicalDevice> physical_device_;
+    uptr<LogicalDevice> device_;
+    uptr<MemoryAllocator> allocator_;
+    uptr<Surface> surface_;
+    uptr<Swapchain> swapchain_;
+    uptr<DescriptorContainer> descriptor_container_;
   }
 
   void init() {

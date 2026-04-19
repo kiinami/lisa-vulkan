@@ -6,7 +6,7 @@
 
 namespace lisa::resources::context {
   namespace {
-    std::unique_ptr<systems::resources::ResourceManager> manager_;
+    uptr<systems::resources::ResourceManager> manager_;
   }
 
   void init() {

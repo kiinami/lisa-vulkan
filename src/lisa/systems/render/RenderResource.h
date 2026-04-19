@@ -8,33 +8,25 @@
 #include "graphics/images/Image.h"
 #include "utils/common.h"
 
+#include <utility>
+
 namespace lisa::systems::render {
+  struct RenderResourceDesc {
+    str type;
+  };
 
   class RenderResource {
   public:
-    RenderResource(
-      const str& name,
-      graphics::ImageFormat format,
-      const vec3& size,
-      vk::ImageUsageFlags usage
-    );
-    ~RenderResource() = default;
+    RenderResource() = default;
 
-    RenderResource(const RenderResource&) = delete;
-    RenderResource& operator=(const RenderResource&) = delete;
+    explicit RenderResource(str id) : id_(std::move(id)) {}
 
-    RenderResource(RenderResource&&) noexcept = default;
-    RenderResource& operator=(RenderResource&&) noexcept = default;
+    virtual ~RenderResource() = default;
 
-    const str& name() const { return name_; }
-
-    graphics::Image& image() { return image_; }
-
-    const graphics::Image& image() const { return image_; }
+    virtual str type() const = 0;
 
   private:
-    str name_;
-    graphics::Image image_;
+    str id_;
   };
 
 }

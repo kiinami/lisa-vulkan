@@ -18,8 +18,8 @@
 #include <sys/stat.h>
 
 namespace lisa::systems::render {
-  Renderer::Renderer(Rendergraph&& graph) :
-    graph_(std::move(graph)),
+  Renderer::Renderer(const str& graph_filepath) :
+    graph_(graph_filepath),
     cmd_buffer_(graphics::context::device().cmd_buffer()),
     swapchain_(graphics::context::swapchain()) {
     constexpr vk::BufferUsageFlags usage =
@@ -173,7 +173,7 @@ namespace lisa::systems::render {
     );
 
     const auto swapchain_image = swapchain_.copy(
-      graph_.get_resource("FinalTarget")->image(),
+      graph_.output_resource()->image(),
       cmd_buffer_,
       available_s_[current_frame_]
     );

@@ -12,7 +12,7 @@
 
 namespace lisa::window::context {
   namespace {
-    std::unique_ptr<Window> window_;
+    uptr<Window> window_;
     bool should_close_ = false;
   }
 
