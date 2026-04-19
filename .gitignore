@@ -243,6 +243,7 @@ tutorial/.github/**
 .idea
 cmake-build*
 AGENTS.md
+TODO.md
 docs
 examples
 

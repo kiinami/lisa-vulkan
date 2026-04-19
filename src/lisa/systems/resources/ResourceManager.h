@@ -5,7 +5,6 @@
 #ifndef LISA_RESOURCEMANAGER_H
 #define LISA_RESOURCEMANAGER_H
 #include "Resource.h"
-#include "ResourceHandle.h"
 #include "utils/common.h"
 
 #include <memory>
@@ -17,6 +16,8 @@
 namespace lisa::systems::resources {
   template<typename T>
   concept ResourceDerived = std::derived_from<T, Resource>;
+
+  template<typename T> class ResourceHandle;
 
   class ResourceManager {
   public:
@@ -78,86 +79,19 @@ namespace lisa::systems::resources {
   template<ResourceDerived T> void ResourceManager::add_ref(const str& id) {
     auto& type_resources = resources_[std::type_index(typeid(T))];
     if (const auto it = type_resources.find(id); it != type_resources.end())
-      it->second.references++;
+      ++it->second.references;
   }
 
   template<ResourceDerived T> void ResourceManager::release(const str& id) {
     auto& type_resources = resources_[std::type_index(typeid(T))];
     if (const auto it = type_resources.find(id); it != type_resources.end()) {
-      it->second.references--;
+      --it->second.references;
       if (it->second.references <= 0) {
         dead_resources_.push_back(std::move(it->second.resource));
         type_resources.erase(it);
       }
     }
   }
-
-  // =========================================================================
-  // ResourceHandle inline implementations
-  // =========================================================================
-  template<typename T>
-  ResourceHandle<T>::ResourceHandle() : manager_(nullptr) {}
-
-  template<typename T>
-  ResourceHandle<T>::ResourceHandle(const str& id, ResourceManager* manager) :
-    id_(id),
-    manager_(manager) {}
-
-  template<typename T> ResourceHandle<T>::~ResourceHandle() {
-    if (manager_ && !id_.empty()) manager_->release<T>(id_);
-  }
-
-  template<typename T>
-  ResourceHandle<T>::ResourceHandle(const ResourceHandle& other) :
-    id_(other.id_),
-    manager_(other.manager_) {
-    if (manager_ && !id_.empty()) manager_->add_ref<T>(id_);
-  }
-
-  template<typename T>
-  ResourceHandle<T>& ResourceHandle<T>::operator=(const ResourceHandle& other) {
-    if (this != &other) {
-      if (manager_ && !id_.empty()) manager_->release<T>(id_);
-      id_ = other.id_;
-      manager_ = other.manager_;
-      if (manager_ && !id_.empty()) manager_->add_ref<T>(id_);
-    }
-    return *this;
-  }
-
-  template<typename T>
-  ResourceHandle<T>::ResourceHandle(ResourceHandle&& other) noexcept :
-    id_(std::move(other.id_)),
-    manager_(other.manager_) {
-    other.manager_ = nullptr;
-    other.id_.clear();
-  }
-
-  template<typename T>
-  ResourceHandle<T>&
-    ResourceHandle<T>::operator=(ResourceHandle&& other) noexcept {
-    if (this != &other) {
-      if (manager_ && !id_.empty()) manager_->release<T>(id_);
-      id_ = std::move(other.id_);
-      manager_ = other.manager_;
-      other.manager_ = nullptr;
-      other.id_.clear();
-    }
-    return *this;
-  }
-
-  template<typename T> T* ResourceHandle<T>::operator->() const {
-    return manager_ ? manager_->get<T>(id_) : nullptr;
-  }
-
-  template<typename T> T* ResourceHandle<T>::get() const {
-    return manager_ ? manager_->get<T>(id_) : nullptr;
-  }
-
-  template<typename T> ResourceHandle<T>::operator bool() const {
-    return manager_ != nullptr && manager_->exists<T>(id_);
-  }
-
 }
 
 #endif // LISA_RESOURCEMANAGER_H
