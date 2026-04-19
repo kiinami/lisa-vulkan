@@ -26,7 +26,7 @@ namespace lisa::graphics::constants {
 
       constexpr VpCapabilitiesCreateInfo createInfo{
         .flags = VP_PROFILE_CREATE_STATIC_BIT,
-        .apiVersion = vk::ApiVersion11,
+        .apiVersion = vk::ApiVersion13,
         .pVulkanFunctions = nullptr
       };
 

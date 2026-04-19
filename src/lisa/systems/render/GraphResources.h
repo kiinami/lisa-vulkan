@@ -44,7 +44,19 @@ namespace lisa::systems::render {
         {"final",
          {vk::Format::eR8G8B8A8Unorm,
           vk::ImageUsageFlagBits::eColorAttachment |
-            vk::ImageUsageFlagBits::eTransferSrc}}
+            vk::ImageUsageFlagBits::eTransferSrc}},
+        {"normal",
+         {vk::Format::eR16G16B16A16Sfloat,
+          vk::ImageUsageFlagBits::eColorAttachment |
+            vk::ImageUsageFlagBits::eSampled}},
+        {"position",
+         {vk::Format::eR32G32B32A32Sfloat,
+          vk::ImageUsageFlagBits::eColorAttachment |
+            vk::ImageUsageFlagBits::eSampled}},
+        {"material",
+         {vk::Format::eR8G8B8A8Unorm,
+          vk::ImageUsageFlagBits::eColorAttachment |
+            vk::ImageUsageFlagBits::eSampled}},
       };
 
       if (const auto it = aliases.find(type); it != aliases.end())

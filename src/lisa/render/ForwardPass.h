@@ -9,7 +9,7 @@
 #include "systems/render/RenderPass.h"
 #include "systems/resources/ResourceHandle.h"
 
-namespace lisa::render::passes {
+namespace lisa::render {
   class ForwardPass : public systems::render::RenderPass {
   public:
     static constexpr auto TYPE_ID = "forward";

@@ -27,7 +27,8 @@ namespace lisa::graphics {
     const resources::Shader& shader,
     bool depth_test_enable,
     const vector<vk::Format>& color_attachment_formats,
-    vk::Format depth_attachment_format
+    vk::Format depth_attachment_format,
+    bool empty_vertex_input
   ) {
     layout_ = create_layout(descriptor_set_layout, push_constant_range);
 
@@ -40,11 +41,14 @@ namespace lisa::graphics {
       resources::Vertex::attribute_descriptions(vertex_binding.binding);
 
     const vk::PipelineVertexInputStateCreateInfo vertex_input_state{
-      .vertexBindingDescriptionCount = 1,
-      .pVertexBindingDescriptions = &vertex_binding,
+      .vertexBindingDescriptionCount = empty_vertex_input ? 0u : 1u,
+      .pVertexBindingDescriptions =
+        empty_vertex_input ? nullptr : &vertex_binding,
       .vertexAttributeDescriptionCount =
-        static_cast<uint32_t>(vertex_attributes.size()),
-      .pVertexAttributeDescriptions = vertex_attributes.data()
+        empty_vertex_input ? 0u
+                           : static_cast<uint32_t>(vertex_attributes.size()),
+      .pVertexAttributeDescriptions =
+        empty_vertex_input ? nullptr : vertex_attributes.data()
     };
 
     const vk::PipelineInputAssemblyStateCreateInfo input_assembly_state{

@@ -35,23 +35,32 @@ namespace lisa::graphics {
       .pQueuePriorities = &queue_priority
     };
 
-    const char* device_extensions[] = {vk::KHRSwapchainExtensionName};
+    vector device_extensions = {
+      vk::KHRSwapchainExtensionName, vk::KHRShaderDrawParametersExtensionName
+    };
+
+    VkPhysicalDeviceVulkan11Features vulkan11_features{
+      .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES,
+      .pNext = nullptr,
+      .shaderDrawParameters = VK_TRUE
+    };
 
     VkDeviceCreateInfo vk_device_ci{
       .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
+      .pNext = &vulkan11_features,
       .queueCreateInfoCount = 1,
       .pQueueCreateInfos = &device_queue_ci,
-      .enabledExtensionCount = 1,
-      .ppEnabledExtensionNames = device_extensions,
+      .enabledExtensionCount = static_cast<uint32>(device_extensions.size()),
+      .ppEnabledExtensionNames = device_extensions.data(),
     };
 
     const VpDeviceCreateInfo device_ci{
       .pCreateInfo = &vk_device_ci,
       .enabledFullProfileCount = 1,
-      .pEnabledFullProfiles = &constants::PROFILE
+      .pEnabledFullProfiles = &constants::PROFILE,
     };
     VkDevice dev;
-    lisa::utils::chk(vpCreateDevice(
+    utils::chk(vpCreateDevice(
       constants::capabilities(), *physical_device, &device_ci, nullptr, &dev
     ));
     device_ = vk::raii::Device{physical_device, vk::Device{dev}};

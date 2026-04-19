@@ -21,7 +21,8 @@ namespace lisa::graphics {
       const resources::Shader& shader,
       bool depth_test_enable,
       const vector<vk::Format>& color_attachment_formats,
-      vk::Format depth_attachment_format = vk::Format::eUndefined
+      vk::Format depth_attachment_format = vk::Format::eUndefined,
+      bool empty_vertex_input = false
     );
     ~Pipeline() = default;
 

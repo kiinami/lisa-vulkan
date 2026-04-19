@@ -1,8 +1,8 @@
 //
-// Created by kinami on 4/18/26.
+// Created by kinami on 4/19/26.
 //
 
-#include "ForwardPass.h"
+#include "GeometryPass.h"
 
 #include "components/MeshComponent.h"
 #include "components/TextureComponent.h"
@@ -12,22 +12,45 @@
 #include "systems/render/Rendergraph.h"
 
 namespace lisa::render {
-  REGISTER_RENDER_PASS(ForwardPass);
+  REGISTER_RENDER_PASS(GeometryPass);
 
-  void ForwardPass::setup(
+  void GeometryPass::setup(
     systems::render::Rendergraph& graph, const pugi::xml_node& node
   ) {
-    str color_ref = node.find_child_by_attribute("output", "id", "color")
-                      .attribute("ref")
-                      .value();
-    str depth_ref = node.find_child_by_attribute("output", "id", "depth")
-                      .attribute("ref")
-                      .value();
+    auto albedo_fmt =
+      graph
+        .get_resource(node.find_child_by_attribute("output", "id", "albedo")
+                        .attribute("ref")
+                        .value())
+        .format();
+    auto normal_fmt =
+      graph
+        .get_resource(node.find_child_by_attribute("output", "id", "normal")
+                        .attribute("ref")
+                        .value())
+        .format();
+    auto position_fmt =
+      graph
+        .get_resource(node.find_child_by_attribute("output", "id", "position")
+                        .attribute("ref")
+                        .value())
+        .format();
+    auto material_fmt =
+      graph
+        .get_resource(node.find_child_by_attribute("output", "id", "material")
+                        .attribute("ref")
+                        .value())
+        .format();
+    auto depth_fmt =
+      graph
+        .get_resource(node.find_child_by_attribute("output", "id", "depth")
+                        .attribute("ref")
+                        .value())
+        .format();
 
-    auto color_format = graph.get_resource(color_ref).format();
-    auto depth_format = graph.get_resource(depth_ref).format();
-
-    shader_ = resources::context::manager().load<resources::Shader>("shader");
+    shader_ = resources::context::manager().load<resources::Shader>(
+      "geometry.deferred"
+    );
     pipeline_ = std::make_unique<graphics::Pipeline>(
       graphics::context::descriptor_container().layout(),
       vk::PushConstantRange{
@@ -38,12 +61,12 @@ namespace lisa::render {
       },
       *shader_.get(),
       true,
-      vector<vk::Format>{color_format},
-      depth_format
+      vector<vk::Format>{albedo_fmt, normal_fmt, position_fmt, material_fmt},
+      depth_fmt
     );
   }
 
-  void ForwardPass::execute(const systems::render::RenderContext& ctx) {
+  void GeometryPass::execute(const systems::render::RenderContext& ctx) {
     ctx.cmdb->bindPipeline(vk::PipelineBindPoint::eGraphics, **pipeline_);
     ctx.cmdb->bindDescriptorSets(
       vk::PipelineBindPoint::eGraphics,

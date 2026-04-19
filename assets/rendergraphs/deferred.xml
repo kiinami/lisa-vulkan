@@ -1,16 +1,23 @@
-<rendergraph output="composition.final">
+<rendergraph output="final">
+    <resource id="albedo" type="color"/>
+    <resource id="normal" type="normal"/>
+    <resource id="position" type="position"/>
+    <resource id="material" type="material"/>
+    <resource id="final" type="final"/>
+    <resource id="depth" type="depth"/>
+
     <pass id="geometry" type="deferred::GeometryPass">
-        <output id="albedo" maps_to="albedo"/>
-        <output id="normal" maps_to="normal"/>
-        <output id="position" maps_to="position"/>
-        <output id="material" maps_to="material"/>
-        <output id="depth" maps_to="depth"/>
+        <output id="albedo" ref="albedo" usage="ColorAttachmentWrite"/>
+        <output id="normal" ref="normal" usage="ColorAttachmentWrite"/>
+        <output id="position" ref="position" usage="ColorAttachmentWrite"/>
+        <output id="material" ref="material" usage="ColorAttachmentWrite"/>
+        <output id="depth" ref="depth" usage="DepthStencilAttachmentWrite"/>
     </pass>
     <pass id="composition" type="deferred::CompositionPass">
-        <input id="geometry.albedo" maps_to="albedo"/>
-        <input id="geometry.normal" maps_to="normal"/>
-        <input id="geometry.position" maps_to="position"/>
-        <input id="geometry.material" maps_to="material"/>
-        <output id="final" maps_to="color"/>
+        <input id="albedo" ref="albedo" usage="SampledFragment"/>
+        <input id="normal" ref="normal" usage="SampledFragment"/>
+        <input id="position" ref="position" usage="SampledFragment"/>
+        <input id="material" ref="material" usage="SampledFragment"/>
+        <output id="final" ref="final" usage="ColorAttachmentWrite"/>
     </pass>
 </rendergraph>

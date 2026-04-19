@@ -66,7 +66,7 @@ int main(const int argc, char** argv) {
       auto scene = scene::Scene(scene_filepath);
 
       auto renderer = std::make_unique<systems::render::Renderer>(
-        "assets/rendergraphs/forward.xml"
+        "assets/rendergraphs/deferred.xml"
       );
 
       while (!window::context::should_close()) {

@@ -133,6 +133,10 @@ src = files(
 
     'src/lisa/render/ForwardPass.h',
     'src/lisa/render/ForwardPass.cpp',
+    'src/lisa/render/GeometryPass.h',
+    'src/lisa/render/GeometryPass.cpp',
+    'src/lisa/render/CompositionPass.h',
+    'src/lisa/render/CompositionPass.cpp',
 
     'src/lisa/scene/Scene.h',
     'src/lisa/scene/Scene.cpp',
