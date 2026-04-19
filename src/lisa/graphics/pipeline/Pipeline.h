@@ -19,8 +19,9 @@ namespace lisa::graphics {
       vk::DescriptorSetLayout descriptor_set_layout,
       vk::PushConstantRange push_constant_range,
       const resources::Shader& shader,
-      bool is_stencil,
-      ImageFormat format
+      bool depth_test_enable,
+      const vector<vk::Format>& color_attachment_formats,
+      vk::Format depth_attachment_format = vk::Format::eUndefined
     );
     ~Pipeline() = default;
 

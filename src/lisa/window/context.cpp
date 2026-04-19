@@ -45,6 +45,11 @@ namespace lisa::window::context {
 
   uint32 window_height() { return window_size().y; }
 
+  vec2 from_scale(const float scale) {
+    auto [x, y] = window_.get()->size();
+    return {std::floor(x * scale), std::floor(y * scale)};
+  }
+
   bool should_close() { return should_close_; }
 
   void poll_events() {

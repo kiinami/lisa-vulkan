@@ -9,11 +9,50 @@
 #include "components/TransformComponent.h"
 #include "components/context.h"
 #include "systems/render/RenderPassRegistry.h"
+#include "systems/render/Rendergraph.h"
 
 namespace lisa::render::passes {
   REGISTER_RENDER_PASS(ForwardPass);
 
-  void ForwardPass::do_render(const systems::render::RenderContext& ctx) {
+  void ForwardPass::setup(
+    systems::render::Rendergraph& graph, const pugi::xml_node& node
+  ) {
+    str color_ref = node.find_child_by_attribute("output", "id", "color")
+                      .attribute("ref")
+                      .value();
+    str depth_ref = node.find_child_by_attribute("output", "id", "depth")
+                      .attribute("ref")
+                      .value();
+
+    auto color_format = graph.get_resource(color_ref).format();
+    auto depth_format = graph.get_resource(depth_ref).format();
+
+    shader_ = resources::context::manager().load<resources::Shader>("shader");
+    pipeline_ = std::make_unique<graphics::Pipeline>(
+      graphics::context::descriptor_container().layout(),
+      vk::PushConstantRange{
+        .stageFlags =
+          vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment,
+        .offset = 0,
+        .size = sizeof(systems::render::PushConstants)
+      },
+      *shader_.get(),
+      true,
+      vector<vk::Format>{color_format},
+      depth_format
+    );
+  }
+
+  void ForwardPass::execute(const systems::render::RenderContext& ctx) {
+    ctx.cmdb->bindPipeline(vk::PipelineBindPoint::eGraphics, **pipeline_);
+    ctx.cmdb->bindDescriptorSets(
+      vk::PipelineBindPoint::eGraphics,
+      pipeline_->layout(),
+      0,
+      {*graphics::context::descriptor_container().set()},
+      {}
+    );
+
     const auto view = components::context::registry()
                         ->view<
                           const components::TransformComponent,

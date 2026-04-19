@@ -5,7 +5,6 @@
 #include "Pipeline.h"
 
 #include "graphics/context.h"
-#include "graphics/images/ImageFormat.h"
 #include "resources/Vertex.h"
 
 namespace lisa::graphics {
@@ -23,11 +22,12 @@ namespace lisa::graphics {
   }
 
   Pipeline::Pipeline(
-    const vk::DescriptorSetLayout descriptor_set_layout,
-    const vk::PushConstantRange push_constant_range,
+    vk::DescriptorSetLayout descriptor_set_layout,
+    vk::PushConstantRange push_constant_range,
     const resources::Shader& shader,
-    bool is_stencil,
-    ImageFormat format
+    bool depth_test_enable,
+    const vector<vk::Format>& color_attachment_formats,
+    vk::Format depth_attachment_format
   ) {
     layout_ = create_layout(descriptor_set_layout, push_constant_range);
 
@@ -84,29 +84,31 @@ namespace lisa::graphics {
       .rasterizationSamples = vk::SampleCountFlagBits::e1
     };
 
+    vector blend_attachments(
+      color_attachment_formats.size(),
+      vk::PipelineColorBlendAttachmentState{
+        .colorWriteMask = vk::ColorComponentFlagBits::eR |
+                          vk::ColorComponentFlagBits::eG |
+                          vk::ColorComponentFlagBits::eB |
+                          vk::ColorComponentFlagBits::eA
+      }
+    );
+    const vk::PipelineColorBlendStateCreateInfo color_blend_state{
+      .attachmentCount = static_cast<uint32>(blend_attachments.size()),
+      .pAttachments = blend_attachments.data()
+    };
+
     const vk::PipelineDepthStencilStateCreateInfo depth_stencil_state{
-      .depthTestEnable = static_cast<vk::Bool32>(is_stencil),
-      .depthWriteEnable = static_cast<vk::Bool32>(is_stencil),
+      .depthTestEnable = static_cast<vk::Bool32>(depth_test_enable),
+      .depthWriteEnable = static_cast<vk::Bool32>(depth_test_enable),
       .depthCompareOp = vk::CompareOp::eLessOrEqual
     };
 
-    const vk::PipelineColorBlendAttachmentState blend_attachment{
-      .colorWriteMask = vk::ColorComponentFlagBits::eR |
-                        vk::ColorComponentFlagBits::eG |
-                        vk::ColorComponentFlagBits::eB |
-                        vk::ColorComponentFlagBits::eA
-    };
-    const vk::PipelineColorBlendStateCreateInfo color_blend_state{
-      .attachmentCount = 1, .pAttachments = &blend_attachment
-    };
-
-    vk::Format depth_format =
-      is_stencil ? vk::Format::eD32Sfloat : vk::Format::eUndefined;
-
     const vk::PipelineRenderingCreateInfo rendering_ci{
-      .colorAttachmentCount = 1,
-      .pColorAttachmentFormats = *format,
-      .depthAttachmentFormat = depth_format
+      .colorAttachmentCount =
+        static_cast<uint32>(color_attachment_formats.size()),
+      .pColorAttachmentFormats = color_attachment_formats.data(),
+      .depthAttachmentFormat = depth_attachment_format
     };
 
     const vk::GraphicsPipelineCreateInfo pipeline_ci{

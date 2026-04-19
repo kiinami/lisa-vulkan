@@ -1,16 +1,16 @@
 <rendergraph output="composition.final">
     <pass id="geometry" type="deferred::GeometryPass">
-        <output id="albedo" type="color"/>
-        <output id="normal" type="color"/>
-        <output id="position" type="color"/>
-        <output id="material" type="color"/>
-        <output id="depth" type="depth"/>
+        <output id="albedo" maps_to="albedo"/>
+        <output id="normal" maps_to="normal"/>
+        <output id="position" maps_to="position"/>
+        <output id="material" maps_to="material"/>
+        <output id="depth" maps_to="depth"/>
     </pass>
     <pass id="composition" type="deferred::CompositionPass">
-        <input id="geometry.albedo"/>
-        <input id="geometry.normal"/>
-        <input id="geometry.position"/>
-        <input id="geometry.material"/>
-        <output id="final" type="color"/>
+        <input id="geometry.albedo" maps_to="albedo"/>
+        <input id="geometry.normal" maps_to="normal"/>
+        <input id="geometry.position" maps_to="position"/>
+        <input id="geometry.material" maps_to="material"/>
+        <output id="final" maps_to="color"/>
     </pass>
 </rendergraph>

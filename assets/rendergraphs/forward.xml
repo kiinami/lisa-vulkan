@@ -1,6 +1,9 @@
-<rendergraph output="forward.final">
+<rendergraph output="color">
+    <resource id="color" type="final"/>
+    <resource id="depth" type="depth"/>
+
     <pass id="forward" type="forward">
-        <output id="final" maps_to="color"/>
-        <output id="depth" maps_to="depth"/>
+        <output id="color" ref="color" usage="ColorAttachmentWrite"/>
+        <output id="depth" ref="depth" usage="DepthStencilAttachmentWrite"/>
     </pass>
 </rendergraph>

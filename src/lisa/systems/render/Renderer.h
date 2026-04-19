@@ -5,8 +5,6 @@
 #ifndef LISA_VULKAN_RENDERER_H
 #define LISA_VULKAN_RENDERER_H
 
-#include "RenderPass.h"
-#include "RenderResource.h"
 #include "Rendergraph.h"
 #include "graphics/buffer/Buffer.h"
 #include "graphics/constants.h"
@@ -16,7 +14,6 @@
 #include "scene/Scene.h"
 #include "utils/common.h"
 
-#include <vulkan/vulkan_raii.hpp>
 
 namespace lisa::systems::render {
 

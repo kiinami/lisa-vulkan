@@ -27,6 +27,7 @@ namespace lisa {
   typedef std::filesystem::path path;
   template<typename T> using uptr = std::unique_ptr<T>;
   template<typename T> using uset = std::unordered_set<T>;
+  template<typename T> using optional = std::optional<T>;
 
   typedef glm::vec2 vec2;
   typedef glm::vec3 vec3;

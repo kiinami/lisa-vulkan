@@ -4,9 +4,9 @@
 
 #ifndef LISA_VULKAN_RENDERGRAPH_H
 #define LISA_VULKAN_RENDERGRAPH_H
-#include "ImageRenderResource.h"
+#include "GraphResources.h"
 #include "RenderPass.h"
-#include "RenderResource.h"
+#include "graphics/commands/CommandBuffer.h"
 #include "utils/common.h"
 
 namespace lisa::systems::render {
@@ -24,12 +24,8 @@ namespace lisa::systems::render {
 
     explicit Rendergraph(const path& filepath);
 
-    RenderResource* get_resource(const str& id) const;
-
-    const ImageRenderResource* output_resource() const {
-      return static_cast<const ImageRenderResource*>(
-        resources_.at(output_id_).get()
-      );
+    const ImageGraphResource& get_resource(const str& ref) const {
+      return images_[resource_id_map_.at(ref)];
     }
 
     void render(
@@ -39,13 +35,27 @@ namespace lisa::systems::render {
       vk::DeviceAddress object_bda
     );
 
-  private:
-    umap<str, uptr<RenderResource>> resources_;
-    vector<uptr<RenderPass>> passes_;
-    vector<size> order_;
-    str output_id_;
+    const ImageGraphResource& output_resource() const {
+      return images_[output_handle_];
+    }
 
-    void compile();
+  private:
+    struct ExecutionNode {
+      RenderPass* pass;
+      vector<vk::ImageMemoryBarrier2> barriers;
+      vector<vk::RenderingAttachmentInfo> color_attachments;
+      optional<vk::RenderingAttachmentInfo> depth_attachment;
+    };
+
+    vector<ImageGraphResource> images_;
+    umap<str, GraphResourceHandle> resource_id_map_;
+    vector<uptr<RenderPass>> passes_;
+    vector<ExecutionNode> nodes_;
+    GraphResourceHandle output_handle_;
+
+    void allocate_resources(const pugi::xml_node& doc_element);
+    void allocate_passes(const pugi::xml_node& doc_element);
+    void compile_graph(const pugi::xml_node& doc_element);
   };
 
 }

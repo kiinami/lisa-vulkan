@@ -20,6 +20,8 @@ add_project_arguments('-DVP_USE_OBJECT', language: 'cpp')
 add_project_arguments('-DGLM_FORCE_RADIANS', language: 'cpp')
 add_project_arguments('-DGLM_FORCE_DEPTH_ZERO_TO_ONE', language: 'cpp')
 add_project_arguments('-DGLM_ENABLE_EXPERIMENTAL', language : 'cpp')
+add_project_arguments('-DMAGIC_ENUM_RANGE_MIN=0', language : 'cpp')
+add_project_arguments('-DMAGIC_ENUM_RANGE_MAX=2000', language : 'cpp')
 
 ###############################################################################
 # Dependencies
@@ -58,6 +60,7 @@ cli11 = dependency('CLI11', required: true)
 entt = dependency('entt', required : true)
 glm = dependency('glm', required: true)
 ktx = dependency('ktx', required: true)
+magic_enum = dependency('magic_enum', required : true)
 pugixml = dependency('pugixml', required : true)
 sdl3 = dependency('sdl3', required: true)
 sdl3pp = dependency('sdl3pp', required: true)
@@ -128,15 +131,8 @@ src = files(
     'src/lisa/resources/Texture.cpp',
     'src/lisa/resources/Vertex.h',
 
-    'src/lisa/render/passes/ForwardPass.h',
-    'src/lisa/render/passes/ForwardPass.cpp',
-
-    'src/lisa/render/resources/ColorRenderResource.h',
-    'src/lisa/render/resources/ColorRenderResource.cpp',
-    'src/lisa/render/resources/FinalRenderResource.h',
-    'src/lisa/render/resources/FinalRenderResource.cpp',
-    'src/lisa/render/resources/DepthRenderResource.h',
-    'src/lisa/render/resources/DepthRenderResource.cpp',
+    'src/lisa/render/ForwardPass.h',
+    'src/lisa/render/ForwardPass.cpp',
 
     'src/lisa/scene/Scene.h',
     'src/lisa/scene/Scene.cpp',
@@ -171,11 +167,7 @@ src = files(
     'src/lisa/systems/render/RenderPass.h',
     'src/lisa/systems/render/RenderPass.cpp',
     'src/lisa/systems/render/RenderPassRegistry.h',
-    'src/lisa/systems/render/RenderResource.h',
-    'src/lisa/systems/render/RenderResource.cpp',
-    'src/lisa/systems/render/ImageRenderResource.h',
-    'src/lisa/systems/render/ImageRenderResource.cpp',
-    'src/lisa/systems/render/RenderResourceRegistry.h',
+    'src/lisa/systems/render/GraphResources.h',
     'src/lisa/systems/render/ShaderData.h',
 
     'src/lisa/systems/resources/Resource.h',
@@ -208,14 +200,14 @@ lisa_library = library(
     'lisa',
     sources: src,
     include_directories: inc,
-    dependencies : [entt, glm, ktx, pugixml, sdl3, sdl3pp, slang, spdlog, tinyobjloader, vulkan, vma, vma_hpp],
+    dependencies : [entt, glm, ktx, magic_enum, pugixml, sdl3, sdl3pp, slang, spdlog, tinyobjloader, vulkan, vma, vma_hpp],
     cpp_pch: 'src/lisa/pch/pch.h'
 )
 
 lisa_dep = declare_dependency(
     include_directories: include_directories('src/lisa'),
     link_with: lisa_library,
-    dependencies : [entt, glm, ktx, pugixml, sdl3, sdl3pp, slang, spdlog, tinyobjloader, vulkan, vma, vma_hpp]
+    dependencies : [entt, glm, ktx, magic_enum, pugixml, sdl3, sdl3pp, slang, spdlog, tinyobjloader, vulkan, vma, vma_hpp]
 )
 
 ###############################################################################

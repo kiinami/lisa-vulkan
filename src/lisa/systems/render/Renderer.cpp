@@ -173,8 +173,7 @@ namespace lisa::systems::render {
     );
 
     const auto swapchain_image = swapchain_.copy(
-      graph_.output_resource()->image(),
-      cmd_buffer_,
+      graph_.output_resource().image, cmd_buffer_,
       available_s_[current_frame_]
     );
 
