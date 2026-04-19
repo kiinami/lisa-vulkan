@@ -16,12 +16,14 @@ namespace lisa::resources {
 
   class Shader : public systems::resources::Resource {
   public:
+    inline static const path SHADERS_PATH = "src/lisa/shaders";
+
     struct ShaderStage {
       vk::ShaderStageFlagBits stage;
       const char* entry_point;
     };
 
-    explicit Shader(const str& id) : Resource(id) {}
+    explicit Shader(const path& filepath) : Resource(filepath) {}
 
     const vk::raii::ShaderModule& module() const { return module_; }
 
@@ -40,7 +42,6 @@ namespace lisa::resources {
     static const Slang::ComPtr<slang::IGlobalSession>& get_global_session();
     static Slang::ComPtr<slang::ISession> create_session();
   };
-
 }
 
 #endif // LISA_VULKAN_SHADER_H

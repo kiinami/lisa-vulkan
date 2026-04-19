@@ -23,7 +23,7 @@ namespace lisa::render {
         .format();
 
     shader_ = resources::context::manager().load<resources::Shader>(
-      "composition.deferred"
+      "composition.deferred.slang"
     );
 
     pipeline_ = std::make_unique<graphics::Pipeline>(

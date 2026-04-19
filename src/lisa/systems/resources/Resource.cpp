@@ -8,9 +8,9 @@ namespace lisa::systems::resources {
   bool Resource::load() {
     loaded_ = load_function();
     if (loaded_)
-      logging::trace("Loaded {} with ID '{}'", type_name(), id_);
+      logging::trace("Loaded {} from path '{}'", type_name(), path_);
     else
-      logging::error("{} with ID '{}' could not be loaded", type_name(), id_);
+      logging::error("{} in path '{}' could not be loaded", type_name(), path_);
     return loaded_;
   }
 }

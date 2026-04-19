@@ -11,11 +11,11 @@ namespace lisa::systems::resources {
 
   class Resource {
   public:
-    explicit Resource(const str& id) : id_(id) {}
+    explicit Resource(const path& filepath) : path_(filepath) {}
 
     virtual ~Resource() = default;
 
-    const str& id() const { return id_; }
+    const str& filepath() const { return path_; }
 
     bool is_loaded() const { return loaded_; }
 
@@ -27,7 +27,7 @@ namespace lisa::systems::resources {
     }
 
   protected:
-    str id_;
+    str path_;
     bool loaded_ = false;
 
     virtual bool load_function() = 0;

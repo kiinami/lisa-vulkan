@@ -16,7 +16,7 @@ namespace lisa::resources {
 
   class Texture : public systems::resources::Resource {
   public:
-    explicit Texture(const str& id) : Resource(id) {}
+    explicit Texture(const path& filepath) : Resource(filepath) {}
 
     ~Texture() override { unload(); }
 

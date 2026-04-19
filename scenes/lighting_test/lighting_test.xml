@@ -4,8 +4,8 @@
         <transform>
             <translate value="0, 0, 0"/>
         </transform>
-        <mesh type="obj" path="./models/suzanne.obj"/>
-        <texture path="./textures/suzanne0.ktx"/>
+        <mesh type="obj" path="models/suzanne.obj"/>
+        <texture path="textures/suzanne0.ktx"/>
     </entity>
 
     <entity name="monkey_left">
@@ -13,8 +13,8 @@
             <translate value="-3, 0, 0"/>
             <rotate axis="0, 1, 0" angle="45"/>
         </transform>
-        <mesh type="obj" path="./models/suzanne.obj"/>
-        <texture path="./textures/suzanne1.ktx"/>
+        <mesh type="obj" path="models/suzanne.obj"/>
+        <texture path="textures/suzanne1.ktx"/>
     </entity>
 
     <entity name="monkey_right">
@@ -22,8 +22,8 @@
             <translate value="3, 0, 0"/>
             <rotate axis="0, 1, 0" angle="-45"/>
         </transform>
-        <mesh type="obj" path="./models/suzanne.obj"/>
-        <texture path="./textures/suzanne2.ktx"/>
+        <mesh type="obj" path="models/suzanne.obj"/>
+        <texture path="textures/suzanne2.ktx"/>
     </entity>
 
     <!-- Camera -->

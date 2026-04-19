@@ -27,7 +27,8 @@ namespace lisa::render {
     auto color_format = graph.get_resource(color_ref).format();
     auto depth_format = graph.get_resource(depth_ref).format();
 
-    shader_ = resources::context::manager().load<resources::Shader>("shader");
+    shader_ =
+      resources::context::manager().load<resources::Shader>("forward.slang");
     pipeline_ = std::make_unique<graphics::Pipeline>(
       graphics::context::descriptor_container().layout(),
       vk::PushConstantRange{

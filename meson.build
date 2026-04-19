@@ -9,6 +9,12 @@ project(
 )
 
 ###############################################################################
+# Imports
+###############################################################################
+
+fs = import('fs')
+
+###############################################################################
 # Project arguments
 ###############################################################################
 
@@ -120,7 +126,6 @@ src = files(
     'src/lisa/graphics/sync/Semaphore.h',
     'src/lisa/graphics/sync/Semaphore.cpp',
 
-    'src/lisa/resources/constants.h',
     'src/lisa/resources/context.h',
     'src/lisa/resources/context.cpp',
     'src/lisa/resources/Mesh.h',
@@ -198,6 +203,11 @@ src = files(
 inc = include_directories('src/lisa')
 
 ###############################################################################
+# Shaders
+###############################################################################
+subdir('src/lisa/shaders')
+
+###############################################################################
 # Library definition
 ###############################################################################
 lisa_library = library(
@@ -222,16 +232,4 @@ lisa = executable(
     'src/main.cpp',
     install: true,
     dependencies: [cli11, lisa_dep]
-)
-
-###############################################################################
-# Assets
-###############################################################################
-install_subdir('assets', install_dir: get_option('bindir') / 'assets')
-
-run_command(
-    'cp', '-r',
-    meson.project_source_root() / 'assets',
-    meson.project_build_root() / 'assets',
-    check: false
 )

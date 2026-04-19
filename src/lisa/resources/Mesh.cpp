@@ -5,7 +5,6 @@
 #include "Mesh.h"
 
 #include "Vertex.h"
-#include "constants.h"
 #include "graphics/context.h"
 #include "tiny_obj_loader.h"
 #include "utils/chk.h"
@@ -15,15 +14,13 @@
 
 namespace lisa::resources {
   bool Mesh::load_function() {
-    const path filepath = resources::constants::MODELS_PATH / (id_ + ".obj");
-
     tinyobj::attrib_t attrib;
     vector<tinyobj::shape_t> shapes;
     vector<tinyobj::material_t> materials;
 
     utils::chk(
       tinyobj::LoadObj(
-        &attrib, &shapes, &materials, nullptr, nullptr, filepath.c_str()
+        &attrib, &shapes, &materials, nullptr, nullptr, path_.c_str()
       )
     );
 

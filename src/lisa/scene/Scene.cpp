@@ -15,18 +15,21 @@ namespace lisa::scene {
     const auto doc = utils::xml::read(filepath, "scene");
 
     const auto scene = doc.document_element();
+    const path base_path = filepath.parent_path();
 
     auto& reg = components::context::registry();
     for (const auto node : scene.children("entity")) {
       const auto entity = reg.create();
       for (auto child : node.children())
-        parse_component(entity, child);
+        parse_component(entity, child, base_path);
     }
 
     logging::debug("Scene loaded successfully with {} entities", reg->size());
   }
 
-  void Scene::parse_component(entt::entity e, const pugi::xml_node& node) {
+  void Scene::parse_component(
+    entt::entity e, const pugi::xml_node& node, const path& base_path
+  ) {
     auto type_id = entt::hashed_string(node.name());
     auto meta_type = entt::resolve(type_id);
 
@@ -38,12 +41,15 @@ namespace lisa::scene {
     auto instance = meta_type.construct();
 
     if (auto custom_parse_func = meta_type.func(entt::hashed_string("parse")))
-      custom_parse_func.invoke(instance, entt::forward_as_meta(node));
+      custom_parse_func.invoke(
+        instance, entt::forward_as_meta(node), entt::forward_as_meta(base_path)
+      );
     else {
       for (const auto& attr : node.attributes()) {
         auto prop_id = entt::hashed_string(attr.name());
         if (auto metadata = meta_type.data(prop_id)) {
-          if (auto value = parse_value_string(metadata.type(), attr.value()))
+          if (auto value =
+                parse_value_string(metadata.type(), attr.value(), base_path))
             metadata.set(instance, value);
         }
       }
@@ -58,13 +64,18 @@ namespace lisa::scene {
       );
   }
 
-  entt::meta_any
-    Scene::parse_value_string(const entt::meta_type& type, const str& value) {
+  entt::meta_any Scene::parse_value_string(
+    const entt::meta_type& type, const str& value, const path& base_path
+  ) {
     if (type == entt::resolve<float>()) return utils::xml::parse<float>(value);
     if (type == entt::resolve<int>()) return utils::xml::parse<int>(value);
     if (type == entt::resolve<bool>()) return utils::xml::parse<bool>(value);
     if (type == entt::resolve<str>()) return utils::xml::parse<str>(value);
-    if (type == entt::resolve<path>()) return utils::xml::parse<path>(value);
+    if (type == entt::resolve<path>()) {
+      auto p = utils::xml::parse<path>(value);
+      if (p.is_relative()) p = (base_path / p).lexically_normal();
+      return p;
+    }
     if (type == entt::resolve<vec3>()) return utils::xml::parse<vec3>(value);
     if (type == entt::resolve<rgb>()) return utils::xml::parse<rgb>(value);
     if (type == entt::resolve<vec4>()) return utils::xml::parse<vec4>(value);

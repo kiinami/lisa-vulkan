@@ -13,7 +13,7 @@ namespace lisa::resources {
 
   class Mesh : public systems::resources::Resource {
   public:
-    explicit Mesh(const str& id) : Resource(id) {}
+    explicit Mesh(const path& filepath) : Resource(filepath) {}
 
     const graphics::Buffer& vertex_buffer() const { return vertex_buffer_; }
 

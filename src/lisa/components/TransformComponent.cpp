@@ -24,7 +24,9 @@ namespace lisa::components {
     }();
   }
 
-  void TransformComponent::parse(const pugi::xml_node& node) {
+  void TransformComponent::parse(
+    const pugi::xml_node& node, const path& base_path
+  ) {
     mat4 mat{1.0f};
 
     for (const auto& op : node.children())
@@ -45,7 +47,8 @@ namespace lisa::components {
         );
       } else if (std::strcmp(op.name(), "scale") == 0) {
         mat = glm::scale(
-          mat, utils::xml::parse<vec3>(op.attribute("value").value()));
+          mat, utils::xml::parse<vec3>(op.attribute("value").value())
+        );
       } else if (std::strcmp(op.name(), "lookat") == 0) {
         auto origin = utils::xml::parse<vec3>(op.attribute("origin").value());
         auto target = utils::xml::parse<vec3>(op.attribute("target").value());

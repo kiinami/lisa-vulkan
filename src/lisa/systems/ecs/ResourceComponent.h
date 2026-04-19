@@ -15,10 +15,9 @@ namespace lisa::systems::ecs {
   template<typename T> struct ResourceComponent : Component {
     path filepath;
 
-    str id() const { return filepath.stem(); }
-
     T* resource() const {
-      if (!handle_) handle_ = lisa::resources::context::manager().load<T>(id());
+      if (!handle_)
+        handle_ = lisa::resources::context::manager().load<T>(filepath);
       return handle_.get();
     }
 

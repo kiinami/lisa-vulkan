@@ -4,18 +4,15 @@
 
 #include "components/context.h"
 #include "lisa/graphics/context.h"
-#include "lisa/graphics/descriptors/DescriptorContainer.h"
 #include "lisa/graphics/pipeline/Pipeline.h"
 #include "lisa/utils/logging.h"
 #include "resources/context.h"
 #include "scene/Scene.h"
 #include "systems/render/Renderer.h"
-#include "systems/render/Rendergraph.h"
 #include "systems/resources/ResourceManager.h"
 #include "window/context.h"
 
 #include <CLI/CLI.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 
 using namespace lisa;
 
@@ -66,7 +63,7 @@ int main(const int argc, char** argv) {
       auto scene = scene::Scene(scene_filepath);
 
       auto renderer = std::make_unique<systems::render::Renderer>(
-        "assets/rendergraphs/deferred.xml"
+        "../assets/rendergraphs/deferred.xml"
       );
 
       while (!window::context::should_close()) {

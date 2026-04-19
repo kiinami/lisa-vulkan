@@ -4,7 +4,6 @@
 
 #include "Texture.h"
 
-#include "constants.h"
 #include "graphics/buffer/Buffer.h"
 
 #include <cstring>
@@ -99,8 +98,7 @@ namespace lisa::resources {
   }
 
   bool Texture::load_function() {
-    const path filepath = constants::TEXTURES_PATH / (id_ + ".ktx");
-    const auto texture = load_from_file(filepath);
+    const auto texture = load_from_file(path_);
 
     const auto format = graphics::ImageFormat(ktxTexture_GetVkFormat(texture));
 

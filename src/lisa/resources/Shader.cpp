@@ -4,7 +4,6 @@
 
 #include "Shader.h"
 
-#include "constants.h"
 #include "graphics/context.h"
 #include "utils/logging.h"
 
@@ -29,7 +28,7 @@ namespace lisa::resources {
       {{slang::CompilerOptionName::EmitSpirvDirectly,
         {slang::CompilerOptionValueKind::Int, 1}}}
     );
-    auto search_path_str = constants::SHADERS_PATH.string();
+    const auto search_path_str = SHADERS_PATH.string();
     const char* search_paths[] = {search_path_str.c_str()};
 
     const slang::SessionDesc session_desc{
@@ -49,14 +48,14 @@ namespace lisa::resources {
   }
 
   bool Shader::load_function() {
-    const path filepath = constants::SHADERS_PATH / (id_ + ".slang");
+    const path filepath = SHADERS_PATH / path_;
 
     const auto session = create_session();
     Slang::ComPtr<ISlangBlob> load_diagnostics;
     const auto module =
-      session->loadModule(id_.c_str(), load_diagnostics.writeRef());
+      session->loadModule(filepath.c_str(), load_diagnostics.writeRef());
     if (!module) {
-      logging::error("Failed to load shader module: {}", id_);
+      logging::abort("Failed to load shader module at {}", filepath.c_str());
       return false;
     }
 
@@ -88,7 +87,7 @@ namespace lisa::resources {
     module_ = graphics::context::device()->createShaderModule(module_ci);
 
     slang::ShaderReflection* reflection = program->getLayout();
-    uint32 entry_point_count = reflection->getEntryPointCount();
+    const uint32 entry_point_count = reflection->getEntryPointCount();
 
     stages_.reserve(entry_point_count);
 
@@ -96,7 +95,7 @@ namespace lisa::resources {
       slang::EntryPointReflection* entry_point =
         reflection->getEntryPointByIndex(i);
 
-      SlangStage slang_stage = entry_point->getStage();
+      const SlangStage slang_stage = entry_point->getStage();
       const char* entry_name = entry_point->getNameOverride();
       vk::ShaderStageFlagBits vk_stage;
       switch (slang_stage) {

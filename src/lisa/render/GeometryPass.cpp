@@ -49,7 +49,7 @@ namespace lisa::render {
         .format();
 
     shader_ = resources::context::manager().load<resources::Shader>(
-      "geometry.deferred"
+      "geometry.deferred.slang"
     );
     pipeline_ = std::make_unique<graphics::Pipeline>(
       graphics::context::descriptor_container().layout(),
