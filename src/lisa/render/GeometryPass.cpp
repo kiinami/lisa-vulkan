@@ -79,12 +79,10 @@ namespace lisa::render {
     const auto view = components::context::registry()
                         ->view<
                           const components::TransformComponent,
-                          const components::MeshComponent,
-                          const components::TextureComponent>();
+                          const components::MeshComponent>();
 
     uint32 i = 0;
-    for (auto [entity, transform, mesh_component, texture_component] :
-         view.each()) {
+    for (auto [entity, transform, mesh_component] : view.each()) {
       const auto mesh = mesh_component.resource();
 
       vk::DeviceSize offset = 0;

@@ -7,6 +7,7 @@
 #include "ShaderData.h"
 #include "components/CameraComponent.h"
 #include "components/DirectionalLightComponent.h"
+#include "components/MaterialComponent.h"
 #include "components/MeshComponent.h"
 #include "components/PointLightComponent.h"
 #include "components/TextureComponent.h"
@@ -149,18 +150,36 @@ namespace lisa::systems::render {
       const auto view = components::context::registry()
                           ->view<
                             const components::TransformComponent,
-                            const components::MeshComponent,
-                            const components::TextureComponent>();
+                            const components::MeshComponent>();
       uint32 i = 0;
-      for (auto
-           [entity, transform_component, mesh_component, texture_component] :
-           view.each()) {
+      for (auto [entity, transform_component, mesh_component] : view.each()) {
         object_data[i].model =
           transform_component.matrix() *
           glm::rotate(mat4(1.0f), time_, vec3(0.0f, 1.0f, 0.0f));
         object_data[i].color = vec4(1.0f);
-        object_data[i].texture_index =
-          texture_component.resource()->descriptor_index();
+
+        const auto* texture_component =
+          components::context::registry()
+            ->try_get<components::TextureComponent>(entity);
+        if (texture_component)
+          object_data[i].texture_index =
+            texture_component->resource()->descriptor_index();
+        else
+          object_data[i].texture_index = std::numeric_limits<uint32>::max();
+
+        const auto* material_component =
+          components::context::registry()
+            ->try_get<components::MaterialComponent>(entity);
+        if (material_component) {
+          object_data[i].color = vec4(material_component->color, 1.0f);
+          object_data[i].roughness = material_component->roughness;
+          object_data[i].metallic = material_component->metallic;
+        } else {
+          object_data[i].color = vec4(1.0f);
+          object_data[i].roughness = 0.5f;
+          object_data[i].metallic = 0.0f;
+        }
+
         i++;
       }
     }
@@ -173,8 +192,7 @@ namespace lisa::systems::render {
     );
 
     const auto swapchain_image = swapchain_.copy(
-      graph_.output_resource().image, cmd_buffer_,
-      available_s_[current_frame_]
+      graph_.output_resource().image, cmd_buffer_, available_s_[current_frame_]
     );
 
     cmd_buffer_->end();

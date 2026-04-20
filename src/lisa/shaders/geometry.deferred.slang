@@ -43,6 +43,9 @@ struct ObjectData {
   float4x4 model;
   float4 color;
   uint32_t texture_index;
+  float roughness;
+  float metallic;
+  float2 padding;
 };
 
 struct PushConstants {
@@ -89,12 +92,16 @@ Vertex2Fragment vertex(Input input) {
 Output fragment(Vertex2Fragment input) {
   Output output;
 
-  float3 albedo = textures[input.texture_index].Sample(input.uv).rgb;
+  float4 base_color = push_constants.object_data->color;
+  float3 albedo = base_color.rgb;
+  if (input.texture_index != 0xFFFFFFFF) {
+    albedo *= textures[input.texture_index].Sample(input.uv).rgb;
+  }
 
   output.albedo = float4(albedo, 1.0);
   output.normal = float4(normalize(input.normal), 0.0);
   output.position = float4(input.world_position, 1.0);
-  output.material = float4(0.0, 0.0, 0.0, 1.0);
+  output.material = float4(push_constants.object_data->roughness, push_constants.object_data->metallic, 0.0, 1.0);
 
   return output;
 }

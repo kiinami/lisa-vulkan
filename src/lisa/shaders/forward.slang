@@ -3,18 +3,18 @@
 //
 
 struct Input {
-    float3 position;
-    float3 normal;
-    float2 uv;
+  float3 position;
+  float3 normal;
+  float2 uv;
 };
 
 Sampler2D textures[];
 
 struct PointLight {
-    float3 position;
-    float intensity;
-    float3 color;
-    float radius;
+  float3 position;
+  float intensity;
+  float3 color;
+  float radius;
 }
 
 struct DirLight {
@@ -25,59 +25,62 @@ struct DirLight {
 }
 
 struct GlobalData {
-    float4x4 view_projection;
-    float4x4 projection;
-    float4x4 view;
+  float4x4 view_projection;
+  float4x4 projection;
+  float4x4 view;
 
-    PointLight* point_lights;
-    uint32_t point_lights_count;
+  PointLight* point_lights;
+  uint32_t point_lights_count;
 
-    DirLight* dir_lights;
-    uint32_t dir_lights_count;
+  DirLight* dir_lights;
+  uint32_t dir_lights_count;
 
-    float3 camera_position;
-    float padding;
+  float3 camera_position;
+  float padding;
 };
 
 struct ObjectData {
-    float4x4 model;
-    float4 color;
-    uint32_t texture_index;
+  float4x4 model;
+  float4 color;
+  uint32_t texture_index;
+  float roughness;
+  float metallic;
+  float2 padding;
 };
 
 struct PushConstants {
-    GlobalData* global_data;
-    ObjectData* object_data;
+  GlobalData* global_data;
+  ObjectData* object_data;
 };
 
 [[vk::push_constant]]
 ConstantBuffer<PushConstants> push_constants;
 
 struct Vertex2Fragment {
-    float4 position : SV_POSITION;
-    float3 normal;
-    float3 world_position;
-    float2 uv;
-    uint32_t texture_index;
+  float4 position : SV_POSITION;
+  float3 normal;
+  float3 world_position;
+  float2 uv;
+  uint32_t texture_index;
 };
 
 [shader("vertex")]
 Vertex2Fragment vertex(Input input) {
-    Vertex2Fragment output;
+  Vertex2Fragment output;
 
-    float4x4 model = push_constants.object_data->model;
-    float4x4 view = push_constants.global_data->view;
-    float4x4 view_projection = push_constants.global_data->view_projection;
+  float4x4 model = push_constants.object_data->model;
+  float4x4 view = push_constants.global_data->view;
+  float4x4 view_projection = push_constants.global_data->view_projection;
 
-    float4 world_pos = mul(model, float4(input.position, 1.0));
+  float4 world_pos = mul(model, float4(input.position, 1.0));
 
-    output.position = mul(view_projection, world_pos);
-    output.world_position = world_pos.xyz;
-    output.normal = mul((float3x3) model, input.normal);
-    output.uv = input.uv;
-    output.texture_index = push_constants.object_data->texture_index;
+  output.position = mul(view_projection, world_pos);
+  output.world_position = world_pos.xyz;
+  output.normal = mul((float3x3) model, input.normal);
+  output.uv = input.uv;
+  output.texture_index = push_constants.object_data->texture_index;
 
-    return output;
+  return output;
 }
 
 [shader("fragment")]
@@ -86,7 +89,11 @@ float4 fragmentMain(Vertex2Fragment input) {
   float3 V = normalize(push_constants.global_data.camera_position - input.world_position);
 
   float3 shading = float3(0.0);
-  float3 albedo = textures[input.texture_index].Sample(input.uv).rgb;
+  float4 base_color = push_constants.object_data->color;
+  float3 albedo = base_color.rgb;
+  if (input.texture_index != 0xFFFFFFFF) {
+    albedo *= textures[input.texture_index].Sample(input.uv).rgb;
+  }
 
   // Point lights
   for (uint32_t i = 0; i < push_constants.global_data.point_lights_count; i++) {

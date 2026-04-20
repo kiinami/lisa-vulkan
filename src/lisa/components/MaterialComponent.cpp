@@ -13,13 +13,12 @@ namespace lisa::components {
     const bool registered = [] {
       using namespace entt::literals;
 
-      systems::ecs::reflect_component<BrdfComponent>("brdf"_hs)
-        .data<&BrdfComponent::color>("color"_hs)
-        .data<&BrdfComponent::roughness>("roughness"_hs)
-        .data<&BrdfComponent::metallic>("metallic"_hs)
-        .data<&BrdfComponent::specular>("specular"_hs);
+    systems::ecs::reflect_component<MaterialComponent>("material"_hs)
+      .data<&MaterialComponent::color>("color"_hs)
+      .data<&MaterialComponent::roughness>("roughness"_hs)
+      .data<&MaterialComponent::metallic>("metallic"_hs);
 
-      return true;
+    return true;
     }();
   }
 }

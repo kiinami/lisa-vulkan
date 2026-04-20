@@ -84,6 +84,9 @@ namespace lisa::systems::render {
     mat4 model;
     vec4 color;
     uint32 texture_index;
+    float roughness;
+    float metallic;
+    vec2 padding;
   };
 
   struct PushConstants {

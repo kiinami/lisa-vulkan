@@ -26,6 +26,7 @@ namespace lisa::components {
   mat4 CameraComponent::projection_matrix() const {
     if (dirty_) {
       matrix_ = glm::perspective(fov, aspect_ratio, near_plane, far_plane);
+      matrix_[1][1] *= -1.0f;
     }
     return matrix_;
   }

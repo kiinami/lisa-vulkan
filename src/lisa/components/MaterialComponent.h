@@ -8,11 +8,10 @@
 
 namespace lisa::components {
 
-  struct BrdfComponent : systems::ecs::Component {
+  struct MaterialComponent : systems::ecs::Component {
     rgb color;
     float roughness;
     float metallic;
-    float specular;
   };
 
 }
