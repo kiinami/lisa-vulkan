@@ -1,29 +1,11 @@
 <scene xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:noNamespaceSchemaLocation="../scene.xsd">
-    <entity name="monkey_center">
+    <entity name="cat">
         <transform>
             <translate value="0, 0, 0"/>
+            <scale value="10.0"/>
         </transform>
-        <mesh type="obj" path="models/suzanne.obj"/>
-        <texture path="textures/suzanne0.ktx"/>
-    </entity>
-
-    <entity name="monkey_left">
-        <transform>
-            <translate value="-3, 0, 0"/>
-            <rotate axis="0, 1, 0" angle="45"/>
-        </transform>
-        <mesh type="obj" path="models/suzanne.obj"/>
-        <texture path="textures/suzanne1.ktx"/>
-    </entity>
-
-    <entity name="monkey_right">
-        <transform>
-            <translate value="3, 0, 0"/>
-            <rotate axis="0, 1, 0" angle="-45"/>
-        </transform>
-        <mesh type="obj" path="models/suzanne.obj"/>
-        <texture path="textures/suzanne2.ktx"/>
+        <mesh type="obj" path="models/cat.obj"/>
     </entity>
 
     <entity name="main_camera">
@@ -32,6 +14,7 @@
         </transform>
         <camera/>
     </entity>
+
 
     <entity name="sun_light">
         <transform>

@@ -1,4 +1,6 @@
-<rendergraph output="final">
+<rendergraph xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:noNamespaceSchemaLocation="rendergraph.xsd"
+             output="final">
     <resource id="albedo" type="color"/>
     <resource id="normal" type="normal"/>
     <resource id="position" type="position"/>

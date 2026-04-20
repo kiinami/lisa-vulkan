@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+    <xs:simpleType name="floatList">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[-+]?\d*\.?\d+([eE][-+]?\d+)?([ ,]+[-+]?\d*\.?\d+([eE][-+]?\d+)?)*"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:element name="scene">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="entity" maxOccurs="unbounded">
+                    <xs:complexType>
+
+                        <xs:all>
+
+                            <!-- Transform -->
+                            <xs:element name="transform" minOccurs="0">
+                                <xs:complexType>
+                                    <xs:sequence maxOccurs="unbounded">
+                                        <xs:choice>
+
+                                            <xs:element name="translate">
+                                                <xs:complexType>
+                                                    <xs:attribute name="value" type="floatList" use="required"/>
+                                                </xs:complexType>
+                                            </xs:element>
+
+                                            <xs:element name="rotate">
+                                                <xs:complexType>
+                                                    <xs:attribute name="axis" type="floatList" use="required"/>
+                                                    <xs:attribute name="angle" type="xs:float" use="required"/>
+                                                </xs:complexType>
+                                            </xs:element>
+
+                                            <xs:element name="scale">
+                                                <xs:complexType>
+                                                    <xs:attribute name="value" type="floatList" use="required"/>
+                                                </xs:complexType>
+                                            </xs:element>
+
+                                            <xs:element name="lookat">
+                                                <xs:complexType>
+                                                    <xs:attribute name="origin" type="floatList" use="required"/>
+                                                    <xs:attribute name="target" type="floatList" use="required"/>
+                                                    <xs:attribute name="up" type="floatList" use="required"/>
+                                                </xs:complexType>
+                                            </xs:element>
+
+                                            <xs:element name="matrix">
+                                                <xs:complexType>
+                                                    <xs:attribute name="value" type="floatList" use="required"/>
+                                                </xs:complexType>
+                                            </xs:element>
+
+                                        </xs:choice>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+
+                            <!-- Mesh -->
+                            <xs:element name="mesh" minOccurs="0">
+                                <xs:complexType>
+                                    <xs:attribute name="type" type="xs:string" use="required"/>
+                                    <xs:attribute name="path" type="xs:string" use="required"/>
+                                </xs:complexType>
+                            </xs:element>
+
+                            <!-- Material -->
+                            <xs:element name="material" minOccurs="0">
+                                <xs:complexType>
+                                    <xs:attribute name="color" type="floatList" use="required"/>
+                                    <xs:attribute name="roughness" type="xs:float" use="required"/>
+                                    <xs:attribute name="metallic" type="xs:float" use="required"/>
+                                </xs:complexType>
+                            </xs:element>
+
+                            <!-- Texture -->
+                            <xs:element name="texture" minOccurs="0">
+                                <xs:complexType>
+                                    <xs:attribute name="path" type="xs:string" use="required"/>
+                                </xs:complexType>
+                            </xs:element>
+
+                            <!-- Camera -->
+                            <xs:element name="camera" minOccurs="0">
+                                <xs:complexType>
+                                    <xs:attribute name="fov" type="xs:float"/>
+                                    <xs:attribute name="aspect_ratio" type="xs:float"/>
+                                    <xs:attribute name="near_plane">
+                                        <xs:simpleType>
+                                            <xs:restriction base="xs:float">
+                                                <xs:minExclusive value="0"/>
+                                            </xs:restriction>
+                                        </xs:simpleType>
+                                    </xs:attribute>
+                                    <xs:attribute name="far_plane">
+                                        <xs:simpleType>
+                                            <xs:restriction base="xs:float">
+                                                <xs:minExclusive value="0"/>
+                                            </xs:restriction>
+                                        </xs:simpleType>
+                                    </xs:attribute>
+                                </xs:complexType>
+                            </xs:element>
+
+                            <!-- Directional Light -->
+                            <xs:element name="directional_light" minOccurs="0">
+                                <xs:complexType>
+                                    <xs:attribute name="color" type="floatList" use="required"/>
+                                    <xs:attribute name="intensity" type="xs:float" use="required"/>
+                                </xs:complexType>
+                            </xs:element>
+
+                            <!-- Point Light -->
+                            <xs:element name="point_light" minOccurs="0">
+                                <xs:complexType>
+                                    <xs:attribute name="color" type="floatList" use="required"/>
+                                    <xs:attribute name="intensity" type="xs:float" use="required"/>
+                                    <xs:attribute name="attenuation" type="xs:float" use="required"/>
+                                    <xs:attribute name="radius" type="xs:float" use="required"/>
+                                </xs:complexType>
+                            </xs:element>
+
+                        </xs:all>
+
+                        <xs:attribute name="name" type="xs:string"/>
+
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+</xs:schema>

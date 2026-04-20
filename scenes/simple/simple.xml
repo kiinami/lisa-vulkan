@@ -1,4 +1,5 @@
-<scene>
+<scene xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="../scene.xsd">
     <entity name="monkey0">
         <transform>
             <translate value="0, 0, 0"/>

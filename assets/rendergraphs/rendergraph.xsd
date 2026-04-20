@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+    <xs:simpleType name="ResourceType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="color"/>
+            <xs:enumeration value="depth"/>
+            <xs:enumeration value="final"/>
+            <xs:enumeration value="normal"/>
+            <xs:enumeration value="position"/>
+            <xs:enumeration value="material"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="ResourceUsage">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="ColorAttachmentWrite"/>
+            <xs:enumeration value="DepthStencilAttachmentWrite"/>
+            <xs:enumeration value="DepthStencilAttachmentRead"/>
+            <xs:enumeration value="SampledFragment"/>
+            <xs:enumeration value="StorageComputeWrite"/>
+            <xs:enumeration value="TransferSrc"/>
+            <xs:enumeration value="TransferDst"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:element name="rendergraph">
+        <xs:complexType>
+            <xs:sequence>
+
+                <xs:element name="resource" maxOccurs="unbounded">
+                    <xs:complexType>
+                        <xs:attribute name="id" type="xs:ID" use="required"/>
+                        <xs:attribute name="type" type="ResourceType" use="required"/>
+                    </xs:complexType>
+                </xs:element>
+
+                <xs:element name="pass" maxOccurs="unbounded">
+                    <xs:complexType>
+                        <xs:sequence>
+
+                            <xs:element name="input" minOccurs="0" maxOccurs="unbounded">
+                                <xs:complexType>
+                                    <xs:attribute name="id" type="xs:string" use="required"/>
+                                    <xs:attribute name="ref" type="xs:IDREF" use="required"/>
+                                    <xs:attribute name="usage" type="ResourceUsage" use="required"/>
+                                </xs:complexType>
+                            </xs:element>
+
+                            <xs:element name="output" minOccurs="0" maxOccurs="unbounded">
+                                <xs:complexType>
+                                    <xs:attribute name="id" type="xs:string" use="required"/>
+                                    <xs:attribute name="ref" type="xs:IDREF" use="required"/>
+                                    <xs:attribute name="usage" type="ResourceUsage" use="required"/>
+                                </xs:complexType>
+                            </xs:element>
+
+                        </xs:sequence>
+
+                        <xs:attribute name="id" type="xs:ID" use="required"/>
+                        <xs:attribute name="type" type="xs:string" use="required"/>
+                    </xs:complexType>
+                </xs:element>
+
+            </xs:sequence>
+
+            <xs:attribute name="output" type="xs:IDREF" use="required"/>
+
+        </xs:complexType>
+    </xs:element>
+
+</xs:schema>

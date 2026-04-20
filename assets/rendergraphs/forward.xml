@@ -1,4 +1,6 @@
-<rendergraph output="color">
+<rendergraph xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:noNamespaceSchemaLocation="rendergraph.xsd"
+             output="color">
     <resource id="color" type="final"/>
     <resource id="depth" type="depth"/>
 
