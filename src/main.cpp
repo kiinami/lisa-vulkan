@@ -68,6 +68,17 @@ int main(const int argc, char** argv) {
 
       while (!window::context::should_close()) {
         window::context::poll_events();
+
+        if (window::context::was_resized()) {
+          logging::debug("Window was resized, recreating renderer");
+          graphics::context::device()->waitIdle();
+          renderer.reset();
+          graphics::context::recreate_swapchain();
+          renderer = std::make_unique<systems::render::Renderer>(
+            "../assets/rendergraphs/deferred.xml"
+          );
+        }
+
         renderer->render(scene);
       }
 

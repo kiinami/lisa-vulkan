@@ -5,6 +5,8 @@
 #ifndef LISA_VULKAN_COMPOSITIONPASS_H
 #define LISA_VULKAN_COMPOSITIONPASS_H
 #pragma once
+
+#include "graphics/descriptors/DescriptorAllocator.h"
 #include "graphics/images/Sampler.h"
 #include "graphics/pipeline/Pipeline.h"
 #include "systems/render/RenderPass.h"
@@ -13,10 +15,10 @@
 namespace lisa::render {
   struct CompositionPushConstants {
     uint64 global_bda;
-    uint32 albedo_idx;
-    uint32 normal_idx;
-    uint32 position_idx;
-    uint32 material_idx;
+    DescriptorIndex albedo_idx;
+    DescriptorIndex normal_idx;
+    DescriptorIndex position_idx;
+    DescriptorIndex material_idx;
   };
 
   class CompositionPass : public systems::render::RenderPass {
@@ -24,7 +26,8 @@ namespace lisa::render {
     static constexpr auto TYPE_ID = "deferred::CompositionPass";
 
     explicit CompositionPass(const pugi::xml_node& node) : RenderPass(node) {}
-    ~CompositionPass() override = default;
+
+    ~CompositionPass() override;
 
     void setup(systems::render::Rendergraph& graph, const pugi::xml_node& node) override;
     void execute(const systems::render::RenderContext& ctx) override;
@@ -34,10 +37,10 @@ namespace lisa::render {
     uptr<graphics::Pipeline> pipeline_;
     uptr<graphics::Sampler> sampler_;
 
-    uint32 albedo_idx_;
-    uint32 normal_idx_;
-    uint32 position_idx_;
-    uint32 material_idx_;
+    DescriptorIndex albedo_idx_ = 0;
+    DescriptorIndex normal_idx_ = 0;
+    DescriptorIndex position_idx_ = 0;
+    DescriptorIndex material_idx_ = 0;
   };
 
 }

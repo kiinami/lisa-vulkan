@@ -12,6 +12,13 @@
 namespace lisa::render {
   REGISTER_RENDER_PASS(CompositionPass);
 
+  CompositionPass::~CompositionPass() {
+    graphics::context::descriptor_container().free(albedo_idx_);
+    graphics::context::descriptor_container().free(normal_idx_);
+    graphics::context::descriptor_container().free(position_idx_);
+    graphics::context::descriptor_container().free(material_idx_);
+  }
+
   void CompositionPass::setup(
     systems::render::Rendergraph& graph, const pugi::xml_node& node
   ) {

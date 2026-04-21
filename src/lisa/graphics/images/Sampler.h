@@ -4,8 +4,6 @@
 
 #ifndef LISA_VULKAN_SAMPLER_H
 #define LISA_VULKAN_SAMPLER_H
-#include "graphics/context.h"
-#include "utils/common.h"
 
 #include <vulkan/vulkan_raii.hpp>
 
@@ -15,24 +13,14 @@ namespace lisa::graphics {
   public:
     Sampler() = default;
 
-    Sampler(
-      const float max_lod,
-      const vk::Filter mag_filter = vk::Filter::eLinear,
-      const vk::Filter min_filter = vk::Filter::eLinear,
-      const vk::SamplerMipmapMode mipmap_mode = vk::SamplerMipmapMode::eLinear,
-      const bool anisotropic = true,
-      const float max_anisotropy = 8.0f
-    ) :
-      sampler_(
-        context::device()->createSampler(
-          {.magFilter = mag_filter,
-           .minFilter = min_filter,
-           .mipmapMode = mipmap_mode,
-           .anisotropyEnable = anisotropic,
-           .maxAnisotropy = max_anisotropy,
-           .maxLod = max_lod}
-        )
-      ) {}
+    explicit Sampler(
+      float max_lod,
+      vk::Filter mag_filter = vk::Filter::eLinear,
+      vk::Filter min_filter = vk::Filter::eLinear,
+      vk::SamplerMipmapMode mipmap_mode = vk::SamplerMipmapMode::eLinear,
+      bool anisotropic = true,
+      float max_anisotropy = 8.0f
+    );
 
     ~Sampler() = default;
 

@@ -66,4 +66,9 @@ namespace lisa::graphics::context {
   Swapchain& swapchain() { return *swapchain_; }
 
   DescriptorContainer& descriptor_container() { return *descriptor_container_; }
+
+  void recreate_swapchain() {
+    swapchain_.reset();
+    swapchain_ = std::make_unique<Swapchain>(*surface_, *device_);
+  }
 }

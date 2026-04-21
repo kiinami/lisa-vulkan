@@ -6,6 +6,8 @@
 #define LISA_VULKAN_DESCRIPTORCONTAINER_H
 #include "DescriptorAllocator.h"
 #include "graphics/device/LogicalDevice.h"
+#include "graphics/images/Image.h"
+#include "graphics/images/Sampler.h"
 #include "utils/common.h"
 
 #include <vulkan/vulkan_raii.hpp>
@@ -28,13 +30,24 @@ namespace lisa::graphics {
 
     DescriptorIndex write(const vk::DescriptorImageInfo& image_info);
 
+    void free(DescriptorIndex descriptor);
+
   private:
     uint32 size_;
     vk::DescriptorType type_;
     DescriptorAllocator index_allocator_;
+
+    Image dummy_image_;
+    Sampler dummy_sampler_;
+
     vk::raii::DescriptorPool pool_ = nullptr;
     vk::raii::DescriptorSetLayout layout_ = nullptr;
     vk::raii::DescriptorSet set_ = nullptr;
+
+    static Image create_dummy_image();
+    static Sampler create_dummy_sampler();
+    void transition_dummy_image() const;
+    void write_null(DescriptorIndex index) const;
 
     static vk::raii::DescriptorPool
       create_pool(uint32 descriptor_count, vk::DescriptorType type);

@@ -13,6 +13,8 @@ namespace lisa::graphics {
     size_(size),
     type_(type),
     index_allocator_(size),
+    dummy_image_(create_dummy_image()),
+    dummy_sampler_(create_dummy_sampler()),
     pool_(create_pool(size, type)),
     layout_(create_layout(size, type)),
     set_(create_set(pool_, layout_, size)) {}
@@ -30,6 +32,92 @@ namespace lisa::graphics {
     };
     context::device()->updateDescriptorSets(write_desc, nullptr);
     return index;
+  }
+
+  void DescriptorContainer::free(const DescriptorIndex descriptor) {
+    index_allocator_.free(descriptor);
+    write_null(descriptor);
+  }
+
+  Image DescriptorContainer::create_dummy_image() {
+    return Image(
+      ImageFormat(vk::Format::eR8G8B8A8Unorm),
+      vk::ImageUsageFlagBits::eSampled,
+      vec3(1, 1, 1),
+      vk::ImageType::e2D,
+      1,
+      vk::ImageLayout::eUndefined
+    );
+  }
+
+  Sampler DescriptorContainer::create_dummy_sampler() {
+    return Sampler(
+      0.0f,
+      vk::Filter::eNearest,
+      vk::Filter::eNearest,
+      vk::SamplerMipmapMode::eNearest,
+      false
+    );
+  }
+
+  void DescriptorContainer::transition_dummy_image() const {
+    const auto cmdb = context::device().cmd_buffer();
+    cmdb.begin_onetime();
+
+    cmdb->pipelineBarrier(
+      vk::PipelineStageFlagBits::eTopOfPipe,
+      vk::PipelineStageFlagBits::eFragmentShader,
+      {},
+      {},
+      {},
+      vk::ImageMemoryBarrier{
+        .srcAccessMask = {},
+        .dstAccessMask = vk::AccessFlagBits::eShaderRead,
+        .oldLayout = vk::ImageLayout::eUndefined,
+        .newLayout = vk::ImageLayout::eShaderReadOnlyOptimal,
+        .image = static_cast<const vk::Image&>(dummy_image_),
+        .subresourceRange = {
+          .aspectMask = vk::ImageAspectFlagBits::eColor,
+          .baseMipLevel = 0,
+          .levelCount = 1,
+          .baseArrayLayer = 0,
+          .layerCount = 1,
+        },
+      }
+    );
+
+    cmdb->end();
+    context::device().submit_cmd_buffer_with_fence(cmdb);
+  }
+
+  void DescriptorContainer::write_null(const DescriptorIndex index) const {
+    const ImageViewDesc dummy_view_desc{
+      .type = vk::ImageViewType::e2D,
+      .format = ImageFormat(vk::Format::eR8G8B8A8Unorm),
+      .range = {
+        .aspectMask = vk::ImageAspectFlagBits::eColor,
+        .baseMipLevel = 0,
+        .levelCount = 1,
+        .baseArrayLayer = 0,
+        .layerCount = 1,
+      }
+    };
+    const vk::DescriptorImageInfo null_info{
+      .sampler = *dummy_sampler_,
+      .imageView = *dummy_image_.view(dummy_view_desc),
+      .imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal,
+    };
+    context::device()->updateDescriptorSets(
+      vk::WriteDescriptorSet{
+        .dstSet = *set_,
+        .dstBinding = 0,
+        .dstArrayElement = index,
+        .descriptorCount = 1,
+        .descriptorType = type_,
+        .pImageInfo = &null_info,
+      },
+      nullptr
+    );
   }
 
   vk::raii::DescriptorPool DescriptorContainer::create_pool(

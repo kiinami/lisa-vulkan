@@ -14,6 +14,7 @@ namespace lisa::window::context {
   namespace {
     uptr<Window> window_;
     bool should_close_ = false;
+    bool resized_ = false;
   }
 
   void init(const int width, const int height) {
@@ -52,9 +53,23 @@ namespace lisa::window::context {
 
   bool should_close() { return should_close_; }
 
+  bool was_resized() {
+    if (resized_) {
+      window_->mark_dirty();
+      resized_ = false;
+      return true;
+    }
+    return false;
+  }
+
   void poll_events() {
     SDL_Event event;
-    while (SDL_PollEvent(&event))
+    while (SDL_PollEvent(&event)) {
       if (event.type == SDL_EVENT_QUIT) should_close_ = true;
+      if (event.type ==
+          SDL_EVENT_WINDOW_RESIZED ||
+          event.type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED)
+        resized_ = true;
+    }
   }
 }

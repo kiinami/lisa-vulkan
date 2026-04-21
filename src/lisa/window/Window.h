@@ -25,6 +25,8 @@ namespace lisa::window {
 
     WindowSize size() const;
 
+    void mark_dirty() { size_dirty_ = true; }
+
   private:
     SDL::Window window_ = nullptr;
     mutable WindowSize size_;

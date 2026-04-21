@@ -17,6 +17,7 @@ namespace lisa::window::context {
   uint32 window_height();
   vec2 from_scale(float scale);
   bool should_close();
+  bool was_resized();
   void poll_events();
 }
 

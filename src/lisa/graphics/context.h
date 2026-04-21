@@ -27,6 +27,8 @@ namespace lisa::graphics::context {
   const Surface& surface();
   Swapchain& swapchain();
   DescriptorContainer& descriptor_container();
+
+  void recreate_swapchain();
 }
 
 #endif

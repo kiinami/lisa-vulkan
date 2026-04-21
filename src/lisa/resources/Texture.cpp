@@ -5,6 +5,7 @@
 #include "Texture.h"
 
 #include "graphics/buffer/Buffer.h"
+#include "graphics/context.h"
 #include "stb_image.h"
 #include "tinyexr.h"
 
