@@ -6,6 +6,7 @@ struct Input {
   float3 position;
   float3 normal;
   float2 uv;
+  float3 tangent;
 }
 
 Sampler2D textures[];
@@ -47,7 +48,8 @@ struct ObjectData {
   uint32_t diffuse_texture_index;
   uint32_t roughness_texture_index;
   uint32_t metallic_texture_index;
-  float3 padding;
+  uint32_t normal_texture_index;
+  float2 padding;
 };
 
 struct PushConstants {
@@ -63,9 +65,11 @@ struct Vertex2Fragment {
   float3 normal;
   float3 world_position;
   float2 uv;
+  float3 tangent;
   uint32_t diffuse_texture_index;
   uint32_t roughness_texture_index;
   uint32_t metallic_texture_index;
+  uint32_t normal_texture_index;
 };
 
 struct Output {
@@ -87,9 +91,11 @@ Vertex2Fragment vertex(Input input) {
   output.world_position = world_pos.xyz;
   output.normal = mul((float3x3) model, input.normal);
   output.uv = input.uv;
+  output.tangent = mul((float3x3) model, input.tangent);
   output.diffuse_texture_index = push_constants.object_data->diffuse_texture_index;
   output.roughness_texture_index = push_constants.object_data->roughness_texture_index;
   output.metallic_texture_index = push_constants.object_data->metallic_texture_index;
+  output.normal_texture_index = push_constants.object_data->normal_texture_index;
 
   return output;
 }
@@ -113,8 +119,15 @@ Output output;
   if (input.metallic_texture_index != 0xFFFFFFFF) {
     final_metallic *= textures[input.metallic_texture_index].Sample(input.uv).r;
   }
+
+  float3 N = normalize(input.normal);
+  if (input.normal_texture_index != 0xFFFFFFFF) {
+    float3 normalMap = textures[input.normal_texture_index].Sample(input.uv).rgb;
+    N = normalize(normalMap);
+  }
+
   output.albedo = float4(albedo, 1.0);
-  output.normal = float4(normalize(input.normal), 0.0);
+  output.normal = float4(N, 0.0);
   output.position = float4(input.world_position, 1.0);
   output.material = float4(final_roughness, final_metallic, 0.0, 1.0);
 

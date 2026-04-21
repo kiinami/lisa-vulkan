@@ -15,7 +15,8 @@ namespace lisa::components { namespace {
     systems::ecs::reflect_component<TextureComponent>("texture"_hs)
       .data<&TextureComponent::diffuse>("diffuse"_hs)
       .data<&TextureComponent::roughness>("roughness"_hs)
-      .data<&TextureComponent::metallic>("metallic"_hs);
+      .data<&TextureComponent::metallic>("metallic"_hs)
+      .data<&TextureComponent::normal>("normal"_hs);
 
     return true;
   }();

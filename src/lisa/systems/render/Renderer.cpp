@@ -173,21 +173,25 @@ namespace lisa::systems::render {
         const auto* texture_component =
           components::context::registry()
             ->try_get<components::TextureComponent>(entity);
+        object_data[i].diffuse_texture_index =
+          std::numeric_limits<uint32>::max();
+        object_data[i].roughness_texture_index =
+          std::numeric_limits<uint32>::max();
+        object_data[i].metallic_texture_index =
+          std::numeric_limits<uint32>::max();
+        object_data[i].normal_texture_index =
+          std::numeric_limits<uint32>::max();
         if (texture_component) {
           object_data[i].diffuse_texture_index =
             texture_component->diffuse_resource()->descriptor_index();
-          if (auto res = texture_component->roughness_resource();
-              res != nullptr)
+          if (
+            auto res = texture_component->roughness_resource(); res != nullptr
+          )
             object_data[i].roughness_texture_index = res->descriptor_index();
           if (auto res = texture_component->metallic_resource(); res != nullptr)
             object_data[i].metallic_texture_index = res->descriptor_index();
-        } else {
-          object_data[i].diffuse_texture_index =
-            std::numeric_limits<uint32>::max();
-          object_data[i].roughness_texture_index =
-            std::numeric_limits<uint32>::max();
-          object_data[i].metallic_texture_index =
-            std::numeric_limits<uint32>::max();
+          if (auto res = texture_component->normal_resource(); res != nullptr)
+            object_data[i].normal_texture_index = res->descriptor_index();
         }
 
         i++;

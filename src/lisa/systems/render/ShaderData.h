@@ -88,7 +88,8 @@ namespace lisa::systems::render {
     uint32 diffuse_texture_index = std::numeric_limits<uint32>::max();
     uint32 roughness_texture_index = std::numeric_limits<uint32>::max();
     uint32 metallic_texture_index = std::numeric_limits<uint32>::max();
-    uint32 padding[3];
+    uint32 normal_texture_index = std::numeric_limits<uint32>::max();
+    uint32 padding[2];
   };
 
   struct PushConstants {

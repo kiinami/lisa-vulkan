@@ -11,6 +11,7 @@ namespace lisa::resources {
     vec3 pos;
     vec3 normal;
     vec2 uv;
+    vec3 tangent;
 
     static vector<vk::VertexInputAttributeDescription>
       attribute_descriptions(const uint32 binding) {
@@ -31,7 +32,13 @@ namespace lisa::resources {
         .format = vk::Format::eR32G32Sfloat,
         .offset = offsetof(Vertex, uv)
       };
-      return {pos_attribute, normal_attribute, uv_attribute};
+      const vk::VertexInputAttributeDescription tangent_attribute = {
+        .location = 3,
+        .binding = binding,
+        .format = vk::Format::eR32G32B32Sfloat,
+        .offset = offsetof(Vertex, tangent)
+      };
+      return {pos_attribute, normal_attribute, uv_attribute, tangent_attribute};
     }
   };
 }

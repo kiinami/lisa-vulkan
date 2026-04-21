@@ -48,6 +48,29 @@ namespace lisa::resources {
       indices.push_back(indices.size());
     }
 
+    for (size i = 0; i < vertices.size(); i += 3) {
+      auto& v0 = vertices[i].pos;
+      auto& v1 = vertices[i + 1].pos;
+      auto& v2 = vertices[i + 2].pos;
+
+      auto& uv0 = vertices[i].uv;
+      auto& uv1 = vertices[i + 1].uv;
+      auto& uv2 = vertices[i + 2].uv;
+
+      auto edge1 = v1 - v0;
+      auto edge2 = v2 - v0;
+      auto deltaUV1 = uv1 - uv0;
+      auto deltaUV2 = uv2 - uv0;
+
+      auto f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
+      auto tangent =
+        glm::normalize(f * (deltaUV2.y * edge1 - deltaUV1.y * edge2));
+
+      vertices[i].tangent = tangent;
+      vertices[i + 1].tangent = tangent;
+      vertices[i + 2].tangent = tangent;
+    }
+
     vertex_count_ = vertices.size();
     index_count_ = indices.size();
 

@@ -8,41 +8,22 @@
         <mesh type="obj" path="models/cat.obj"/>
         <texture diffuse="textures/concrete_cat_statue_diff_1k.jpg"
                  roughness="textures/concrete_cat_statue_rough_1k.exr"
-                 metallic="textures/concrete_cat_statue_metal_1k.exr"/>
+                 metallic="textures/concrete_cat_statue_metal_1k.exr"
+                 normal="textures/concrete_cat_statue_nor_gl_1k.exr"
+        />
     </entity>
 
     <entity name="main_camera">
         <transform>
-            <lookat origin="0, 2, 8" target="0, 0, 0" up="0, 1, 0"/>
+            <lookat origin="0, 5, 4" target="0, 0, 0" up="0, 1, 0"/>
         </transform>
         <camera/>
     </entity>
 
     <entity name="sun_light">
         <transform>
-            <lookat origin="0, 0, 0" target="-1, -1, -1" up="0, 1, 0"/>
+            <lookat origin="0, 0, 0" target="0, -1, -1" up="0, 1, 0"/>
         </transform>
-        <directional_light color="1.0, 0.9, 0.8" intensity="1.5"/>
-    </entity>
-
-    <entity name="red_point_light">
-        <transform>
-            <translate value="-3, 1, 2"/>
-        </transform>
-        <point_light color="1.0, 0.1, 0.1" intensity="50.0" attenuation="1.0" radius="10.0"/>
-    </entity>
-
-    <entity name="blue_point_light">
-        <transform>
-            <translate value="3, -1, 2"/>
-        </transform>
-        <point_light color="0.1, 0.1, 1.0" intensity="50.0" attenuation="1.0" radius="10.0"/>
-    </entity>
-
-    <entity name="green_point_light">
-        <transform>
-            <translate value="0, 3, -2"/>
-        </transform>
-        <point_light color="0.1, 1.0, 0.1" intensity="30.0" attenuation="1.0" radius="15.0"/>
+        <directional_light color="1.0, 0.9, 0.8" intensity="3"/>
     </entity>
 </scene>

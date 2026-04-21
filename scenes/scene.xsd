@@ -76,6 +76,7 @@
                                     <xs:attribute name="diffuse" type="xs:string" use="required"/>
                                     <xs:attribute name="roughness" type="xs:string" default=""/>
                                     <xs:attribute name="metallic" type="xs:string" default=""/>
+                                    <xs:attribute name="normal" type="xs:string" default=""/>
                                 </xs:complexType>
                             </xs:element>
 
