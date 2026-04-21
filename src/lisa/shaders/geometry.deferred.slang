@@ -122,8 +122,18 @@ Output output;
 
   float3 N = normalize(input.normal);
   if (input.normal_texture_index != 0xFFFFFFFF) {
+    float3 T = normalize(input.tangent);
+    T = normalize(T - dot(T, N) * N);
+    if (length(T) < 0.001) {
+      float3 up = abs(N.z) < 0.999 ? float3(0, 0, 1) : float3(1, 0, 0);
+      T = normalize(cross(N, up));
+    }
+    float3 B = cross(N, T);
+    float3x3 TBN = float3x3(T, B, N);
+
     float3 normalMap = textures[input.normal_texture_index].Sample(input.uv).rgb;
-    N = normalize(normalMap);
+    normalMap = normalMap * 2.0 - 1.0;
+    N = normalize(mul(normalMap, TBN));
   }
 
   output.albedo = float4(albedo, 1.0);

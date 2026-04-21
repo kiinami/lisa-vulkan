@@ -293,6 +293,17 @@ namespace lisa::resources {
       }
     }
 
+    // Flip vertically: EXR has Y going up, Vulkan expects Y going down
+    const int row_size = w * 4 * sizeof(float);
+    std::vector<float> temp(row_size);
+    for (int y = 0; y < h / 2; y++) {
+      const int top_row = y * w * 4;
+      const int bottom_row = (h - 1 - y) * w * 4;
+      std::memcpy(temp.data(), out_rgba + top_row, row_size);
+      std::memcpy(out_rgba + top_row, out_rgba + bottom_row, row_size);
+      std::memcpy(out_rgba + bottom_row, temp.data(), row_size);
+    }
+
     auto width = static_cast<uint32>(w);
     auto height = static_cast<uint32>(h);
     const auto mip_levels =
