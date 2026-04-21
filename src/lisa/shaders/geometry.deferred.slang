@@ -42,10 +42,12 @@ struct GlobalData {
 struct ObjectData {
   float4x4 model;
   float4 color;
-  uint32_t texture_index;
   float roughness;
   float metallic;
-  float2 padding;
+  uint32_t diffuse_texture_index;
+  uint32_t roughness_texture_index;
+  uint32_t metallic_texture_index;
+  float3 padding;
 };
 
 struct PushConstants {
@@ -61,7 +63,9 @@ struct Vertex2Fragment {
   float3 normal;
   float3 world_position;
   float2 uv;
-  uint32_t texture_index;
+  uint32_t diffuse_texture_index;
+  uint32_t roughness_texture_index;
+  uint32_t metallic_texture_index;
 };
 
 struct Output {
@@ -83,25 +87,36 @@ Vertex2Fragment vertex(Input input) {
   output.world_position = world_pos.xyz;
   output.normal = mul((float3x3) model, input.normal);
   output.uv = input.uv;
-  output.texture_index = push_constants.object_data->texture_index;
+  output.diffuse_texture_index = push_constants.object_data->diffuse_texture_index;
+  output.roughness_texture_index = push_constants.object_data->roughness_texture_index;
+  output.metallic_texture_index = push_constants.object_data->metallic_texture_index;
 
   return output;
 }
 
 [shader("fragment")]
 Output fragment(Vertex2Fragment input) {
-  Output output;
-
+Output output;
   float4 base_color = push_constants.object_data->color;
+
   float3 albedo = base_color.rgb;
-  if (input.texture_index != 0xFFFFFFFF) {
-    albedo *= textures[input.texture_index].Sample(input.uv).rgb;
+  if (input.diffuse_texture_index != 0xFFFFFFFF) {
+    albedo *= textures[input.diffuse_texture_index].Sample(input.uv).rgb;
   }
 
+  float final_roughness = push_constants.object_data->roughness;
+  if (input.roughness_texture_index != 0xFFFFFFFF) {
+    final_roughness *= textures[input.roughness_texture_index].Sample(input.uv).r;
+  }
+
+  float final_metallic = push_constants.object_data->metallic;
+  if (input.metallic_texture_index != 0xFFFFFFFF) {
+    final_metallic *= textures[input.metallic_texture_index].Sample(input.uv).r;
+  }
   output.albedo = float4(albedo, 1.0);
   output.normal = float4(normalize(input.normal), 0.0);
   output.position = float4(input.world_position, 1.0);
-  output.material = float4(push_constants.object_data->roughness, push_constants.object_data->metallic, 0.0, 1.0);
+  output.material = float4(final_roughness, final_metallic, 0.0, 1.0);
 
   return output;
 }

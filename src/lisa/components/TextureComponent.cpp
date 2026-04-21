@@ -13,7 +13,9 @@ namespace lisa::components { namespace {
     using namespace entt::literals;
 
     systems::ecs::reflect_component<TextureComponent>("texture"_hs)
-      .data<&TextureComponent::filepath>("path"_hs);
+      .data<&TextureComponent::diffuse>("diffuse"_hs)
+      .data<&TextureComponent::roughness>("roughness"_hs)
+      .data<&TextureComponent::metallic>("metallic"_hs);
 
     return true;
   }();

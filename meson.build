@@ -67,10 +67,13 @@ entt = dependency('entt', required : true)
 glm = dependency('glm', required: true)
 ktx = dependency('ktx', required: true)
 magic_enum = dependency('magic_enum', required : true)
+miniz = dependency('miniz', required : true)
 pugixml = dependency('pugixml', required : true)
 sdl3 = dependency('sdl3', required: true)
 sdl3pp = dependency('sdl3pp', required: true)
 spdlog = dependency('spdlog', required: true)
+stb = dependency('stb', required : true)
+tinyexr = dependency('tinyexr', required : true)
 tinyobjloader = dependency('tinyobjloader', required: true)
 vma = dependency('VulkanMemoryAllocator', required: true)
 vma_hpp = dependency('VulkanMemoryAllocator-Hpp', required: true)
@@ -216,14 +219,14 @@ lisa_library = library(
     'lisa',
     sources: src,
     include_directories: inc,
-    dependencies : [entt, glm, ktx, magic_enum, pugixml, sdl3, sdl3pp, slang, spdlog, tinyobjloader, vulkan, vma, vma_hpp],
+    dependencies : [entt, glm, ktx, magic_enum, miniz, pugixml, sdl3, sdl3pp, slang, spdlog, stb, tinyexr, tinyobjloader, vulkan, vma, vma_hpp],
     cpp_pch: 'src/lisa/pch/pch.h'
 )
 
 lisa_dep = declare_dependency(
     include_directories: include_directories('src/lisa'),
     link_with: lisa_library,
-    dependencies : [entt, glm, ktx, magic_enum, pugixml, sdl3, sdl3pp, slang, spdlog, tinyobjloader, vulkan, vma, vma_hpp]
+    dependencies : [entt, glm, ktx, magic_enum, miniz, pugixml, sdl3, sdl3pp, slang, spdlog, stb, tinyexr, tinyobjloader, vulkan, vma, vma_hpp]
 )
 
 ###############################################################################

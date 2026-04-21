@@ -18,44 +18,38 @@
                             <!-- Transform -->
                             <xs:element name="transform" minOccurs="0">
                                 <xs:complexType>
-                                    <xs:sequence maxOccurs="unbounded">
-                                        <xs:choice>
-
+                                    <xs:choice>
+                                        <xs:choice maxOccurs="unbounded">
                                             <xs:element name="translate">
                                                 <xs:complexType>
                                                     <xs:attribute name="value" type="floatList" use="required"/>
                                                 </xs:complexType>
                                             </xs:element>
-
                                             <xs:element name="rotate">
                                                 <xs:complexType>
                                                     <xs:attribute name="axis" type="floatList" use="required"/>
                                                     <xs:attribute name="angle" type="xs:float" use="required"/>
                                                 </xs:complexType>
                                             </xs:element>
-
                                             <xs:element name="scale">
                                                 <xs:complexType>
                                                     <xs:attribute name="value" type="floatList" use="required"/>
                                                 </xs:complexType>
                                             </xs:element>
-
-                                            <xs:element name="lookat">
-                                                <xs:complexType>
-                                                    <xs:attribute name="origin" type="floatList" use="required"/>
-                                                    <xs:attribute name="target" type="floatList" use="required"/>
-                                                    <xs:attribute name="up" type="floatList" use="required"/>
-                                                </xs:complexType>
-                                            </xs:element>
-
-                                            <xs:element name="matrix">
-                                                <xs:complexType>
-                                                    <xs:attribute name="value" type="floatList" use="required"/>
-                                                </xs:complexType>
-                                            </xs:element>
-
                                         </xs:choice>
-                                    </xs:sequence>
+                                        <xs:element name="lookat">
+                                            <xs:complexType>
+                                                <xs:attribute name="origin" type="floatList" use="required"/>
+                                                <xs:attribute name="target" type="floatList" use="required"/>
+                                                <xs:attribute name="up" type="floatList" use="required"/>
+                                            </xs:complexType>
+                                        </xs:element>
+                                        <xs:element name="matrix">
+                                            <xs:complexType>
+                                                <xs:attribute name="value" type="floatList" use="required"/>
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:choice>
                                 </xs:complexType>
                             </xs:element>
 
@@ -79,7 +73,9 @@
                             <!-- Texture -->
                             <xs:element name="texture" minOccurs="0">
                                 <xs:complexType>
-                                    <xs:attribute name="path" type="xs:string" use="required"/>
+                                    <xs:attribute name="diffuse" type="xs:string" use="required"/>
+                                    <xs:attribute name="roughness" type="xs:string" default=""/>
+                                    <xs:attribute name="metallic" type="xs:string" default=""/>
                                 </xs:complexType>
                             </xs:element>
 

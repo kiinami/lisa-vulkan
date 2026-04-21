@@ -5,7 +5,7 @@
             <translate value="0, 0, 0"/>
         </transform>
         <mesh type="obj" path="models/suzanne.obj"/>
-        <texture path="textures/suzanne0.ktx"/>
+        <texture diffuse="textures/suzanne0.ktx"/>
     </entity>
 
     <entity name="monkey_left">
@@ -14,7 +14,7 @@
             <rotate axis="0, 1, 0" angle="45"/>
         </transform>
         <mesh type="obj" path="models/suzanne.obj"/>
-        <texture path="textures/suzanne1.ktx"/>
+        <texture diffuse="textures/suzanne1.ktx"/>
     </entity>
 
     <entity name="monkey_right">
@@ -23,7 +23,7 @@
             <rotate axis="0, 1, 0" angle="-45"/>
         </transform>
         <mesh type="obj" path="models/suzanne.obj"/>
-        <texture path="textures/suzanne2.ktx"/>
+        <texture diffuse="textures/suzanne2.ktx"/>
     </entity>
 
     <entity name="main_camera">

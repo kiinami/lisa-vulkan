@@ -1,0 +1,14 @@
+[wrap-file]
+directory = miniz-3.1.0
+lead_directory_missing = true
+source_url = https://github.com/richgel999/miniz/releases/download/3.1.0/miniz-3.1.0.zip
+source_filename = miniz-3.1.0.zip
+source_hash = f9d3e769ec5fd5583955a3c22eea457fe806be0d507805966d1a5b0410c77dda
+source_fallback_url = https://github.com/mesonbuild/wrapdb/releases/download/miniz_3.1.0-1/miniz-3.1.0.zip
+patch_filename = miniz_3.1.0-1_patch.zip
+patch_url = https://wrapdb.mesonbuild.com/v2/miniz_3.1.0-1/get_patch
+patch_hash = a8d4bf52281bc710c4cc62c3dc1274b8f5b2b56f5c9dad0db74fd3dbb3ddbf8f
+wrapdb_version = 3.1.0-1
+
+[provide]
+dependency_names = miniz

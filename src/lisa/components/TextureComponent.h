@@ -7,11 +7,44 @@
 #pragma once
 #include "resources/Texture.h"
 #include "systems/ecs/ResourceComponent.h"
+#include "systems/resources/ResourceHandle.h"
 
 namespace lisa::components {
 
-  struct TextureComponent :
-    systems::ecs::ResourceComponent<resources::Texture> {};
+  struct TextureComponent : systems::ecs::Component {
+    path diffuse;
+    path roughness = "";
+    path metallic = "";
+
+    resources::Texture* diffuse_resource() const {
+      if (!diffuse_handle_)
+        diffuse_handle_ =
+          resources::context::manager().load<resources::Texture>(diffuse);
+      return diffuse_handle_.get();
+    }
+
+    resources::Texture* roughness_resource() const {
+      if (!roughness_handle_)
+        roughness_handle_ =
+          resources::context::manager().load<resources::Texture>(roughness);
+      return roughness_handle_.get();
+    }
+
+    resources::Texture* metallic_resource() const {
+      if (!metallic_handle_)
+        metallic_handle_ =
+          resources::context::manager().load<resources::Texture>(metallic);
+      return metallic_handle_.get();
+    }
+
+  private:
+    mutable systems::resources::ResourceHandle<resources::Texture>
+      diffuse_handle_;
+    mutable systems::resources::ResourceHandle<resources::Texture>
+      roughness_handle_;
+    mutable systems::resources::ResourceHandle<resources::Texture>
+      metallic_handle_;
+  };
 
 }
 

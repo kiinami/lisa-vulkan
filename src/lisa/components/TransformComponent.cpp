@@ -54,15 +54,7 @@ namespace lisa::components {
         auto target = utils::xml::parse<vec3>(op.attribute("target").value());
         auto up = utils::xml::parse<vec3>(op.attribute("up").value());
 
-        auto f = glm::normalize(target - origin);
-        auto r = glm::normalize(glm::cross(f, up));
-        auto u = glm::cross(r, f);
-
-        mat3 rot(r, u, -f);
-        auto q = glm::quat_cast(rot);
-
-        mat = glm::translate(mat, origin);
-        mat *= glm::mat4_cast(q);
+        mat *= glm::inverse(glm::lookAt(origin, target, up));
       } else if (std::strcmp(op.name(), "matrix") == 0)
         mat *= utils::xml::parse<mat4>(op.attribute("value").value());
       else

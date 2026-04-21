@@ -40,9 +40,19 @@ namespace lisa::resources {
     graphics::Image image_;
     graphics::Sampler sampler_;
     DescriptorIndex descriptor_index_ = 0;
+    uint32 levels_;
 
-    static ktxTexture* load_from_file(const path& filepath);
-    static void copy(ktxTexture* texture, const graphics::Image& image);
+    static graphics::Image load_ktx(const path& filepath);
+    static graphics::Image load_jpg(const path& filepath);
+    static graphics::Image load_exr(const path& filepath);
+    static void generate_mipmaps(
+      const void* pixel_data,
+      size_t buffer_size,
+      uint32 width,
+      uint32 height,
+      uint32 mip_levels,
+      const graphics::Image& image
+    );
   };
 
 }

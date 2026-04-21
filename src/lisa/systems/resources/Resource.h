@@ -15,7 +15,7 @@ namespace lisa::systems::resources {
 
     virtual ~Resource() = default;
 
-    const str& filepath() const { return path_; }
+    const path& filepath() const { return path_; }
 
     bool is_loaded() const { return loaded_; }
 
@@ -27,7 +27,7 @@ namespace lisa::systems::resources {
     }
 
   protected:
-    str path_;
+    path path_;
     bool loaded_ = false;
 
     virtual bool load_function() = 0;

@@ -82,11 +82,13 @@ namespace lisa::systems::render {
 
   struct alignas(16) ObjectData {
     mat4 model;
-    vec4 color;
-    uint32 texture_index;
-    float roughness;
-    float metallic;
-    vec2 padding;
+    vec4 color = vec4(1.0f);
+    float roughness = 1.0f;
+    float metallic = 0.0f;
+    uint32 diffuse_texture_index = std::numeric_limits<uint32>::max();
+    uint32 roughness_texture_index = std::numeric_limits<uint32>::max();
+    uint32 metallic_texture_index = std::numeric_limits<uint32>::max();
+    uint32 padding[3];
   };
 
   struct PushConstants {

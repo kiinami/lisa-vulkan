@@ -153,19 +153,7 @@ namespace lisa::systems::render {
                             const components::MeshComponent>();
       uint32 i = 0;
       for (auto [entity, transform_component, mesh_component] : view.each()) {
-        object_data[i].model =
-          transform_component.matrix() *
-          glm::rotate(mat4(1.0f), time_, vec3(0.0f, 1.0f, 0.0f));
-        object_data[i].color = vec4(1.0f);
-
-        const auto* texture_component =
-          components::context::registry()
-            ->try_get<components::TextureComponent>(entity);
-        if (texture_component)
-          object_data[i].texture_index =
-            texture_component->resource()->descriptor_index();
-        else
-          object_data[i].texture_index = std::numeric_limits<uint32>::max();
+        object_data[i].model = transform_component.matrix();
 
         const auto* material_component =
           components::context::registry()
@@ -176,8 +164,28 @@ namespace lisa::systems::render {
           object_data[i].metallic = material_component->metallic;
         } else {
           object_data[i].color = vec4(1.0f);
-          object_data[i].roughness = 0.5f;
+          object_data[i].roughness = 1.0f;
           object_data[i].metallic = 0.0f;
+        }
+
+        const auto* texture_component =
+          components::context::registry()
+            ->try_get<components::TextureComponent>(entity);
+        if (texture_component) {
+          object_data[i].diffuse_texture_index =
+            texture_component->diffuse_resource()->descriptor_index();
+          if (auto res = texture_component->roughness_resource();
+              res != nullptr)
+            object_data[i].roughness_texture_index = res->descriptor_index();
+          if (auto res = texture_component->metallic_resource(); res != nullptr)
+            object_data[i].metallic_texture_index = res->descriptor_index();
+        } else {
+          object_data[i].diffuse_texture_index =
+            std::numeric_limits<uint32>::max();
+          object_data[i].roughness_texture_index =
+            std::numeric_limits<uint32>::max();
+          object_data[i].metallic_texture_index =
+            std::numeric_limits<uint32>::max();
         }
 
         i++;

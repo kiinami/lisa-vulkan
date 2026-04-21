@@ -33,15 +33,15 @@ namespace lisa::resources {
       Vertex v{
         .pos =
           {attrib.vertices[vertex_index * 3],
-           -attrib.vertices[vertex_index * 3 + 1],
+           attrib.vertices[vertex_index * 3 + 1],
            attrib.vertices[vertex_index * 3 + 2]},
         .normal =
           {attrib.normals[normal_index * 3],
-           -attrib.normals[normal_index * 3 + 1],
+           attrib.normals[normal_index * 3 + 1],
            attrib.normals[normal_index * 3 + 2]},
         .uv = {
           attrib.texcoords[texcoord_index * 2],
-          1.0 - attrib.texcoords[texcoord_index * 2 + 1]
+          attrib.texcoords[texcoord_index * 2 + 1]
         }
       };
       vertices.push_back(v);
