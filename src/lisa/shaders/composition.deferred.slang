@@ -2,38 +2,11 @@
 // Created by kinami on 19/4/26.
 //
 
-static const float PI = float.getPi();
+import common;
+import constants;
+
 
 Sampler2D textures[];
-
-struct PointLight {
-  float3 position;
-  float intensity;
-  float3 color;
-  float radius;
-}
-
-struct DirLight {
-  float3 direction;
-  float intensity;
-  float3 color;
-  float padding;
-}
-
-struct GlobalData {
-  float4x4 view_projection;
-  float4x4 projection;
-  float4x4 view;
-
-  PointLight* point_lights;
-  uint32_t point_lights_count;
-
-  DirLight* dir_lights;
-  uint32_t dir_lights_count;
-
-  float3 camera_position;
-  float padding;
-};
 
 struct CompositionPushConstants {
   GlobalData* global_data;

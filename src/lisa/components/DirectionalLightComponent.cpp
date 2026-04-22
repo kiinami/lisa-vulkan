@@ -12,7 +12,9 @@ namespace lisa::components { namespace {
   const bool registered = [] {
     using namespace entt::literals;
 
-    systems::ecs::reflect_component<DirectionalLightComponent>("directional_light"_hs)
+    systems::ecs::reflect_component<DirectionalLightComponent>(
+      "directional_light"_hs
+    )
       .data<&DirectionalLightComponent::color>("color"_hs)
       .data<&DirectionalLightComponent::intensity>("intensity"_hs);
 

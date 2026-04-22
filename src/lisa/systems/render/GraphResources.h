@@ -102,6 +102,14 @@ namespace lisa::systems::render {
             vk::ImageLayout::eDepthAttachmentOptimal
           };
           break;
+        case DepthStencilAttachmentRead:
+          dst_state = {
+            vk::PipelineStageFlagBits2::eEarlyFragmentTests |
+              vk::PipelineStageFlagBits2::eLateFragmentTests,
+            vk::AccessFlagBits2::eDepthStencilAttachmentRead,
+            vk::ImageLayout::eDepthReadOnlyOptimal
+          };
+          break;
         case SampledFragment:
           dst_state = {
             vk::PipelineStageFlagBits2::eFragmentShader,
@@ -128,17 +136,24 @@ namespace lisa::systems::render {
       return barrier;
     }
 
-    vk::RenderingAttachmentInfo attachment_info(const bool is_load) const {
+    vk::RenderingAttachmentInfo attachment_info(
+      const bool is_load, const bool is_read_only = false
+    ) const {
       const bool is_depth = image.format().is_depth();
       const graphics::ImageViewDesc view_desc{
         .type = vk::ImageViewType::e2D,
         .format = format(),
         .range = {aspect(), 0, 1, 0, 1}
       };
+
+      auto layout = is_depth ? vk::ImageLayout::eDepthAttachmentOptimal
+                             : vk::ImageLayout::eColorAttachmentOptimal;
+      if (is_depth && is_read_only)
+        layout = vk::ImageLayout::eDepthReadOnlyOptimal;
+
       return vk::RenderingAttachmentInfo{
         .imageView = image.view(view_desc),
-        .imageLayout = is_depth ? vk::ImageLayout::eDepthAttachmentOptimal
-                                : vk::ImageLayout::eColorAttachmentOptimal,
+        .imageLayout = layout,
         .loadOp =
           is_load ? vk::AttachmentLoadOp::eLoad : vk::AttachmentLoadOp::eClear,
         .storeOp = vk::AttachmentStoreOp::eStore,

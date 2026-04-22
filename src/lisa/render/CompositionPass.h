@@ -29,9 +29,11 @@ namespace lisa::render {
 
     ~CompositionPass() override;
 
-    void setup(systems::render::Rendergraph& graph, const pugi::xml_node& node) override;
+    void setup(
+      systems::render::Rendergraph& graph, const pugi::xml_node& node
+    ) override;
     void execute(const systems::render::RenderContext& ctx) override;
-    
+
   private:
     systems::resources::ResourceHandle<resources::Shader> shader_;
     uptr<graphics::Pipeline> pipeline_;
@@ -45,4 +47,4 @@ namespace lisa::render {
 
 }
 
-#endif //LISA_VULKAN_COMPOSITIONPASS_H
+#endif // LISA_VULKAN_COMPOSITIONPASS_H

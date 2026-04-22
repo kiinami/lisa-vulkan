@@ -16,4 +16,4 @@ namespace lisa::components {
 
 }
 
-#endif //LISA_VULKAN_MATERIALCOMPONENT_H
+#endif // LISA_VULKAN_MATERIALCOMPONENT_H

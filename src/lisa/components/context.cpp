@@ -21,5 +21,5 @@ namespace lisa::components::context {
     logging::debug("Component context destroyed");
   }
 
-  systems::ecs::Registry& registry() { return *registry_;};
+  systems::ecs::Registry& registry() { return *registry_; }
 }

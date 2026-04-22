@@ -36,15 +36,15 @@ namespace lisa::render {
                         .attribute("ref")
                         .value())
         .format();
-    auto material_fmt =
+    auto depth_fmt =
       graph
-        .get_resource(node.find_child_by_attribute("output", "id", "material")
+        .get_resource(node.find_child_by_attribute("input", "id", "depth")
                         .attribute("ref")
                         .value())
         .format();
-    auto depth_fmt =
+    auto material_fmt =
       graph
-        .get_resource(node.find_child_by_attribute("output", "id", "depth")
+        .get_resource(node.find_child_by_attribute("output", "id", "material")
                         .attribute("ref")
                         .value())
         .format();
@@ -52,19 +52,22 @@ namespace lisa::render {
     shader_ = resources::context::manager().load<resources::Shader>(
       "geometry.deferred.slang"
     );
-    pipeline_ = std::make_unique<graphics::Pipeline>(
-      graphics::context::descriptor_container().layout(),
-      vk::PushConstantRange{
-        .stageFlags =
-          vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment,
-        .offset = 0,
-        .size = sizeof(systems::render::PushConstants)
-      },
-      *shader_.get(),
-      true,
-      vector<vk::Format>{albedo_fmt, normal_fmt, position_fmt, material_fmt},
-      depth_fmt
-    );
+
+    graphics::Pipeline::CreateParameters params{
+      .push_constant_range =
+        vk::PushConstantRange{
+          .stageFlags = vk::ShaderStageFlagBits::eVertex |
+                        vk::ShaderStageFlagBits::eFragment,
+          .offset = 0,
+          .size = sizeof(systems::render::PushConstants)
+        },
+      .shader = *shader_.get(),
+      .color_attachment_formats =
+        vector<vk::Format>{albedo_fmt, normal_fmt, position_fmt, material_fmt},
+      .depth_attachment_format = depth_fmt,
+      .depth_compare_op = vk::CompareOp::eLessOrEqual
+    };
+    pipeline_ = std::make_unique<graphics::Pipeline>(params);
   }
 
   void GeometryPass::execute(const systems::render::RenderContext& ctx) {

@@ -1,8 +1,8 @@
 //
-// Created by kinami on 4/18/26.
+// Created by kinami on 4/22/26.
 //
 
-#include "ForwardPass.h"
+#include "DepthPass.h"
 
 #include "components/MeshComponent.h"
 #include "components/TextureComponent.h"
@@ -13,41 +13,37 @@
 #include "systems/render/Rendergraph.h"
 
 namespace lisa::render {
-  REGISTER_RENDER_PASS(ForwardPass);
+  REGISTER_RENDER_PASS(DepthPass);
 
-  void ForwardPass::setup(
+  void DepthPass::setup(
     systems::render::Rendergraph& graph, const pugi::xml_node& node
   ) {
-    str color_ref = node.find_child_by_attribute("output", "id", "color")
-                      .attribute("ref")
-                      .value();
-    str depth_ref = node.find_child_by_attribute("output", "id", "depth")
-                      .attribute("ref")
-                      .value();
-
-    auto color_format = graph.get_resource(color_ref).format();
-    auto depth_format = graph.get_resource(depth_ref).format();
+    const auto depth_fmt =
+      graph
+        .get_resource(node.find_child_by_attribute("output", "id", "depth")
+                        .attribute("ref")
+                        .value())
+        .format();
 
     shader_ =
-      resources::context::manager().load<resources::Shader>("forward.slang");
+      resources::context::manager().load<resources::Shader>("depth.slang");
 
     graphics::Pipeline::CreateParameters params{
       .push_constant_range =
         vk::PushConstantRange{
-          .stageFlags = vk::ShaderStageFlagBits::eVertex |
-                        vk::ShaderStageFlagBits::eFragment,
+          .stageFlags = vk::ShaderStageFlagBits::eVertex,
           .offset = 0,
           .size = sizeof(systems::render::PushConstants)
         },
       .shader = *shader_.get(),
-      .color_attachment_formats = vector<vk::Format>{color_format},
+      .position_only = true,
       .depth_test_write = true,
-      .depth_attachment_format = depth_format
+      .depth_attachment_format = depth_fmt
     };
     pipeline_ = std::make_unique<graphics::Pipeline>(params);
   }
 
-  void ForwardPass::execute(const systems::render::RenderContext& ctx) {
+  void DepthPass::execute(const systems::render::RenderContext& ctx) {
     ctx.cmdb->bindPipeline(vk::PipelineBindPoint::eGraphics, **pipeline_);
     ctx.cmdb->bindDescriptorSets(
       vk::PipelineBindPoint::eGraphics,
@@ -60,12 +56,10 @@ namespace lisa::render {
     const auto view = components::context::registry()
                         ->view<
                           const components::TransformComponent,
-                          const components::MeshComponent,
-                          const components::TextureComponent>();
+                          const components::MeshComponent>();
 
     uint32 i = 0;
-    for (auto [entity, transform, mesh_component, texture_component] :
-         view.each()) {
+    for (auto [entity, transform, mesh_component] : view.each()) {
       const auto mesh = mesh_component.resource();
 
       vk::DeviceSize offset = 0;
@@ -82,10 +76,7 @@ namespace lisa::render {
       };
 
       ctx.cmdb->pushConstants<systems::render::PushConstants>(
-        pipeline_->layout(),
-        vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment,
-        0,
-        push_constants
+        pipeline_->layout(), vk::ShaderStageFlagBits::eVertex, 0, push_constants
       );
 
       ctx.cmdb->drawIndexed(mesh->index_count(), 1, 0, 0, 0);

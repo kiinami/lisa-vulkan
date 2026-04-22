@@ -111,6 +111,12 @@ namespace lisa::systems::render {
         vk::ImageMemoryBarrier2 barrier =
           img.transition(resource_states[handle], usage);
         exec_node.barriers.push_back(barrier);
+
+        if (usage == DepthStencilAttachmentRead) {
+          vk::RenderingAttachmentInfo attachment =
+            img.attachment_info(true, true);
+          exec_node.depth_attachment = attachment;
+        }
       }
 
       for (const auto& output : pass_node.children("output")) {

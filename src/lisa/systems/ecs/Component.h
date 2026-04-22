@@ -15,9 +15,8 @@ namespace lisa::systems::ecs {
   protected:
 
   private:
-
   };
 
 }
 
-#endif //LISA_VULKAN_COMPONENT_H
+#endif // LISA_VULKAN_COMPONENT_H

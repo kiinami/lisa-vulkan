@@ -33,20 +33,19 @@ namespace lisa::render {
       "composition.deferred.slang"
     );
 
-    pipeline_ = std::make_unique<graphics::Pipeline>(
-      graphics::context::descriptor_container().layout(),
-      vk::PushConstantRange{
-        .stageFlags =
-          vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment,
-        .offset = 0,
-        .size = sizeof(CompositionPushConstants)
-      },
-      *shader_.get(),
-      false,
-      vector<vk::Format>{final_fmt},
-      vk::Format::eUndefined,
-      true
-    );
+    const graphics::Pipeline::CreateParameters params{
+      .push_constant_range =
+        vk::PushConstantRange{
+          .stageFlags = vk::ShaderStageFlagBits::eVertex |
+                        vk::ShaderStageFlagBits::eFragment,
+          .offset = 0,
+          .size = sizeof(CompositionPushConstants)
+        },
+      .shader = *shader_.get(),
+      .vertex_input = false,
+      .color_attachment_formats = vector<vk::Format>{final_fmt},
+    };
+    pipeline_ = std::make_unique<graphics::Pipeline>(params);
 
     sampler_ = std::make_unique<graphics::Sampler>(
       1.0f, vk::Filter::eNearest, vk::Filter::eNearest

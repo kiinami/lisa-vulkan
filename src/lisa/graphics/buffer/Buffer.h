@@ -36,6 +36,7 @@ namespace lisa::graphics {
 
     vk::DeviceAddress address() const;
     void* mapped_data() const;
+
   private:
     vma::raii::Buffer buffer_ = nullptr;
   };

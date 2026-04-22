@@ -14,7 +14,6 @@
 #include "scene/Scene.h"
 #include "utils/common.h"
 
-
 namespace lisa::systems::render {
 
   class Renderer {

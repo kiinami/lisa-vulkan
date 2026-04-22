@@ -2,63 +2,12 @@
 // Created by kinami on 19/4/26.
 //
 
-struct Input {
-  float3 position;
-  float3 normal;
-  float2 uv;
-  float3 tangent;
-}
-
-Sampler2D textures[];
-
-struct PointLight {
-  float3 position;
-  float intensity;
-  float3 color;
-  float radius;
-}
-
-struct DirLight {
-  float3 direction;
-  float intensity;
-  float3 color;
-  float padding;
-}
-
-struct GlobalData {
-  float4x4 view_projection;
-  float4x4 projection;
-  float4x4 view;
-
-  PointLight* point_lights;
-  uint32_t point_lights_count;
-
-  DirLight* dir_lights;
-  uint32_t dir_lights_count;
-
-  float3 camera_position;
-  float padding;
-};
-
-struct ObjectData {
-  float4x4 model;
-  float4 color;
-  float roughness;
-  float metallic;
-  uint32_t diffuse_texture_index;
-  uint32_t roughness_texture_index;
-  uint32_t metallic_texture_index;
-  uint32_t normal_texture_index;
-  float2 padding;
-};
-
-struct PushConstants {
-  GlobalData* global_data;
-  ObjectData* object_data;
-};
+import common;
 
 [[vk::push_constant]]
-ConstantBuffer<PushConstants> push_constants;
+public ConstantBuffer<PushConstants> push_constants;
+
+Sampler2D textures[];
 
 struct Vertex2Fragment {
   float4 position : SV_POSITION;

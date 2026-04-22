@@ -8,10 +8,9 @@
 #include "entt/meta/factory.hpp"
 #include "systems/ecs/meta.h"
 
-namespace lisa::components {
-  namespace {
-    const bool registered = [] {
-      using namespace entt::literals;
+namespace lisa::components { namespace {
+  const bool registered = [] {
+    using namespace entt::literals;
 
     systems::ecs::reflect_component<MaterialComponent>("material"_hs)
       .data<&MaterialComponent::color>("color"_hs)
@@ -19,6 +18,5 @@ namespace lisa::components {
       .data<&MaterialComponent::metallic>("metallic"_hs);
 
     return true;
-    }();
-  }
-}
+  }();
+}}

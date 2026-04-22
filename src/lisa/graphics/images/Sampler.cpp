@@ -3,6 +3,7 @@
 //
 
 #include "Sampler.h"
+
 #include "graphics/context.h"
 
 namespace lisa::graphics {

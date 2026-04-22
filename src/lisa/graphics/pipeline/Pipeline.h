@@ -5,6 +5,7 @@
 #ifndef LISA_VULKAN_PIPELINE_H
 #define LISA_VULKAN_PIPELINE_H
 
+#include "graphics/context.h"
 #include "graphics/images/ImageFormat.h"
 #include "resources/Shader.h"
 #include "utils/common.h"
@@ -15,15 +16,21 @@ namespace lisa::graphics {
 
   class Pipeline {
   public:
-    Pipeline(
-      vk::DescriptorSetLayout descriptor_set_layout,
-      vk::PushConstantRange push_constant_range,
-      const resources::Shader& shader,
-      bool depth_test_enable,
-      const vector<vk::Format>& color_attachment_formats,
-      vk::Format depth_attachment_format = vk::Format::eUndefined,
-      bool empty_vertex_input = false
-    );
+    struct CreateParameters {
+      vk::DescriptorSetLayout descriptor_set_layout =
+        context::descriptor_container().layout();
+      vk::PushConstantRange push_constant_range;
+      const resources::Shader& shader;
+      bool vertex_input = true;
+      bool position_only = false;
+      const vector<vk::Format>& color_attachment_formats = {};
+      bool depth_test_read = true;
+      bool depth_test_write = false;
+      vk::Format depth_attachment_format = vk::Format::eUndefined;
+      vk::CompareOp depth_compare_op = vk::CompareOp::eLessOrEqual;
+    };
+
+    explicit Pipeline(CreateParameters params);
     ~Pipeline() = default;
 
     operator const vk::raii::Pipeline&() { return pipeline_; }

@@ -145,6 +145,8 @@ src = files(
     'src/lisa/render/GeometryPass.cpp',
     'src/lisa/render/CompositionPass.h',
     'src/lisa/render/CompositionPass.cpp',
+    'src/lisa/render/DepthPass.h',
+    'src/lisa/render/DepthPass.cpp',
 
     'src/lisa/scene/Scene.h',
     'src/lisa/scene/Scene.cpp',

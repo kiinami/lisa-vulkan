@@ -1,21 +1,24 @@
 <rendergraph xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
              xsi:noNamespaceSchemaLocation="rendergraph.xsd"
              output="final">
+    <resource id="depth" type="depth"/>
     <resource id="albedo" type="color"/>
     <resource id="normal" type="normal"/>
     <resource id="position" type="position"/>
     <resource id="material" type="material"/>
     <resource id="final" type="final"/>
-    <resource id="depth" type="depth"/>
 
-    <pass id="geometry" type="deferred::GeometryPass">
+    <pass id="depth_pass" type="depth">
+        <output id="depth" ref="depth" usage="DepthStencilAttachmentWrite"/>
+    </pass>
+    <pass id="geometry_pass" type="deferred::GeometryPass">
+        <input id="depth" ref="depth" usage="DepthStencilAttachmentRead"/>
         <output id="albedo" ref="albedo" usage="ColorAttachmentWrite"/>
         <output id="normal" ref="normal" usage="ColorAttachmentWrite"/>
         <output id="position" ref="position" usage="ColorAttachmentWrite"/>
         <output id="material" ref="material" usage="ColorAttachmentWrite"/>
-        <output id="depth" ref="depth" usage="DepthStencilAttachmentWrite"/>
     </pass>
-    <pass id="composition" type="deferred::CompositionPass">
+    <pass id="composition_pass" type="deferred::CompositionPass">
         <input id="albedo" ref="albedo" usage="SampledFragment"/>
         <input id="normal" ref="normal" usage="SampledFragment"/>
         <input id="position" ref="position" usage="SampledFragment"/>

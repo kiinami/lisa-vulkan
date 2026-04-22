@@ -21,35 +21,39 @@ namespace lisa::graphics {
     return context::device()->createPipelineLayout(layout_ci);
   }
 
-  Pipeline::Pipeline(
-    vk::DescriptorSetLayout descriptor_set_layout,
-    vk::PushConstantRange push_constant_range,
-    const resources::Shader& shader,
-    bool depth_test_enable,
-    const vector<vk::Format>& color_attachment_formats,
-    vk::Format depth_attachment_format,
-    bool empty_vertex_input
-  ) {
-    layout_ = create_layout(descriptor_set_layout, push_constant_range);
+  Pipeline::Pipeline(CreateParameters params) {
+    layout_ =
+      create_layout(params.descriptor_set_layout, params.push_constant_range);
 
-    const vk::VertexInputBindingDescription vertex_binding{
-      .binding = 0,
-      .stride = sizeof(resources::Vertex),
-      .inputRate = vk::VertexInputRate::eVertex
+    vk::PipelineVertexInputStateCreateInfo vertex_input_state{
+      .vertexBindingDescriptionCount = 0u,
+      .pVertexBindingDescriptions = nullptr,
+      .vertexAttributeDescriptionCount = 0u,
+      .pVertexAttributeDescriptions = nullptr
     };
-    const vector<vk::VertexInputAttributeDescription> vertex_attributes =
-      resources::Vertex::attribute_descriptions(vertex_binding.binding);
 
-    const vk::PipelineVertexInputStateCreateInfo vertex_input_state{
-      .vertexBindingDescriptionCount = empty_vertex_input ? 0u : 1u,
-      .pVertexBindingDescriptions =
-        empty_vertex_input ? nullptr : &vertex_binding,
-      .vertexAttributeDescriptionCount =
-        empty_vertex_input ? 0u
-                           : static_cast<uint32_t>(vertex_attributes.size()),
-      .pVertexAttributeDescriptions =
-        empty_vertex_input ? nullptr : vertex_attributes.data()
-    };
+    vk::VertexInputBindingDescription vertex_binding{};
+    vector<vk::VertexInputAttributeDescription> vertex_attributes;
+    if (params.vertex_input) {
+      vertex_binding = {
+        .binding = 0,
+        .stride = sizeof(resources::Vertex),
+        .inputRate = vk::VertexInputRate::eVertex
+      };
+
+      vertex_attributes =
+        resources::Vertex::attribute_descriptions(vertex_binding.binding);
+
+      if (params.position_only && !vertex_attributes.empty())
+        vertex_attributes.resize(1); // Keep only the position attribute
+
+      vertex_input_state.vertexBindingDescriptionCount = 1u;
+      vertex_input_state.pVertexBindingDescriptions = &vertex_binding;
+      vertex_input_state.vertexAttributeDescriptionCount =
+        static_cast<uint32>(vertex_attributes.size());
+      vertex_input_state.pVertexAttributeDescriptions =
+        vertex_attributes.data();
+    }
 
     const vk::PipelineInputAssemblyStateCreateInfo input_assembly_state{
       .topology = vk::PrimitiveTopology::eTriangleList
@@ -57,13 +61,13 @@ namespace lisa::graphics {
 
     vector<str> entry_names;
     vector<vk::PipelineShaderStageCreateInfo> shader_stages;
-    entry_names.reserve(shader.stages().size());
-    shader_stages.reserve(shader.stages().size());
+    entry_names.reserve(params.shader.stages().size());
+    shader_stages.reserve(params.shader.stages().size());
 
-    for (const auto& [stage, entry_point] : shader.stages()) {
+    for (const auto& [stage, entry_point] : params.shader.stages()) {
       shader_stages.push_back(
         vk::PipelineShaderStageCreateInfo{
-          .stage = stage, .module = shader.module(), .pName = entry_point
+          .stage = stage, .module = params.shader.module(), .pName = entry_point
         }
       );
     }
@@ -89,7 +93,7 @@ namespace lisa::graphics {
     };
 
     vector blend_attachments(
-      color_attachment_formats.size(),
+      params.color_attachment_formats.size(),
       vk::PipelineColorBlendAttachmentState{
         .colorWriteMask = vk::ColorComponentFlagBits::eR |
                           vk::ColorComponentFlagBits::eG |
@@ -103,16 +107,16 @@ namespace lisa::graphics {
     };
 
     const vk::PipelineDepthStencilStateCreateInfo depth_stencil_state{
-      .depthTestEnable = static_cast<vk::Bool32>(depth_test_enable),
-      .depthWriteEnable = static_cast<vk::Bool32>(depth_test_enable),
-      .depthCompareOp = vk::CompareOp::eLessOrEqual
+      .depthTestEnable = static_cast<vk::Bool32>(params.depth_test_read),
+      .depthWriteEnable = static_cast<vk::Bool32>(params.depth_test_write),
+      .depthCompareOp = params.depth_compare_op
     };
 
     const vk::PipelineRenderingCreateInfo rendering_ci{
       .colorAttachmentCount =
-        static_cast<uint32>(color_attachment_formats.size()),
-      .pColorAttachmentFormats = color_attachment_formats.data(),
-      .depthAttachmentFormat = depth_attachment_format
+        static_cast<uint32>(params.color_attachment_formats.size()),
+      .pColorAttachmentFormats = params.color_attachment_formats.data(),
+      .depthAttachmentFormat = params.depth_attachment_format
     };
 
     const vk::GraphicsPipelineCreateInfo pipeline_ci{
