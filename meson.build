@@ -147,6 +147,8 @@ src = files(
     'src/lisa/render/CompositionPass.cpp',
     'src/lisa/render/DepthPass.h',
     'src/lisa/render/DepthPass.cpp',
+    'src/lisa/render/SSAOPass.h',
+    'src/lisa/render/SSAOPass.cpp',
 
     'src/lisa/scene/Scene.h',
     'src/lisa/scene/Scene.cpp',
@@ -221,7 +223,7 @@ lisa_library = library(
     'lisa',
     sources: src,
     include_directories: inc,
-    dependencies : [entt, glm, ktx, magic_enum, miniz, pugixml, sdl3, sdl3pp, slang, spdlog, stb, tinyexr, tinyobjloader, vulkan, vma, vma_hpp],
+    dependencies : [entt, glm, ktx, magic_enum, miniz, pugixml, sdl3, sdl3pp, shader_dep, slang, spdlog, stb, tinyexr, tinyobjloader, vulkan, vma, vma_hpp],
     cpp_pch: 'src/lisa/pch/pch.h'
 )
 

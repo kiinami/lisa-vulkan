@@ -25,8 +25,9 @@ namespace lisa::render {
                         .value())
         .format();
 
-    shader_ =
-      resources::context::manager().load<resources::Shader>("depth.slang");
+    shader_ = resources::context::manager().load<resources::Shader>(
+      "preprocess/depth.slang"
+    );
 
     graphics::Pipeline::CreateParameters params{
       .push_constant_range =

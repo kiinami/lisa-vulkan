@@ -78,34 +78,18 @@ namespace lisa::resources {
     const auto i_size = sizeof(uint16_t) * indices.size();
     const auto size = v_size + i_size;
 
-    auto transfer_buffer = graphics::Buffer(
-      size,
-      vk::BufferUsageFlagBits::eTransferSrc,
-      {.flags = vma::AllocationCreateFlagBits::eMapped |
-                vma::AllocationCreateFlagBits::eHostAccessSequentialWrite,
-       .usage = vma::MemoryUsage::eAuto}
-    );
-    std::memcpy(transfer_buffer.mapped_data(), vertices.data(), v_size);
-    std::memcpy(
-      static_cast<char*>(transfer_buffer.mapped_data()) + v_size,
-      indices.data(),
-      i_size
-    );
+    vector<uint8> buffer_data(size);
+    std::memcpy(buffer_data.data(), vertices.data(), v_size);
+    std::memcpy(buffer_data.data() + v_size, indices.data(), i_size);
 
-    vertex_buffer_ = graphics::Buffer(
+    vertex_buffer_ = graphics::Buffer::from_data(
+      buffer_data.data(),
       size,
       vk::BufferUsageFlagBits::eVertexBuffer |
         vk::BufferUsageFlagBits::eIndexBuffer |
         vk::BufferUsageFlagBits::eTransferDst,
       {.usage = vma::MemoryUsage::eAuto}
     );
-
-    auto cmd_buffer = graphics::context::device().cmd_buffer();
-    cmd_buffer.begin_onetime();
-    const vk::BufferCopy copy_region{.size = size};
-    cmd_buffer->copyBuffer(transfer_buffer, vertex_buffer_, copy_region);
-    cmd_buffer->end();
-    graphics::context::device().submit_cmd_buffer_with_fence(cmd_buffer);
 
     return true;
   }

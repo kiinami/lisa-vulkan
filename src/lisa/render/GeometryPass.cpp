@@ -50,7 +50,7 @@ namespace lisa::render {
         .format();
 
     shader_ = resources::context::manager().load<resources::Shader>(
-      "geometry.deferred.slang"
+      "deferred/geometry.slang"
     );
 
     graphics::Pipeline::CreateParameters params{

@@ -1,13 +1,27 @@
-shaders = [
-    'common.slang',
-    'constants.slang',
+shader_out = meson.current_build_dir()
 
-    'depth.slang',
-    'composition.deferred.slang',
-    'geometry.deferred.slang',
+shader_dirs = {
+    'lib' : ['common.slang', 'constants.slang'],
+    'preprocess' : ['depth.slang', 'ssao.slang'],
+    'deferred' : ['composition.slang', 'geometry.slang'],
+    'forward' : ['forward.slang'],
+}
 
-    'forward.slang'
-]
-foreach s : shaders
-    configure_file(input : s, output : s, copy : true)
+shader_targets = []
+
+foreach dir, names : shader_dirs
+    foreach name : names
+        shader_targets += custom_target(
+            dir + '_' + name,
+            input : dir / name,
+            output : dir + '_' + name,
+            command : [
+                'sh', '-c',
+                'mkdir -p ' + shader_out / dir + ' && cp @INPUT@ ' + shader_out / dir / name
+            ],
+            build_by_default : true
+        )
+    endforeach
 endforeach
+
+shader_dep = declare_dependency(sources : shader_targets)

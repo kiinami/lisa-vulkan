@@ -9,6 +9,18 @@
             <xs:enumeration value="normal"/>
             <xs:enumeration value="position"/>
             <xs:enumeration value="material"/>
+            <xs:enumeration value="ssao"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="PassType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="preprocess::depth"/>
+            <xs:enumeration value="preprocess::ssao"/>
+            <xs:enumeration value="preprocess::ssao_blur"/>
+            <xs:enumeration value="forward"/>
+            <xs:enumeration value="deferred::geometry"/>
+            <xs:enumeration value="deferred::composition"/>
         </xs:restriction>
     </xs:simpleType>
 

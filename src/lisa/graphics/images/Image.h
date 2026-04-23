@@ -104,6 +104,15 @@ namespace lisa::graphics {
 
     vk::ImageLayout initial_layout() const { return initial_layout_; }
 
+    static Image from_data(
+      const void* data,
+      size_t size,
+      const vec3& extent,
+      ImageFormat format,
+      vk::ImageUsageFlags usage,
+      uint32 mip_levels = 1
+    );
+
   protected:
     std::variant<vma::raii::Image, vk::Image> image_ = vk::Image(nullptr);
 

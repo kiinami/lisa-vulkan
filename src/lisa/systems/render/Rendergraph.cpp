@@ -15,6 +15,10 @@
 
 namespace lisa::systems::render {
   Rendergraph::Rendergraph(const path& filepath) {
+    shared_sampler_ = std::make_unique<graphics::Sampler>(
+      1.0f, vk::Filter::eNearest, vk::Filter::eNearest
+    );
+
     const auto doc = utils::xml::read(filepath, "rendergraph");
     const auto doc_element = doc.document_element();
 
@@ -116,6 +120,17 @@ namespace lisa::systems::render {
           vk::RenderingAttachmentInfo attachment =
             img.attachment_info(true, true);
           exec_node.depth_attachment = attachment;
+        } else if (usage == SampledFragment) {
+          const vk::DescriptorImageInfo img_info{
+            **shared_sampler_,
+            *img.image.view(
+              {vk::ImageViewType::e2D, img.format(), {img.aspect(), 0, 1, 0, 1}}
+            ),
+            vk::ImageLayout::eShaderReadOnlyOptimal
+          };
+          uint32 index =
+            graphics::context::descriptor_container().write(img_info);
+          exec_node.pass->set_input_index(input.attribute("id").value(), index);
         }
       }
 

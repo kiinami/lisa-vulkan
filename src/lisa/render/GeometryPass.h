@@ -13,7 +13,7 @@ namespace lisa::render {
 
   class GeometryPass : public systems::render::RenderPass {
   public:
-    static constexpr auto TYPE_ID = "deferred::GeometryPass";
+    static constexpr auto TYPE_ID = "deferred::geometry";
 
     explicit GeometryPass(const pugi::xml_node& node) : RenderPass(node) {}
 

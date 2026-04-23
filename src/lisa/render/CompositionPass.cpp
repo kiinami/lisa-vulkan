@@ -12,13 +12,6 @@
 namespace lisa::render {
   REGISTER_RENDER_PASS(CompositionPass);
 
-  CompositionPass::~CompositionPass() {
-    graphics::context::descriptor_container().free(albedo_idx_);
-    graphics::context::descriptor_container().free(normal_idx_);
-    graphics::context::descriptor_container().free(position_idx_);
-    graphics::context::descriptor_container().free(material_idx_);
-  }
-
   void CompositionPass::setup(
     systems::render::Rendergraph& graph, const pugi::xml_node& node
   ) {
@@ -30,7 +23,7 @@ namespace lisa::render {
         .format();
 
     shader_ = resources::context::manager().load<resources::Shader>(
-      "composition.deferred.slang"
+      "deferred/composition.slang"
     );
 
     const graphics::Pipeline::CreateParameters params{
@@ -46,32 +39,6 @@ namespace lisa::render {
       .color_attachment_formats = vector<vk::Format>{final_fmt},
     };
     pipeline_ = std::make_unique<graphics::Pipeline>(params);
-
-    sampler_ = std::make_unique<graphics::Sampler>(
-      1.0f, vk::Filter::eNearest, vk::Filter::eNearest
-    );
-
-    auto register_image = [&](const str& id) {
-      const str ref = node.find_child_by_attribute("input", "id", id.c_str())
-                        .attribute("ref")
-                        .value();
-      const auto& image = graph.get_resource(ref);
-      const vk::DescriptorImageInfo img_info{
-        **sampler_,
-        *image.image.view(
-          {vk::ImageViewType::e2D,
-           image.format(),
-           {vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1}}
-        ),
-        vk::ImageLayout::eShaderReadOnlyOptimal
-      };
-      return graphics::context::descriptor_container().write(img_info);
-    };
-
-    albedo_idx_ = register_image("albedo");
-    normal_idx_ = register_image("normal");
-    position_idx_ = register_image("position");
-    material_idx_ = register_image("material");
   }
 
   void CompositionPass::execute(const systems::render::RenderContext& ctx) {
@@ -87,10 +54,10 @@ namespace lisa::render {
 
     const CompositionPushConstants push{
       .global_bda = ctx.global_bda,
-      .albedo_idx = albedo_idx_,
-      .normal_idx = normal_idx_,
-      .position_idx = position_idx_,
-      .material_idx = material_idx_
+      .albedo_idx = input_indices_.at("albedo"),
+      .normal_idx = input_indices_.at("normal"),
+      .position_idx = input_indices_.at("position"),
+      .material_idx = input_indices_.at("material")
     };
 
     ctx.cmdb->pushConstants<CompositionPushConstants>(

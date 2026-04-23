@@ -19,6 +19,7 @@ using namespace lisa;
 namespace {
   CLI::App app{"lisa"};
   path scene_filepath;
+  path rendergraph_filepath = "../assets/rendergraph/deferred.xml";
   str log_level = "debug";
   int device = 0;
 }
@@ -29,6 +30,10 @@ static int cli_args(int argc, char** argv) {
   app.add_option("scene", scene_filepath, "The XML scene file")
     ->check(CLI::ExistingFile)
     ->required();
+
+  app
+    .add_option("-g,--graph", rendergraph_filepath, "The XML rendergraph file")
+    ->check(CLI::ExistingFile);
 
   app
     .add_option(
@@ -62,9 +67,8 @@ int main(const int argc, char** argv) {
     {
       auto scene = scene::Scene(scene_filepath);
 
-      auto renderer = std::make_unique<systems::render::Renderer>(
-        "../assets/rendergraphs/deferred.xml"
-      );
+      auto renderer =
+        std::make_unique<systems::render::Renderer>(rendergraph_filepath);
 
       while (!window::context::should_close()) {
         window::context::poll_events();
@@ -74,9 +78,8 @@ int main(const int argc, char** argv) {
           graphics::context::device()->waitIdle();
           renderer.reset();
           graphics::context::recreate_swapchain();
-          renderer = std::make_unique<systems::render::Renderer>(
-            "../assets/rendergraphs/deferred.xml"
-          );
+          renderer =
+            std::make_unique<systems::render::Renderer>(rendergraph_filepath);
         }
 
         renderer->render(scene);

@@ -2,8 +2,8 @@
 // Created by kinami on 19/4/26.
 //
 
-import common;
-import constants;
+import lib.common;
+import lib.constants;
 
 
 Sampler2D textures[];

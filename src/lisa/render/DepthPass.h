@@ -13,7 +13,7 @@ namespace lisa::render {
 
   class DepthPass : public systems::render::RenderPass {
   public:
-    static constexpr auto TYPE_ID = "depth";
+    static constexpr auto TYPE_ID = "preprocess::depth";
 
     explicit DepthPass(const pugi::xml_node& node) : RenderPass(node) {}
 

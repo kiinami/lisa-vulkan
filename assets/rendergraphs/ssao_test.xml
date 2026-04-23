@@ -1,0 +1,30 @@
+<rendergraph xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:noNamespaceSchemaLocation="rendergraph.xsd"
+             output="final">
+
+    <resource id="depth" type="depth"/>
+    <resource id="albedo" type="color"/>
+    <resource id="normal" type="normal"/>
+    <resource id="position" type="position"/>
+    <resource id="material" type="material"/>
+    <resource id="final" type="final"/>
+
+    <pass id="depth_pass" type="preprocess::depth">
+        <output id="depth" ref="depth" usage="DepthStencilAttachmentWrite"/>
+    </pass>
+
+    <pass id="geometry_pass" type="deferred::geometry">
+        <input id="depth" ref="depth" usage="DepthStencilAttachmentRead"/>
+        <output id="albedo" ref="albedo" usage="ColorAttachmentWrite"/>
+        <output id="normal" ref="normal" usage="ColorAttachmentWrite"/>
+        <output id="position" ref="position" usage="ColorAttachmentWrite"/>
+        <output id="material" ref="material" usage="ColorAttachmentWrite"/>
+    </pass>
+
+    <pass id="ssao_pass" type="preprocess::ssao">
+        <input id="depth" ref="depth" usage="SampledFragment"/>
+        <input id="position" ref="position" usage="SampledFragment"/>
+        <input id="normal" ref="normal" usage="SampledFragment"/>
+        <output id="ssao" ref="final" usage="ColorAttachmentWrite"/>
+    </pass>
+</rendergraph>

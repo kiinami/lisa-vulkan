@@ -45,14 +45,6 @@ namespace lisa::resources {
     static graphics::Image load_ktx(const path& filepath);
     static graphics::Image load_jpg(const path& filepath);
     static graphics::Image load_exr(const path& filepath);
-    static void generate_mipmaps(
-      const void* pixel_data,
-      size_t buffer_size,
-      uint32 width,
-      uint32 height,
-      uint32 mip_levels,
-      const graphics::Image& image
-    );
   };
 
 }

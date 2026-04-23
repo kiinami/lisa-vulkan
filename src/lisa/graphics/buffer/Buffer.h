@@ -4,8 +4,9 @@
 
 #ifndef LISA_VULKAN_BUFFER_H
 #define LISA_VULKAN_BUFFER_H
-#include "vk_mem_alloc_raii.hpp"
+#include "utils/common.h"
 
+#include <vk_mem_alloc_raii.hpp>
 #include <vulkan/vulkan_raii.hpp>
 
 namespace lisa::graphics {
@@ -34,6 +35,12 @@ namespace lisa::graphics {
       return buffer_.getAllocation();
     }
 
+    static Buffer from_data(
+      const void* data,
+      size size,
+      vk::BufferUsageFlags usage,
+      const vma::AllocationCreateInfo& allocation_ci = {}
+    );
     vk::DeviceAddress address() const;
     void* mapped_data() const;
 

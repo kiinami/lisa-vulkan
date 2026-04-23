@@ -23,11 +23,9 @@ namespace lisa::render {
 
   class CompositionPass : public systems::render::RenderPass {
   public:
-    static constexpr auto TYPE_ID = "deferred::CompositionPass";
+    static constexpr auto TYPE_ID = "deferred::composition";
 
     explicit CompositionPass(const pugi::xml_node& node) : RenderPass(node) {}
-
-    ~CompositionPass() override;
 
     void setup(
       systems::render::Rendergraph& graph, const pugi::xml_node& node
@@ -37,12 +35,6 @@ namespace lisa::render {
   private:
     systems::resources::ResourceHandle<resources::Shader> shader_;
     uptr<graphics::Pipeline> pipeline_;
-    uptr<graphics::Sampler> sampler_;
-
-    DescriptorIndex albedo_idx_ = 0;
-    DescriptorIndex normal_idx_ = 0;
-    DescriptorIndex position_idx_ = 0;
-    DescriptorIndex material_idx_ = 0;
   };
 
 }

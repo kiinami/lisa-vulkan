@@ -2,7 +2,7 @@
 // Created by kinami on 19/4/26.
 //
 
-import common;
+import lib.common;
 
 [[vk::push_constant]]
 public ConstantBuffer<PushConstants> push_constants;

@@ -113,137 +113,6 @@ namespace lisa::resources {
     return image;
   }
 
-  void Texture::generate_mipmaps(
-    const void* pixel_data,
-    size_t buffer_size,
-    uint32 width,
-    uint32 height,
-    uint32 mip_levels,
-    const graphics::Image& image
-  ) {
-    auto cmdb = graphics::context::device().cmd_buffer();
-    cmdb.begin_onetime();
-
-    auto transfer_buffer = graphics::Buffer(
-      buffer_size,
-      vk::BufferUsageFlagBits::eTransferSrc,
-      {.flags = vma::AllocationCreateFlagBits::eMapped |
-                vma::AllocationCreateFlagBits::eHostAccessSequentialWrite,
-       .usage = vma::MemoryUsage::eAuto}
-    );
-    std::memcpy(transfer_buffer.mapped_data(), pixel_data, buffer_size);
-
-    vk::ImageMemoryBarrier2 barrier{
-      .srcStageMask = vk::PipelineStageFlagBits2::eNone,
-      .srcAccessMask = vk::AccessFlagBits2::eNone,
-      .dstStageMask = vk::PipelineStageFlagBits2::eTransfer,
-      .dstAccessMask = vk::AccessFlagBits2::eTransferWrite,
-      .oldLayout = vk::ImageLayout::eUndefined,
-      .newLayout = vk::ImageLayout::eTransferDstOptimal,
-      .image = image,
-      .subresourceRange = {
-        .aspectMask = vk::ImageAspectFlagBits::eColor,
-        .baseMipLevel = 0,
-        .levelCount = 1,
-        .layerCount = 1
-      }
-    };
-    vk::DependencyInfo dependency{
-      .imageMemoryBarrierCount = 1, .pImageMemoryBarriers = &barrier
-    };
-    cmdb->pipelineBarrier2(dependency);
-
-    const vk::BufferImageCopy copy_region{
-      .imageSubresource =
-        {.aspectMask = vk::ImageAspectFlagBits::eColor,
-         .mipLevel = 0,
-         .layerCount = 1},
-      .imageExtent = {width, height, 1}
-    };
-    cmdb->copyBufferToImage(
-      transfer_buffer, image, vk::ImageLayout::eTransferDstOptimal, copy_region
-    );
-
-    int32 mip_width = width;
-    int32 mip_height = height;
-    for (uint32 i = 1; i < mip_levels; i++) {
-      barrier.subresourceRange.baseMipLevel = i - 1;
-      barrier.oldLayout = vk::ImageLayout::eTransferDstOptimal;
-      barrier.newLayout = vk::ImageLayout::eTransferSrcOptimal;
-      barrier.srcStageMask = vk::PipelineStageFlagBits2::eTransfer;
-      barrier.srcAccessMask = vk::AccessFlagBits2::eTransferWrite;
-      barrier.dstStageMask = vk::PipelineStageFlagBits2::eTransfer;
-      barrier.dstAccessMask = vk::AccessFlagBits2::eTransferRead;
-      cmdb->pipelineBarrier2(dependency);
-
-      barrier.subresourceRange.baseMipLevel = i;
-      barrier.oldLayout = vk::ImageLayout::eUndefined;
-      barrier.newLayout = vk::ImageLayout::eTransferDstOptimal;
-      barrier.srcStageMask = vk::PipelineStageFlagBits2::eNone;
-      barrier.srcAccessMask = vk::AccessFlagBits2::eNone;
-      barrier.dstStageMask = vk::PipelineStageFlagBits2::eTransfer;
-      barrier.dstAccessMask = vk::AccessFlagBits2::eTransferWrite;
-      cmdb->pipelineBarrier2(dependency);
-
-      vk::ImageBlit blit{
-        .srcSubresource =
-          {.aspectMask = vk::ImageAspectFlagBits::eColor,
-           .mipLevel = i - 1,
-           .baseArrayLayer = 0,
-           .layerCount = 1},
-        .dstSubresource = {
-          .aspectMask = vk::ImageAspectFlagBits::eColor,
-          .mipLevel = i,
-          .baseArrayLayer = 0,
-          .layerCount = 1
-        }
-      };
-
-      blit.srcOffsets[0] = vk::Offset3D{0, 0, 0};
-      blit.srcOffsets[1] = vk::Offset3D{mip_width, mip_height, 1};
-
-      blit.dstOffsets[0] = vk::Offset3D{0, 0, 0};
-      blit.dstOffsets[1] = vk::Offset3D{
-        mip_width > 1 ? mip_width / 2 : 1,
-        mip_height > 1 ? mip_height / 2 : 1,
-        1
-      };
-      cmdb->blitImage(
-        image,
-        vk::ImageLayout::eTransferSrcOptimal,
-        image,
-        vk::ImageLayout::eTransferDstOptimal,
-        blit,
-        vk::Filter::eLinear
-      );
-
-      barrier.subresourceRange.baseMipLevel = i - 1;
-      barrier.oldLayout = vk::ImageLayout::eTransferSrcOptimal;
-      barrier.newLayout = vk::ImageLayout::eReadOnlyOptimal;
-      barrier.srcStageMask = vk::PipelineStageFlagBits2::eTransfer;
-      barrier.srcAccessMask = vk::AccessFlagBits2::eTransferRead;
-      barrier.dstStageMask = vk::PipelineStageFlagBits2::eFragmentShader;
-      barrier.dstAccessMask = vk::AccessFlagBits2::eShaderRead;
-      cmdb->pipelineBarrier2(dependency);
-
-      if (mip_width > 1) mip_width /= 2;
-      if (mip_height > 1) mip_height /= 2;
-    }
-
-    barrier.subresourceRange.baseMipLevel = mip_levels - 1;
-    barrier.oldLayout = vk::ImageLayout::eTransferDstOptimal;
-    barrier.newLayout = vk::ImageLayout::eReadOnlyOptimal;
-    barrier.srcStageMask = vk::PipelineStageFlagBits2::eTransfer;
-    barrier.srcAccessMask = vk::AccessFlagBits2::eTransferWrite;
-    barrier.dstStageMask = vk::PipelineStageFlagBits2::eFragmentShader;
-    barrier.dstAccessMask = vk::AccessFlagBits2::eShaderRead;
-    cmdb->pipelineBarrier2(dependency);
-
-    cmdb->end();
-
-    graphics::context::device().submit_cmd_buffer_with_fence(cmdb);
-  }
-
   graphics::Image Texture::load_jpg(const path& filepath) {
     int w, h, channels;
     stbi_set_flip_vertically_on_load(true);
@@ -261,19 +130,14 @@ namespace lisa::resources {
       1;
     const size buffer_size = width * height * 4;
 
-    auto image = graphics::Image(
+    auto image = graphics::Image::from_data(
+      pixels,
+      buffer_size,
+      {static_cast<float>(width), static_cast<float>(height), 1.0f},
       graphics::ImageFormat(vk::Format::eR8G8B8A8Unorm),
-      vk::ImageUsageFlagBits::eTransferDst |
-        vk::ImageUsageFlagBits::eTransferSrc |
-        vk::ImageUsageFlagBits::eSampled,
-      {width, height, 1},
-      vk::ImageType::e2D,
-      mip_levels,
-      vk::ImageLayout::eUndefined,
-      {.usage = vma::MemoryUsage::eAuto}
+      vk::ImageUsageFlagBits::eSampled,
+      mip_levels
     );
-
-    generate_mipmaps(pixels, buffer_size, width, height, mip_levels, image);
 
     stbi_image_free(pixels);
 
@@ -313,19 +177,14 @@ namespace lisa::resources {
       1;
     const auto buffer_size = width * height * 4 * sizeof(float);
 
-    auto image = graphics::Image(
+    auto image = graphics::Image::from_data(
+      out_rgba,
+      buffer_size,
+      {static_cast<float>(width), static_cast<float>(height), 1.0f},
       graphics::ImageFormat(vk::Format::eR32G32B32A32Sfloat),
-      vk::ImageUsageFlagBits::eTransferDst |
-        vk::ImageUsageFlagBits::eTransferSrc |
-        vk::ImageUsageFlagBits::eSampled,
-      {width, height, 1},
-      vk::ImageType::e2D,
-      mip_levels,
-      vk::ImageLayout::eUndefined,
-      {.usage = vma::MemoryUsage::eAuto}
+      vk::ImageUsageFlagBits::eSampled,
+      mip_levels
     );
-
-    generate_mipmaps(out_rgba, buffer_size, width, height, mip_levels, image);
 
     free(out_rgba);
 

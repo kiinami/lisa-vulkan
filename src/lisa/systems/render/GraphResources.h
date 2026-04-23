@@ -57,6 +57,10 @@ namespace lisa::systems::render {
          {vk::Format::eR8G8B8A8Unorm,
           vk::ImageUsageFlagBits::eColorAttachment |
             vk::ImageUsageFlagBits::eSampled}},
+        {"ssao",
+         {vk::Format::eR8Unorm,
+          vk::ImageUsageFlagBits::eColorAttachment |
+            vk::ImageUsageFlagBits::eSampled}},
       };
 
       if (const auto it = aliases.find(type); it != aliases.end())

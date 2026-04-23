@@ -28,8 +28,9 @@ namespace lisa::render {
     auto color_format = graph.get_resource(color_ref).format();
     auto depth_format = graph.get_resource(depth_ref).format();
 
-    shader_ =
-      resources::context::manager().load<resources::Shader>("forward.slang");
+    shader_ = resources::context::manager().load<resources::Shader>(
+      "forward/forward.slang"
+    );
 
     graphics::Pipeline::CreateParameters params{
       .push_constant_range =
