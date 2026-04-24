@@ -179,6 +179,8 @@ src = files(
     'src/lisa/components/DirectionalLightComponent.cpp',
     'src/lisa/components/MaterialComponent.h',
     'src/lisa/components/MaterialComponent.cpp',
+    'src/lisa/components/AmbientLightComponent.h',
+    'src/lisa/components/AmbientLightComponent.cpp',
 
     'src/lisa/systems/render/Renderer.h',
     'src/lisa/systems/render/Renderer.cpp',

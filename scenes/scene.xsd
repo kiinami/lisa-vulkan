@@ -120,6 +120,14 @@
                                 </xs:complexType>
                             </xs:element>
 
+                            <!-- Ambient Light -->
+                            <xs:element name="ambient_light" minOccurs="0">
+                                <xs:complexType>
+                                    <xs:attribute name="color" type="floatList" use="required"/>
+                                    <xs:attribute name="intensity" type="xs:float" use="required"/>
+                                </xs:complexType>
+                            </xs:element>
+
                         </xs:all>
 
                         <xs:attribute name="name" type="xs:string"/>

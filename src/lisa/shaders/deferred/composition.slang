@@ -14,6 +14,7 @@ struct CompositionPushConstants {
   uint32_t normal_idx;
   uint32_t position_idx;
   uint32_t material_idx;
+  uint32_t ssao_idx;
 };
 
 [[vk::push_constant]]
@@ -68,6 +69,7 @@ float4 fragment(Vertex2Fragment input) : SV_Target {
   float4 material = textures[push_constants.material_idx].Sample(input.uv);
   float roughness = material.x;
   float metallic = material.y;
+  float ssao = textures[push_constants.ssao_idx].Sample(input.uv).r;
 
   float3 V = normalize(push_constants.global_data->camera_position - world_position);
 
@@ -91,6 +93,11 @@ float4 fragment(Vertex2Fragment input) : SV_Target {
     shading += brdf(albedo, roughness, metallic, N, L, V) * light.color * light.intensity * falloff * NdotL;
   }
 
-  float3 ambient = albedo * 0.02;
-  return float4(shading + ambient, 1.0);
+  for (uint32_t i = 0; i < push_constants.global_data->ambient_lights_count; i++) {
+    AmbientLight light = push_constants.global_data->ambient_lights[i];
+    float3 diffuse_color = albedo * (1.0 - metallic);
+    shading += light.color * light.intensity * diffuse_color * ssao;
+  }
+
+  return float4(shading, 1.0);
 }

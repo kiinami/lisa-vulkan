@@ -25,6 +25,11 @@ public struct DirLight {
   float padding;
 }
 
+public struct AmbientLight {
+  public float intensity;
+  public float3 color;
+}
+
 public struct GlobalData {
   public float4x4 view_projection;
   public float4x4 projection;
@@ -32,14 +37,16 @@ public struct GlobalData {
 
   public PointLight* point_lights;
   public DirLight* dir_lights;
+  public AmbientLight* ambient_lights;
 
   public uint32_t point_lights_count;
   public uint32_t dir_lights_count;
+  public uint32_t ambient_lights_count;
 
   public float3 camera_position;
   public float2 texel_size;
 
-  float padding;
+  float2 padding;
 };
 
 public struct ObjectData {

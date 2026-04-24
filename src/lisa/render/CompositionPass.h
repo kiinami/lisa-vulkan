@@ -19,6 +19,7 @@ namespace lisa::render {
     DescriptorIndex normal_idx;
     DescriptorIndex position_idx;
     DescriptorIndex material_idx;
+    DescriptorIndex ssao_idx;
   };
 
   class CompositionPass : public systems::render::RenderPass {

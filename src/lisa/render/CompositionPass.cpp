@@ -57,7 +57,8 @@ namespace lisa::render {
       .albedo_idx = input_indices_.at("albedo"),
       .normal_idx = input_indices_.at("normal"),
       .position_idx = input_indices_.at("position"),
-      .material_idx = input_indices_.at("material")
+      .material_idx = input_indices_.at("material"),
+      .ssao_idx = input_indices_.at("ssao")
     };
 
     ctx.cmdb->pushConstants<CompositionPushConstants>(

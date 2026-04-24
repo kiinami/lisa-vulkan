@@ -48,6 +48,8 @@ namespace lisa::systems::render {
       point_lights_buffers_;
     array<graphics::Buffer, graphics::constants::MAX_FRAMES_IN_FLIGHT>
       dir_lights_buffers_;
+    array<graphics::Buffer, graphics::constants::MAX_FRAMES_IN_FLIGHT>
+      ambient_lights_buffers_;
 
     array<graphics::Semaphore, graphics::constants::MAX_FRAMES_IN_FLIGHT>
       available_s_;

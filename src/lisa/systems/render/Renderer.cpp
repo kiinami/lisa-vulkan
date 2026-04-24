@@ -50,6 +50,11 @@ namespace lisa::systems::render {
         usage,
         allocation_ci
       );
+      ambient_lights_buffers_[i] = graphics::Buffer(
+        sizeof(AmbientLightData) * graphics::constants::MAX_AMBIENT_LIGHTS,
+        usage,
+        allocation_ci
+      );
       available_s_[i] = graphics::Semaphore();
       finished_s_[i] = graphics::Semaphore();
     }
@@ -142,6 +147,26 @@ namespace lisa::systems::render {
 
       global_data->update_dir_lights(
         dir_lights_buffers_[current_frame_].address(), i
+      );
+    }
+
+    auto* ambient_light_data = static_cast<AmbientLightData*>(
+      ambient_lights_buffers_[current_frame_].mapped_data()
+    );
+
+    {
+      const auto ambient_lights_view =
+        components::context::registry()
+          ->view<const components::AmbientLightComponent>();
+
+      uint32 i = 0;
+      for (auto [e, dir_light_c] : ambient_lights_view.each()) {
+        ambient_light_data[i] = AmbientLightData(dir_light_c);
+        i++;
+      }
+
+      global_data->update_ambient_lights(
+        ambient_lights_buffers_[current_frame_].address(), i
       );
     }
 

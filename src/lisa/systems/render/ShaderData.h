@@ -5,6 +5,7 @@
 #ifndef LISA_VULKAN_SHADERDATA_H
 #define LISA_VULKAN_SHADERDATA_H
 
+#include "components/AmbientLightComponent.h"
 #include "components/CameraComponent.h"
 #include "components/DirectionalLightComponent.h"
 #include "components/PointLightComponent.h"
@@ -45,6 +46,16 @@ namespace lisa::systems::render {
     }
   };
 
+  struct alignas(16) AmbientLightData {
+    float intensity;
+    rgb color;
+
+    explicit AmbientLightData(const components::AmbientLightComponent& light) {
+      intensity = light.intensity;
+      color = light.color;
+    }
+  };
+
   struct alignas(16) GlobalData {
     mat4 view_projection;
     mat4 projection;
@@ -52,13 +63,16 @@ namespace lisa::systems::render {
 
     vk::DeviceAddress point_lights_bda;
     vk::DeviceAddress dir_lights_bda;
+    vk::DeviceAddress ambient_lights_bda;
 
     uint32 point_lights_count;
     uint32 dir_lights_count;
+    uint32 ambient_lights_count;
 
     vec3 camera_position;
     vec2 texel_size;
-    uint32 padding;
+
+    uint32 padding[2];
 
     void update_camera(
       const components::TransformComponent& transform,
@@ -78,6 +92,12 @@ namespace lisa::systems::render {
     void update_dir_lights(const vk::DeviceAddress bda, const uint32 count) {
       dir_lights_bda = bda;
       dir_lights_count = count;
+    }
+
+    void
+      update_ambient_lights(const vk::DeviceAddress bda, const uint32 count) {
+      ambient_lights_bda = bda;
+      ambient_lights_count = count;
     }
   };
 
