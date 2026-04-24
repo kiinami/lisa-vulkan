@@ -168,6 +168,8 @@ namespace lisa::systems::render {
   ) {
     for (const auto& [pass, barriers, color_attachments, depth_attachment] :
          nodes_) {
+      cmdb.begin_region(pass->id());
+
       if (!barriers.empty()) {
         vk::DependencyInfo dep_info{
           .imageMemoryBarrierCount = static_cast<uint32_t>(barriers.size()),
@@ -206,6 +208,7 @@ namespace lisa::systems::render {
       pass->execute(ctx);
 
       if (has_attachments) cmdb->endRendering();
+      cmdb.end_region();
     }
   }
 }

@@ -87,6 +87,7 @@ namespace lisa::systems::render {
     reset();
 
     cmd_buffer_.begin_onetime();
+    cmd_buffer_.begin_region("setup");
 
     auto* global_data = static_cast<GlobalData*>(
       global_data_buffers_[current_frame_].mapped_data()
@@ -226,6 +227,9 @@ namespace lisa::systems::render {
       }
     }
 
+    cmd_buffer_.end_region();
+    cmd_buffer_.begin_region("passes");
+
     graph_.render(
       cmd_buffer_,
       scene,
@@ -233,9 +237,14 @@ namespace lisa::systems::render {
       object_data_buffers_[current_frame_].address()
     );
 
+    cmd_buffer_.end_region();
+    cmd_buffer_.begin_region("copy");
+
     const auto swapchain_image = swapchain_.copy(
       graph_.output_resource().image, cmd_buffer_, available_s_[current_frame_]
     );
+
+    cmd_buffer_.end_region();
 
     cmd_buffer_->end();
 

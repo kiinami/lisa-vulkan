@@ -29,6 +29,10 @@ add_project_arguments('-DGLM_ENABLE_EXPERIMENTAL', language : 'cpp')
 add_project_arguments('-DMAGIC_ENUM_RANGE_MIN=0', language : 'cpp')
 add_project_arguments('-DMAGIC_ENUM_RANGE_MAX=2000', language : 'cpp')
 
+if get_option('debug')
+    add_project_arguments('-DDEBUG', language: 'cpp')
+endif
+
 ###############################################################################
 # Dependencies
 ###############################################################################

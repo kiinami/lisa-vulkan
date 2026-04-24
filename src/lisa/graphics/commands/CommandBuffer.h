@@ -42,6 +42,11 @@ namespace lisa::graphics {
     void reset() const;
     void begin_onetime() const;
 
+    void begin_region(
+      const str& name, const rgba& color = {1.0, 1.0, 1.0, 1.0}
+    ) const;
+    void end_region() const;
+
   private:
     vk::raii::CommandBuffer buffer_ = nullptr;
     mutable vector<std::shared_ptr<void>> dependencies_;
