@@ -7,7 +7,6 @@
 #include "components/MeshComponent.h"
 #include "components/TextureComponent.h"
 #include "components/TransformComponent.h"
-#include "components/context.h"
 #include "graphics/context.h"
 #include "systems/render/RenderPassRegistry.h"
 #include "systems/render/Rendergraph.h"

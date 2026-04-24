@@ -22,24 +22,31 @@
         <output id="material" ref="material" usage="ColorAttachmentWrite"/>
     </pass>
 
-    <!--    <pass id="ssao_pass" type="preprocess::ssao">-->
-    <!--        <input id="depth" ref="depth" usage="DepthStencilAttachmentRead"/>-->
-    <!--        <input id="position" ref="position" usage="SampledFragment"/>-->
-    <!--        <input id="normal" ref="normal" usage="SampledFragment"/>-->
-    <!--        <output id="ssao" ref="ssao" usage="ColorAttachmentWrite"/>-->
-    <!--    </pass>-->
+    <pass id="ssao_pass" type="preprocess::ssao">
+        <input id="depth" ref="depth" usage="SampledFragment"/>
+        <input id="position" ref="position" usage="SampledFragment"/>
+        <input id="normal" ref="normal" usage="SampledFragment"/>
+        <output id="ssao" ref="ssao" usage="ColorAttachmentWrite"/>
+    </pass>
 
-    <!--    <pass id="ssao_blur_pass" type="preprocess::ssao_blur">-->
-    <!--        <input id="ssao" ref="ssao" usage="SampledFragment"/>-->
-    <!--        <output id="ssao_blurred" ref="ssao_blurred" usage="ColorAttachmentWrite"/>-->
-    <!--    </pass>-->
+    <pass id="ssao_blur_pass" type="postprocess::convolutional">
+        <parameter id="kernel">
+            1 1 1 1 1
+            1 1 1 1 1
+            1 1 1 1 1
+            1 1 1 1 1
+            1 1 1 1 1
+        </parameter>
+        <input id="input" ref="ssao" usage="SampledFragment"/>
+        <output id="output" ref="ssao_blurred" usage="ColorAttachmentWrite"/>
+    </pass>
 
     <pass id="composition_pass" type="deferred::composition">
         <input id="albedo" ref="albedo" usage="SampledFragment"/>
         <input id="normal" ref="normal" usage="SampledFragment"/>
         <input id="position" ref="position" usage="SampledFragment"/>
         <input id="material" ref="material" usage="SampledFragment"/>
-        <!--        <input id="ssao" ref="ssao_blurred" usage="SampledFragment"/>-->
+        <input id="ssao" ref="ssao_blurred" usage="SampledFragment"/>
         <output id="final" ref="final" usage="ColorAttachmentWrite"/>
     </pass>
 

@@ -5,6 +5,7 @@ shader_dirs = {
     'preprocess' : ['depth.slang', 'ssao.slang'],
     'deferred' : ['composition.slang', 'geometry.slang'],
     'forward' : ['forward.slang'],
+    'postprocess' : ['convolutional.slang'],
 }
 
 shader_targets = []

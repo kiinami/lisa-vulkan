@@ -51,13 +51,14 @@ namespace lisa::systems::render {
     mat4 view;
 
     vk::DeviceAddress point_lights_bda;
-    uint32 point_lights_count;
-
     vk::DeviceAddress dir_lights_bda;
+
+    uint32 point_lights_count;
     uint32 dir_lights_count;
 
     vec3 camera_position;
-    float padding;
+    vec2 texel_size;
+    uint32 padding;
 
     void update_camera(
       const components::TransformComponent& transform,

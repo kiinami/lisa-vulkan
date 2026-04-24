@@ -41,6 +41,8 @@ namespace lisa::utils::xml {
 
     const auto f = parse_float_list(value);
 
+    if constexpr (std::is_same_v<T, vector<float>>) return f;
+
     if constexpr (std::is_same_v<T, vec3>) {
       if (f.empty()) return vec3{0.0f};
       if (f.size() == 1) return vec3{f[0]};

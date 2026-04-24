@@ -7,6 +7,7 @@
     <resource id="normal" type="normal"/>
     <resource id="position" type="position"/>
     <resource id="material" type="material"/>
+    <resource id="ssao" type="ssao"/>
     <resource id="final" type="final"/>
 
     <pass id="depth_pass" type="preprocess::depth">
@@ -25,6 +26,18 @@
         <input id="depth" ref="depth" usage="SampledFragment"/>
         <input id="position" ref="position" usage="SampledFragment"/>
         <input id="normal" ref="normal" usage="SampledFragment"/>
-        <output id="ssao" ref="final" usage="ColorAttachmentWrite"/>
+        <output id="ssao" ref="ssao" usage="ColorAttachmentWrite"/>
+    </pass>
+
+    <pass id="ssao_blur_pass" type="postprocess::convolutional">
+        <parameter id="kernel">
+            1 1 1 1 1
+            1 1 1 1 1
+            1 1 1 1 1
+            1 1 1 1 1
+            1 1 1 1 1
+        </parameter>
+        <input id="input" ref="ssao" usage="SampledFragment"/>
+        <output id="output" ref="final" usage="ColorAttachmentWrite"/>
     </pass>
 </rendergraph>

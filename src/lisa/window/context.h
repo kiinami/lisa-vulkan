@@ -15,6 +15,7 @@ namespace lisa::window::context {
   vec2 window_size();
   uint32 window_width();
   uint32 window_height();
+  vec2 texel_size();
   vec2 from_scale(float scale);
   bool should_close();
   bool was_resized();

@@ -31,12 +31,14 @@ public struct GlobalData {
   public float4x4 view;
 
   public PointLight* point_lights;
-  public uint32_t point_lights_count;
-
   public DirLight* dir_lights;
+
+  public uint32_t point_lights_count;
   public uint32_t dir_lights_count;
 
   public float3 camera_position;
+  public float2 texel_size;
+
   float padding;
 };
 

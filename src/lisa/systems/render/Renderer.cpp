@@ -14,6 +14,7 @@
 #include "components/TransformComponent.h"
 #include "components/context.h"
 #include "graphics/context.h"
+#include "window/context.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <sys/stat.h>
@@ -143,6 +144,8 @@ namespace lisa::systems::render {
         dir_lights_buffers_[current_frame_].address(), i
       );
     }
+
+    global_data->texel_size = window::context::texel_size();
 
     auto* object_data = static_cast<ObjectData*>(
       object_data_buffers_[current_frame_].mapped_data()

@@ -19,7 +19,7 @@ using namespace lisa;
 namespace {
   CLI::App app{"lisa"};
   path scene_filepath;
-  path rendergraph_filepath = "../assets/rendergraph/deferred.xml";
+  path rendergraph_filepath = "../assets/rendergraphs/deferred.xml";
   str log_level = "debug";
   int device = 0;
 }

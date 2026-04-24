@@ -149,6 +149,8 @@ src = files(
     'src/lisa/render/DepthPass.cpp',
     'src/lisa/render/SSAOPass.h',
     'src/lisa/render/SSAOPass.cpp',
+    'src/lisa/render/ConvolutionalPass.h',
+    'src/lisa/render/ConvolutionalPass.cpp',
 
     'src/lisa/scene/Scene.h',
     'src/lisa/scene/Scene.cpp',
