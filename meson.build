@@ -212,6 +212,11 @@ src = files(
     'src/lisa/systems/resources/ResourceManager.h',
     'src/lisa/systems/resources/ResourceManager.cpp',
 
+    'src/lisa/update/context.h',
+    'src/lisa/update/context.cpp',
+    'src/lisa/update/CameraMovement.h',
+    'src/lisa/update/CameraMovement.cpp',
+
     'src/lisa/utils/chk.h',
     'src/lisa/utils/defer.h',
     'src/lisa/utils/logging.h',

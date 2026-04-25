@@ -36,6 +36,25 @@ namespace lisa::components {
       dirty_ = true;
     }
 
+    void translate(const vec3& delta) {
+      position_ += delta;
+      dirty_ = true;
+    }
+
+    void translate_local(const vec3& delta) {
+      position_ += rotation_ * delta;
+      dirty_ = true;
+    }
+
+    void rotate(const quat& delta) {
+      rotation_ = glm::normalize(delta * rotation_);
+      dirty_ = true;
+    }
+
+    void rotate(const vec3& axis, const float angle) {
+      rotate(glm::angleAxis(angle, glm::normalize(axis)));
+    }
+
     mat4 matrix() const;
 
   private:

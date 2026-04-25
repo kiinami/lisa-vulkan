@@ -14,12 +14,24 @@ Hobby rendering engine in Vulkan
 - PBR materials, defined by constants or textures
 - Multiple light types
 - Strong assets pipeline
+- Camera movement with WASD and QE (up and down)
 
 ## Building
 
 ### Linux
 
 1. Install dependencies:
+   - [LunarG Vulkan SDK](https://vulkan.lunarg.com/sdk/home#windows) (and note the installation directory path)
+2. Run the following command to set up the build directory
+   ```shell
+   meson setup -Dvulkan_sdk=<vulkan SDK path>
+   ```
+3. Compile the app:
+   ```shell
+   cd buildDir
+   meson compile lisa_app -j 10
+   ```
+4. Now you can run the engine! Refer to the usage section.
 
 ### Windows
 

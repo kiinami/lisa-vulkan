@@ -5,6 +5,8 @@
 #ifndef LISA_VULKAN_EVENTS_H
 #define LISA_VULKAN_EVENTS_H
 
+#include "utils/macros.h"
+
 namespace lisa::window::events {
   struct Event {};
 
@@ -18,9 +20,6 @@ namespace lisa::window::events {
     int code;
   };
 }
-
-#define CONCAT_IMPL(x, y) x##y
-#define CONCAT(x, y) CONCAT_IMPL(x, y)
 
 #define REGISTER_EVENT_IMPL(event, function, id)           \
   namespace {                                              \

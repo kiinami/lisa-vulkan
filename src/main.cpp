@@ -10,6 +10,7 @@
 #include "scene/Scene.h"
 #include "systems/render/Renderer.h"
 #include "systems/resources/ResourceManager.h"
+#include "update/context.h"
 #include "window/context.h"
 #include "window/events.h"
 
@@ -95,6 +96,7 @@ int main(const int argc, char** argv) {
     graphics::context::init();
     resources::context::init();
     components::context::init();
+    update::context::init();
 
     {
       scene_ = std::make_unique<scene::Scene>(scene_filepath);
@@ -104,6 +106,8 @@ int main(const int argc, char** argv) {
       while (!should_close) {
         window::context::dispatcher().update();
         window::context::poll_events();
+        update::context::tick();
+
         renderer_->render(*scene_);
       }
 
@@ -112,6 +116,7 @@ int main(const int argc, char** argv) {
       scene_.reset();
     }
 
+    update::context::destroy();
     components::context::destroy();
     resources::context::destroy();
     graphics::context::destroy();

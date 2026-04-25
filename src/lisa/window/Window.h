@@ -27,6 +27,10 @@ namespace lisa::window {
 
     void mark_dirty() const { size_dirty_ = true; }
 
+    static std::span<const bool> keyboard_state() {
+      return SDL::GetKeyboardState();
+    }
+
   private:
     SDL::Window window_ = nullptr;
     mutable WindowSize size_;
