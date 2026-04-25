@@ -4,6 +4,8 @@
 
 #ifndef LISA_VULKAN_WINDOW_H
 #define LISA_VULKAN_WINDOW_H
+#include "utils/common.h"
+
 #include <SDL3pp/SDL3pp.h>
 
 namespace lisa::window {
@@ -29,6 +31,12 @@ namespace lisa::window {
 
     static std::span<const bool> keyboard_state() {
       return SDL::GetKeyboardState();
+    }
+
+    static vec2 mouse_state() {
+      float dx, dy;
+      SDL::GetRelativeMouseState(&dx, &dy);
+      return {dx, dy};
     }
 
   private:
