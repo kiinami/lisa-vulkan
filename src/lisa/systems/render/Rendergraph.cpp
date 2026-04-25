@@ -31,15 +31,22 @@ namespace lisa::systems::render {
   }
 
   void Rendergraph::allocate_resources(const pugi::xml_node& doc_element) {
+    auto [width, height] = graphics::context::swapchain().extent();
+
     for (const auto& node : doc_element.children("resource")) {
-      str id = node.attribute("id").value();
+      const auto id = node.attribute("id").value();
       const auto metadata =
         ImageGraphResourceMetadata::from_type(node.attribute("type").value());
-      auto size =
-        window::context::from_scale(node.attribute("scale").as_float(1.0f));
+      const auto scale = node.attribute("scale").as_float(1.0f);
+
+      vec3 size(
+        static_cast<float>(width) * scale,
+        static_cast<float>(height) * scale,
+        1.0f
+      );
 
       resource_id_map_[id] = static_cast<GraphResourceHandle>(images_.size());
-      auto image = ImageGraphResource(metadata, vec3(size, 1.0f));
+      auto image = ImageGraphResource(metadata, size);
       images_.push_back(std::move(image));
     }
   }
