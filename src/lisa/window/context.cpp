@@ -67,6 +67,14 @@ namespace lisa::window::context {
         event.type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED
       )
         dispatcher().enqueue<events::WindowResize>();
+      if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN)
+        dispatcher().enqueue<events::MouseButtonDown>(
+          events::MouseButtonDown{event.button.button}
+        );
+      if (event.type == SDL_EVENT_MOUSE_BUTTON_UP)
+        dispatcher().enqueue<events::MouseButtonUp>(
+          events::MouseButtonUp{event.button.button}
+        );
     }
   }
 }

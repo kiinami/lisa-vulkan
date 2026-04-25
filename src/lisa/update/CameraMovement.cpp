@@ -46,6 +46,8 @@ namespace lisa::update {
   REGISTER_UPDATE(update_camera_position);
 
   void update_camera_rotation(const float dt) {
+    if (!(SDL::GetMouseState(nullptr, nullptr) & SDL::BUTTON_LMASK)) return;
+
     const auto transform = find_camera_transform();
     if (!transform) return;
 

@@ -5,6 +5,7 @@
 #ifndef LISA_VULKAN_EVENTS_H
 #define LISA_VULKAN_EVENTS_H
 
+#include "utils/common.h"
 #include "utils/macros.h"
 
 namespace lisa::window::events {
@@ -16,9 +17,18 @@ namespace lisa::window::events {
 
   struct WindowResize : WindowEvent {};
 
-  struct KeyDown : Event {
-    int code;
+  struct InputEvent : Event {};
+
+  struct MouseButtonDown : InputEvent {
+    explicit MouseButtonDown(const uint8 button) : button(button) {}
+    uint8 button;
   };
+
+  struct MouseButtonUp : InputEvent {
+    explicit MouseButtonUp(const uint8 button) : button(button) {}
+    uint8 button;
+  };
+
 }
 
 #define REGISTER_EVENT_IMPL(event, function, id)           \
