@@ -10,15 +10,21 @@ shader_dirs = {
 
 shader_targets = []
 
+fs = import('fs')
+
 foreach dir, names : shader_dirs
     foreach name : names
         shader_targets += custom_target(
             dir + '_' + name,
             input : dir / name,
-            output : dir + '_' + name,
+            output : dir + '_' + name + '.slang',
             command : [
-                'sh', '-c',
-                'mkdir -p ' + shader_out / dir + ' && cp @INPUT@ ' + shader_out / dir / name
+                find_program('python3', 'python'),
+                '-c',
+                'import sys, shutil, os; os.makedirs(sys.argv[1], exist_ok=True); shutil.copy(sys.argv[2], sys.argv[3])',
+                shader_out / dir,
+                '@INPUT@',
+                shader_out / dir / name,
             ],
             build_by_default : true
         )

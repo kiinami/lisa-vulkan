@@ -87,9 +87,9 @@ namespace lisa::graphics {
 
     const vk::InstanceCreateInfo instance_ci{
       .pApplicationInfo = &app_info,
-      .enabledLayerCount = static_cast<uint>(layers.size()),
+      .enabledLayerCount = static_cast<uint32>(layers.size()),
       .ppEnabledLayerNames = layers.data(),
-      .enabledExtensionCount = static_cast<uint>(extensions.size()),
+      .enabledExtensionCount = static_cast<uint32>(extensions.size()),
       .ppEnabledExtensionNames = extensions.data(),
     };
 

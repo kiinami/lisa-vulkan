@@ -20,7 +20,7 @@
 #include <sys/stat.h>
 
 namespace lisa::systems::render {
-  Renderer::Renderer(const str& graph_filepath) :
+  Renderer::Renderer(const path& graph_filepath) :
     graph_(graph_filepath),
     cmd_buffer_(graphics::context::device().cmd_buffer()),
     swapchain_(graphics::context::swapchain()) {

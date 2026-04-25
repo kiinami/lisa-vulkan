@@ -6,6 +6,7 @@
 
 #include "graphics/context.h"
 #include "utils/logging.h"
+#include "utils/path.h"
 
 namespace lisa::resources {
   const Slang::ComPtr<slang::IGlobalSession>& Shader::get_global_session() {
@@ -53,9 +54,9 @@ namespace lisa::resources {
     const auto session = create_session();
     Slang::ComPtr<ISlangBlob> load_diagnostics;
     const auto module =
-      session->loadModule(filepath.c_str(), load_diagnostics.writeRef());
+      session->loadModule(utils::pstr(filepath).c_str(), load_diagnostics.writeRef());
     if (!module) {
-      logging::abort("Failed to load shader module at {}", filepath.c_str());
+      logging::abort("Failed to load shader module at {}", utils::pstr(filepath).c_str());
       return false;
     }
 

@@ -5,7 +5,10 @@ project(
     'lisa', 'cpp',
     version : '0.0.1',
     meson_version: '>=1.8',
-    default_options : ['cpp_std=c++20']
+    default_options : [
+        'cpp_std=c++20',
+        'default_library=static'
+    ]
 )
 
 ###############################################################################
@@ -42,11 +45,6 @@ if sdk_path == ''
     sdk_path = import('os').getenv('VULKAN_SDK', default: '')
 endif
 
-if sdk_path != ''
-    add_project_arguments('-I' + sdk_path / 'include', language: 'cpp')
-    add_project_link_arguments('-L' + sdk_path / 'lib', language: 'cpp')
-endif
-
 sdk_inc = []
 sdk_lib_dirs = []
 if sdk_path != ''
@@ -59,23 +57,34 @@ endif
 cpp = meson.get_compiler('cpp')
 
 if sdk_path != ''
-    slang = cpp.find_library('slang', dirs: sdk_path / 'lib', required: true)
-    vulkan = cpp.find_library('vulkan', dirs: sdk_path / 'lib', required: true)
+    slang = cpp.find_library('slang', dirs: sdk_lib_dirs, required: true)
+    vulkan_lib_name = host_machine.system() == 'windows' ? 'vulkan-1' : 'vulkan'
+    vulkan = cpp.find_library(vulkan_lib_name, dirs: sdk_lib_dirs, required: true)
 else
     slang = dependency('slang', required: true)
     vulkan = dependency('vulkan', required: true)
 endif
 
+ktx_path = get_option('ktx_path')
+
+if ktx_path != ''
+    ktx = cpp.find_library('ktx', dirs: ktx_path / 'lib', required: true)
+    ktx_inc = include_directories(ktx_path / 'include', is_system: true)
+else
+    ktx_dep_raw = dependency('ktx', required: true, fallback: ['ktx', 'ktx_dep'])
+    ktx = ktx_dep_raw
+    ktx_inc = []
+endif
+
 cli11 = dependency('CLI11', required: true)
 entt = dependency('entt', required : true)
 glm = dependency('glm', required: true)
-ktx = dependency('ktx', required: true)
 magic_enum = dependency('magic_enum', required : true)
-miniz = dependency('miniz', required : true)
-pugixml = dependency('pugixml', required : true)
-sdl3 = dependency('sdl3', required: true)
+miniz = dependency('miniz', required : true, default_options: ['default_library=static'])
+pugixml = dependency('pugixml', required : true, default_options: ['default_library=static'])
+sdl3 = dependency('sdl3', required: true, default_options: ['default_library=static'])
 sdl3pp = dependency('sdl3pp', required: true)
-spdlog = dependency('spdlog', required: true)
+spdlog = dependency('spdlog', required: true, default_options: ['default_library=static'])
 stb = dependency('stb', required : true)
 tinyexr = dependency('tinyexr', required : true)
 tinyobjloader = dependency('tinyobjloader', required: true)
@@ -227,17 +236,17 @@ subdir('src/lisa/shaders')
 ###############################################################################
 # Library definition
 ###############################################################################
-lisa_library = library(
+lisa_library = static_library(
     'lisa',
     sources: src,
-    include_directories: inc,
+    include_directories: [inc, sdk_inc, ktx_inc],
     dependencies : [entt, glm, ktx, magic_enum, miniz, pugixml, sdl3, sdl3pp, shader_dep, slang, spdlog, stb, tinyexr, tinyobjloader, vulkan, vma, vma_hpp],
     cpp_pch: 'src/lisa/pch/pch.h'
 )
 
 lisa_dep = declare_dependency(
-    include_directories: include_directories('src/lisa'),
-    link_with: lisa_library,
+    include_directories: [include_directories('src/lisa'), sdk_inc, ktx_inc],
+    link_whole: lisa_library,
     dependencies : [entt, glm, ktx, magic_enum, miniz, pugixml, sdl3, sdl3pp, slang, spdlog, stb, tinyexr, tinyobjloader, vulkan, vma, vma_hpp]
 )
 
@@ -248,5 +257,6 @@ lisa = executable(
     'lisa_app',
     'src/main.cpp',
     install: true,
-    dependencies: [cli11, lisa_dep]
+    dependencies: [cli11, lisa_dep],
+    cpp_args: host_machine.system() == 'windows' ? ['-DSDL_MAIN_HANDLED'] : []
 )

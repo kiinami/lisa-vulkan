@@ -8,6 +8,7 @@
 #include "graphics/context.h"
 #include "tiny_obj_loader.h"
 #include "utils/chk.h"
+#include "utils/path.h"
 
 #include <cstring>
 #include <vulkan/vulkan_raii.hpp>
@@ -17,12 +18,17 @@ namespace lisa::resources {
     tinyobj::attrib_t attrib;
     vector<tinyobj::shape_t> shapes;
     vector<tinyobj::material_t> materials;
+    str warn, error;
 
-    utils::chk(
-      tinyobj::LoadObj(
-        &attrib, &shapes, &materials, nullptr, nullptr, path_.c_str()
-      )
+    const auto fp = utils::pstr(path_);
+    auto result = tinyobj::LoadObj(
+      &attrib, &shapes, &materials, &warn, &error, fp.c_str()
     );
+
+    if (!warn.empty()) logging::warning(warn);
+    if (!error.empty()) logging::error(error);
+    if (!result || shapes.empty())
+      throw std::runtime_error("Failed to load OBJ: " + fp);
 
     vertex_count_ = shapes[0].mesh.indices.size();
 

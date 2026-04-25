@@ -18,7 +18,7 @@ namespace lisa::systems::render {
 
   class Renderer {
   public:
-    explicit Renderer(const str& graph_filepath);
+    explicit Renderer(const path& graph_filepath);
     ~Renderer() = default;
 
     void render(const scene::Scene& scene);

@@ -7,7 +7,7 @@
 #include "systems/resources/Resource.h"
 #include "utils/common.h"
 
-#include <slang.h>
+#include <slang/slang.h>
 #include <slang/slang-com-helper.h>
 #include <slang/slang-com-ptr.h>
 #include <vulkan/vulkan_raii.hpp>

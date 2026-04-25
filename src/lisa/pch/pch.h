@@ -32,7 +32,7 @@
 #include <ktxvulkan.h>
 
 // Slang
-#include <slang.h>
+#include <slang/slang.h>
 #include <slang/slang-com-helper.h>
 #include <slang/slang-com-ptr.h>
 

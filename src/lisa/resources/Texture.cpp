@@ -8,6 +8,7 @@
 #include "graphics/context.h"
 #include "stb_image.h"
 #include "tinyexr.h"
+#include "utils/path.h"
 
 #include <cstring>
 #include <ktxvulkan.h>
@@ -15,8 +16,9 @@
 namespace lisa::resources {
   graphics::Image Texture::load_ktx(const path& filepath) {
     ktxTexture* texture;
+    const auto fp = utils::pstr(filepath);
     ktxTexture_CreateFromNamedFile(
-      filepath.c_str(), KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &texture
+      fp.c_str(), KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &texture
     );
 
     auto cmdb = graphics::context::device().cmd_buffer();
@@ -116,8 +118,9 @@ namespace lisa::resources {
   graphics::Image Texture::load_jpg(const path& filepath) {
     int w, h, channels;
     stbi_set_flip_vertically_on_load(true);
-    stbi_uc* pixels =
-      stbi_load(filepath.c_str(), &w, &h, &channels, STBI_rgb_alpha);
+    stbi_uc* pixels = stbi_load(
+      utils::pstr(filepath).c_str(), &w, &h, &channels, STBI_rgb_alpha
+    );
     if (!pixels)
       logging::abort("Failed to load STB image: {}", filepath.string());
 
@@ -149,8 +152,11 @@ namespace lisa::resources {
     int w, h;
     const char* err = nullptr;
 
-    if (const auto ret = LoadEXR(&out_rgba, &w, &h, filepath.c_str(), &err);
-        ret != TINYEXR_SUCCESS) {
+    if (
+      const auto ret =
+        LoadEXR(&out_rgba, &w, &h, utils::pstr(filepath).c_str(), &err);
+      ret != TINYEXR_SUCCESS
+    ) {
       if (err) {
         logging::abort("Failed to load EXR: {} - {}", filepath.string(), err);
         FreeEXRErrorMessage(err);
@@ -192,8 +198,10 @@ namespace lisa::resources {
   }
 
   bool Texture::load_function() {
-    if (const auto ext = path_.extension().string();
-        ext == ".ktx" || ext == ".ktx2") {
+    if (
+      const auto ext = path_.extension().string();
+      ext == ".ktx" || ext == ".ktx2"
+    ) {
       image_ = load_ktx(path_);
     } else if (ext == ".jpg" || ext == ".jpeg" || ext == ".png") {
       image_ = load_jpg(path_);

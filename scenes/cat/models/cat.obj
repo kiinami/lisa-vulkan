@@ -1,7 +1,5 @@
 # Blender 5.1.0
 # www.blender.org
-mtllib cat.mtl
-o concrete_cat_statue
 v -0.037224 0.132631 -0.049894
 v 0.054462 0.174037 -0.001472
 v 0.043572 0.113790 0.063234
