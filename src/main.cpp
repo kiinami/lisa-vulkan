@@ -22,8 +22,8 @@ namespace {
   path scene_filepath;
   path rendergraph_filepath = "../assets/rendergraphs/deferred.xml";
   str log_level = "debug";
-  int width;
-  int height;
+  int width = 800;
+  int height = 800;
   int device = 0;
 }
 
