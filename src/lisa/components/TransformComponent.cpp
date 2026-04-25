@@ -4,8 +4,8 @@
 
 #include "TransformComponent.h"
 
-#include "entt/entity/registry.hpp"
-#include "entt/meta/factory.hpp"
+#include <entt/entity/registry.hpp>
+#include <entt/meta/factory.hpp>
 #include "systems/ecs/meta.h"
 #include "utils/logging.h"
 #include "utils/xml.h"

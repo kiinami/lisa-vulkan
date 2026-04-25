@@ -4,9 +4,8 @@
 
 #include "MeshComponent.h"
 
-#include "entt/entity/registry.hpp"
-#include "entt/meta/factory.hpp"
-#include "resources/context.h"
+#include <entt/entity/registry.hpp>
+#include <entt/meta/factory.hpp>
 #include "systems/ecs/meta.h"
 
 namespace lisa::components { namespace {

@@ -17,7 +17,6 @@
 #include "window/context.h"
 
 #include <glm/gtc/matrix_transform.hpp>
-#include <sys/stat.h>
 
 namespace lisa::systems::render {
   Renderer::Renderer(const path& graph_filepath) :

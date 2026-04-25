@@ -31,12 +31,12 @@ namespace lisa::graphics {
     if (surface.capabilities().currentExtent.width == 0xFFFFFFFF) {
       auto size = window::context::window().size();
       extent.width = std::clamp(
-        static_cast<uint32_t>(size.x),
+        static_cast<uint32>(size.x),
         surface.capabilities().minImageExtent.width,
         surface.capabilities().maxImageExtent.width
       );
       extent.height = std::clamp(
-        static_cast<uint32_t>(size.y),
+        static_cast<uint32>(size.y),
         surface.capabilities().minImageExtent.height,
         surface.capabilities().maxImageExtent.height
       );

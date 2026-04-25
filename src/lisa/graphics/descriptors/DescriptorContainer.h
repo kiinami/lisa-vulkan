@@ -5,7 +5,7 @@
 #ifndef LISA_VULKAN_DESCRIPTORCONTAINER_H
 #define LISA_VULKAN_DESCRIPTORCONTAINER_H
 #include "DescriptorAllocator.h"
-#include "graphics/device/LogicalDevice.h"
+
 #include "graphics/images/Image.h"
 #include "graphics/images/Sampler.h"
 #include "utils/common.h"

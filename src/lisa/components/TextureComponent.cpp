@@ -4,8 +4,8 @@
 
 #include "TextureComponent.h"
 
-#include "entt/entity/registry.hpp"
-#include "entt/meta/factory.hpp"
+#include <entt/entity/registry.hpp>
+#include <entt/meta/factory.hpp>
 #include "systems/ecs/meta.h"
 
 namespace lisa::components { namespace {

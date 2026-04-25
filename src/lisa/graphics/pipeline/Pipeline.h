@@ -6,7 +6,6 @@
 #define LISA_VULKAN_PIPELINE_H
 
 #include "graphics/context.h"
-#include "graphics/images/ImageFormat.h"
 #include "resources/Shader.h"
 #include "utils/common.h"
 

@@ -7,7 +7,6 @@
 #pragma once
 
 #include "graphics/descriptors/DescriptorAllocator.h"
-#include "graphics/images/Sampler.h"
 #include "graphics/pipeline/Pipeline.h"
 #include "systems/render/RenderPass.h"
 #include "systems/resources/ResourceHandle.h"

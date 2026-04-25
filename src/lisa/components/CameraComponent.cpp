@@ -4,9 +4,10 @@
 
 #include "CameraComponent.h"
 
-#include "entt/entity/registry.hpp"
-#include "entt/meta/factory.hpp"
 #include "systems/ecs/meta.h"
+
+#include <entt/entity/registry.hpp>
+#include <entt/meta/factory.hpp>
 
 namespace lisa::components {
   namespace {

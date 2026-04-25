@@ -6,12 +6,12 @@
 
 #include "graphics/buffer/Buffer.h"
 #include "graphics/context.h"
-#include "stb_image.h"
-#include "tinyexr.h"
 #include "utils/path.h"
 
 #include <cstring>
 #include <ktxvulkan.h>
+#include <stb_image.h>
+#include <tinyexr.h>
 
 namespace lisa::resources {
   graphics::Image Texture::load_ktx(const path& filepath) {

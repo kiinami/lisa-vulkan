@@ -4,10 +4,10 @@
 
 #ifndef LISA_VULKAN_SCENE_H
 #define LISA_VULKAN_SCENE_H
-#include "entt/entity/entity.hpp"
-#include "entt/meta/meta.hpp"
 #include "utils/common.h"
 
+#include <entt/entity/entity.hpp>
+#include <entt/meta/meta.hpp>
 #include <pugixml.hpp>
 
 namespace lisa::scene {

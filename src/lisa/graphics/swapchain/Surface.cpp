@@ -4,10 +4,11 @@
 
 #include "Surface.h"
 
-#include "SDL3pp/SDL3pp_vulkan.h"
 #include "graphics/context.h"
 #include "utils/chk.h"
 #include "window/Window.h"
+
+#include <SDL3pp/SDL3pp_vulkan.h>
 
 namespace lisa::graphics {
   Surface::Surface(

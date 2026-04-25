@@ -5,8 +5,6 @@
 #ifndef LISA_VULKAN_FENCE_H
 #define LISA_VULKAN_FENCE_H
 
-#include "utils/common.h"
-
 #include <vulkan/vulkan_raii.hpp>
 
 namespace lisa::graphics {

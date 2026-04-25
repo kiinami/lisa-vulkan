@@ -6,12 +6,11 @@
 
 #include "Vertex.h"
 #include "graphics/context.h"
-#include "tiny_obj_loader.h"
 #include "utils/chk.h"
 #include "utils/path.h"
 
 #include <cstring>
-#include <vulkan/vulkan_raii.hpp>
+#include <tiny_obj_loader.h>
 
 namespace lisa::resources {
   bool Mesh::load_function() {
@@ -21,9 +20,8 @@ namespace lisa::resources {
     str warn, error;
 
     const auto fp = utils::pstr(path_);
-    auto result = tinyobj::LoadObj(
-      &attrib, &shapes, &materials, &warn, &error, fp.c_str()
-    );
+    auto result =
+      tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &error, fp.c_str());
 
     if (!warn.empty()) logging::warning("{}", warn);
     if (!error.empty()) logging::error("{}", error);

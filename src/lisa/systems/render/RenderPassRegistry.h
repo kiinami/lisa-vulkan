@@ -8,8 +8,6 @@
 #include "RenderPass.h"
 #include "utils/Registry.h"
 
-#include <pugixml.hpp>
-
 namespace lisa::systems::render {
   class RenderPassRegistry :
     public ::lisa::utils::Registry<RenderPass, const pugi::xml_node&> {};

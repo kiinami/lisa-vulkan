@@ -4,10 +4,10 @@
 
 #include "context.h"
 
-#include "SDL3pp/SDL3pp_vulkan.h"
 #include "utils/logging.h"
 
 #include <SDL3/SDL_events.h>
+#include <SDL3pp/SDL3pp_vulkan.h>
 #include <memory>
 
 namespace lisa::window::context {
@@ -68,9 +68,11 @@ namespace lisa::window::context {
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
       if (event.type == SDL_EVENT_QUIT) should_close_ = true;
-      if (event.type ==
-          SDL_EVENT_WINDOW_RESIZED ||
-          event.type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED)
+      if (
+        event.type ==
+        SDL_EVENT_WINDOW_RESIZED ||
+        event.type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED
+      )
         resized_ = true;
     }
   }
