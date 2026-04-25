@@ -35,7 +35,7 @@ namespace {
   bool should_close = false;
 }
 
-static int cli_args(int argc, char** argv) {
+static optional<int> cli_args(int argc, char** argv) {
   argv = app.ensure_utf8(argv);
 
   app.add_option("scene", scene_filepath, "The XML scene file")
@@ -61,8 +61,12 @@ static int cli_args(int argc, char** argv) {
   app.add_option("--height", height, "The initial window height");
   app.add_option("-d,--device", device, "The GPU device to use");
 
-  CLI11_PARSE(app, argc, argv);
-  return 0;
+  try {
+    app.parse(argc, argv);
+  } catch (const CLI::ParseError& e) {
+    return app.exit(e);
+  }
+  return std::nullopt;
 }
 
 namespace {
@@ -86,8 +90,7 @@ namespace {
 }
 
 int main(const int argc, char** argv) {
-  const auto result = cli_args(argc, argv);
-  if (result != 0) return result;
+  if (const auto result = cli_args(argc, argv)) return *result;
 
   logging::init(log_level);
 

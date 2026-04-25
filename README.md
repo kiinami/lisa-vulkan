@@ -59,7 +59,9 @@ The engine was primarily implemented in Linux, but adaptations have been made so
 
 ## Usage
 
-```
+```shell
+$ lisa_app --help
+
 lisa_app [OPTIONS] scene
 
 
