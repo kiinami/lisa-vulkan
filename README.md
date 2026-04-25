@@ -14,7 +14,7 @@ Hobby rendering engine in Vulkan
 - PBR materials, defined by constants or textures
 - Multiple light types
 - Strong assets pipeline
-- Camera movement with WASD and QE (up and down)
+- FPS-style camera movement and rotation with keyboard and mouse
 
 ## Building
 
@@ -71,8 +71,16 @@ OPTIONS:
   -g,     --graph TEXT:FILE   The XML rendergraph file
   -l,     --log-level TEXT:{trace,debug,info,warning,error,critical} 
                               The logging level of the application
+          --width INT         The initial window width
+          --height INT        The initial window height
   -d,     --device INT        The GPU device to use
 ```
+
+### Controls
+
+WASD: movement
+Q and E: movement up and down
+Left click: move camera around
 
 ## Bundled scenes
 
@@ -80,5 +88,11 @@ The project comes with a few scenes to test the engine:
 
 - `scenes/lighting_test/lighting_test.xml` - Tests with different lights in different positions
 - `scenes/material_test/material_test.xml` - Tests loading of materials using textures
-- `scenes/ssao_test/ssao_test.xml` - Tests correct SSAO generation in a way that is easily visible
+- `scenes/ssao_test/ssao_test.xml` - Tests correct SSAO generation in a way that is easily visible (use with `test_ssao.xml` render graph)
 - `scene/cat/cat.xml` - Joins all features in a single simple scenes
+
+It also comes with a few predefined render graphs in `assets/rendergraphs`:
+
+- `forward.xml` - forwards pipeline, very simple
+- `deferred.xml` - deferred pipeline with SSAO
+- `ssao_test.xml` - special render graph to test SSAO
