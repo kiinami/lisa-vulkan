@@ -18,7 +18,8 @@ namespace lisa::graphics {
       const PhysicalDevice& physical_device,
       const LogicalDevice& device
     );
-    ~MemoryAllocator() = default;
+
+    ~MemoryAllocator() { allocator_.clear(); }
 
     operator const vma::raii::Allocator&() const { return allocator_; }
 

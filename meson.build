@@ -223,6 +223,8 @@ src = files(
 
     'src/lisa/window/context.h',
     'src/lisa/window/context.cpp',
+    'src/lisa/window/events.h',
+    'src/lisa/window/events.cpp',
     'src/lisa/window/Window.h',
     'src/lisa/window/Window.cpp',
 )

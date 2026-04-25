@@ -11,6 +11,7 @@
 #include "systems/render/Renderer.h"
 #include "systems/resources/ResourceManager.h"
 #include "window/context.h"
+#include "window/events.h"
 
 #include <CLI/CLI.hpp>
 
@@ -21,7 +22,16 @@ namespace {
   path scene_filepath;
   path rendergraph_filepath = "../assets/rendergraphs/deferred.xml";
   str log_level = "debug";
+  int width;
+  int height;
   int device = 0;
+}
+
+namespace {
+  uptr<scene::Scene> scene_;
+  uptr<systems::render::Renderer> renderer_;
+
+  bool should_close = false;
 }
 
 static int cli_args(int argc, char** argv) {
@@ -46,10 +56,32 @@ static int cli_args(int argc, char** argv) {
       )
     );
 
+  app.add_option("--width", width, "The initial window width");
+  app.add_option("--height", height, "The initial window height");
   app.add_option("-d,--device", device, "The GPU device to use");
 
   CLI11_PARSE(app, argc, argv);
   return 0;
+}
+
+namespace {
+  void on_window_resize(const window::events::WindowResize& event) {
+    logging::debug("Window was resized, recreating renderer");
+    graphics::context::device()->waitIdle();
+    window::context::window().mark_dirty();
+    renderer_.reset();
+    graphics::context::recreate_swapchain();
+    renderer_ =
+      std::make_unique<systems::render::Renderer>(rendergraph_filepath);
+  }
+
+  REGISTER_EVENT(window::events::WindowResize, on_window_resize);
+
+  void on_window_close(const window::events::WindowClose& event) {
+    should_close = true;
+  }
+
+  REGISTER_EVENT(window::events::WindowClose, on_window_close);
 }
 
 int main(const int argc, char** argv) {
@@ -59,33 +91,25 @@ int main(const int argc, char** argv) {
   logging::init(log_level);
 
   {
-    window::context::init(1280, 720);
+    window::context::init(width, height);
     graphics::context::init();
     resources::context::init();
     components::context::init();
 
     {
-      auto scene = scene::Scene(scene_filepath);
-
-      auto renderer =
+      scene_ = std::make_unique<scene::Scene>(scene_filepath);
+      renderer_ =
         std::make_unique<systems::render::Renderer>(rendergraph_filepath);
 
-      while (!window::context::should_close()) {
+      while (!should_close) {
+        window::context::dispatcher().update();
         window::context::poll_events();
-
-        if (window::context::was_resized()) {
-          logging::debug("Window was resized, recreating renderer");
-          graphics::context::device()->waitIdle();
-          renderer.reset();
-          graphics::context::recreate_swapchain();
-          renderer =
-            std::make_unique<systems::render::Renderer>(rendergraph_filepath);
-        }
-
-        renderer->render(scene);
+        renderer_->render(*scene_);
       }
 
       graphics::context::device()->waitIdle();
+      renderer_.reset();
+      scene_.reset();
     }
 
     components::context::destroy();

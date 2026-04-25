@@ -7,6 +7,8 @@
 #include "Window.h"
 #include "utils/common.h"
 
+#include <entt/signal/dispatcher.hpp>
+
 namespace lisa::window::context {
   void init(int width, int height);
   void destroy();
@@ -19,6 +21,7 @@ namespace lisa::window::context {
   vec2 from_scale(float scale);
   bool should_close();
   bool was_resized();
+  entt::dispatcher& dispatcher();
   void poll_events();
 }
 
