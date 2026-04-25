@@ -25,8 +25,8 @@ namespace lisa::resources {
       &attrib, &shapes, &materials, &warn, &error, fp.c_str()
     );
 
-    if (!warn.empty()) logging::warning(warn);
-    if (!error.empty()) logging::error(error);
+    if (!warn.empty()) logging::warning("{}", warn);
+    if (!error.empty()) logging::error("{}", error);
     if (!result || shapes.empty())
       throw std::runtime_error("Failed to load OBJ: " + fp);
 

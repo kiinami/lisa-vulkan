@@ -8,14 +8,9 @@ sdl3pp_inc = include_directories('include')
 
 cpp = meson.get_compiler('cpp')
 
-extra_args = []
-if host_machine.system() == 'windows'
-    extra_args += ['-fpermissive']
-endif
-
 sdl3pp_dep = declare_dependency(
     include_directories: sdl3pp_inc,
-    compile_args: extra_args
+    compile_args : ['-fpermissive']
 )
 
 import('pkgconfig').generate(
