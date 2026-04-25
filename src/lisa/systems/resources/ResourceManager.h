@@ -21,15 +21,15 @@ namespace lisa::systems::resources {
 
   class ResourceManager {
   public:
-    template<ResourceDerived T> ResourceHandle<T> load(const str& id);
+    template<ResourceDerived T> ResourceHandle<T> load(const path& filepath);
 
-    template<ResourceDerived T> T* get(const str& id);
+    template<ResourceDerived T> T* get(const path& filepath);
 
-    template<ResourceDerived T> bool exists(const str& id);
+    template<ResourceDerived T> bool exists(const path& filepath);
 
-    template<ResourceDerived T> void add_ref(const str& id);
+    template<ResourceDerived T> void add_ref(const path& filepath);
 
-    template<ResourceDerived T> void release(const str& id);
+    template<ResourceDerived T> void release(const path& filepath);
 
     void flush_deleted_resources();
 
@@ -41,50 +41,59 @@ namespace lisa::systems::resources {
       int references = 0;
     };
 
-    umap<std::type_index, umap<str, ResourceData>> resources_;
+    umap<std::type_index, umap<path, ResourceData>> resources_;
     vector<uptr<Resource>> dead_resources_;
   };
 
   template<ResourceDerived T>
-  ResourceHandle<T> ResourceManager::load(const str& id) {
+  ResourceHandle<T> ResourceManager::load(const path& filepath) {
     auto& type_resources = resources_[std::type_index(typeid(T))];
 
-    if (type_resources.contains(id)) {
-      ++type_resources[id].references;
-      return ResourceHandle<T>(id, this);
+    if (type_resources.contains(filepath)) {
+      ++type_resources[filepath].references;
+      return ResourceHandle<T>(filepath, this);
     }
 
-    auto resource = std::make_unique<T>(id);
+    auto resource = std::make_unique<T>(filepath);
     if (!resource->load()) return ResourceHandle<T>();
 
-    type_resources[id] = ResourceData{std::move(resource), 1};
+    type_resources[filepath] = ResourceData{std::move(resource), 1};
 
-    return ResourceHandle<T>(id, this);
+    return ResourceHandle<T>(filepath, this);
   }
 
-  template<ResourceDerived T> T* ResourceManager::get(const str& id) {
+  template<ResourceDerived T> T* ResourceManager::get(const path& filepath) {
     auto& type_resources = resources_[std::type_index(typeid(T))];
 
-    if (const auto it = type_resources.find(id); it != type_resources.end())
+    if (
+      const auto it = type_resources.find(filepath); it != type_resources.end()
+    )
       return static_cast<T*>(it->second.resource.get());
 
     return nullptr;
   }
 
-  template<ResourceDerived T> bool ResourceManager::exists(const str& id) {
+  template<ResourceDerived T>
+  bool ResourceManager::exists(const path& filepath) {
     const auto& type_resources = resources_[std::type_index(typeid(T))];
-    return type_resources.contains(id);
+    return type_resources.contains(filepath);
   }
 
-  template<ResourceDerived T> void ResourceManager::add_ref(const str& id) {
+  template<ResourceDerived T>
+  void ResourceManager::add_ref(const path& filepath) {
     auto& type_resources = resources_[std::type_index(typeid(T))];
-    if (const auto it = type_resources.find(id); it != type_resources.end())
+    if (
+      const auto it = type_resources.find(filepath); it != type_resources.end()
+    )
       ++it->second.references;
   }
 
-  template<ResourceDerived T> void ResourceManager::release(const str& id) {
+  template<ResourceDerived T>
+  void ResourceManager::release(const path& filepath) {
     auto& type_resources = resources_[std::type_index(typeid(T))];
-    if (const auto it = type_resources.find(id); it != type_resources.end()) {
+    if (
+      const auto it = type_resources.find(filepath); it != type_resources.end()
+    ) {
       --it->second.references;
       if (it->second.references <= 0) {
         dead_resources_.push_back(std::move(it->second.resource));
