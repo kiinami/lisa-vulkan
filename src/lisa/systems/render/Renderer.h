@@ -53,14 +53,13 @@ namespace lisa::systems::render {
 
     array<graphics::Semaphore, graphics::constants::MAX_FRAMES_IN_FLIGHT>
       available_s_;
-    array<graphics::Semaphore, graphics::constants::MAX_FRAMES_IN_FLIGHT>
-      finished_s_;
+    vector<graphics::Semaphore> finished_s_;
 
     uint32 current_frame_ = 0;
     float time_ = 0.0f;
 
     void reset() const;
-    void submit_to_queue() const;
+    void submit_to_queue(uint32 swapchain_image_index) const;
   };
 
 }

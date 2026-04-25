@@ -16,8 +16,6 @@
 #include "graphics/context.h"
 #include "window/context.h"
 
-#include <glm/gtc/matrix_transform.hpp>
-
 namespace lisa::systems::render {
   Renderer::Renderer(const path& graph_filepath) :
     graph_(graph_filepath),
@@ -55,8 +53,9 @@ namespace lisa::systems::render {
         allocation_ci
       );
       available_s_[i] = graphics::Semaphore();
-      finished_s_[i] = graphics::Semaphore();
     }
+    for (size i = 0; i < swapchain_.images().size(); i++)
+      finished_s_.emplace_back();
   }
 
   void Renderer::reset() const {
@@ -65,11 +64,11 @@ namespace lisa::systems::render {
     cmd_buffer_.reset();
   }
 
-  void Renderer::submit_to_queue() const {
+  void Renderer::submit_to_queue(const uint32 swapchain_image_index) const {
     vk::PipelineStageFlags wait_stage =
       vk::PipelineStageFlagBits::eColorAttachmentOutput;
     const vk::Semaphore wait_semaphore = *available_s_[current_frame_];
-    const vk::Semaphore signal_semaphore = *finished_s_[current_frame_];
+    const vk::Semaphore signal_semaphore = *finished_s_[swapchain_image_index];
     const vk::SubmitInfo submit_info{
       .waitSemaphoreCount = 1,
       .pWaitSemaphores = &wait_semaphore,
@@ -247,9 +246,8 @@ namespace lisa::systems::render {
 
     cmd_buffer_->end();
 
-    submit_to_queue();
-
-    swapchain_.present(swapchain_image, finished_s_[current_frame_]);
+    submit_to_queue(swapchain_image);
+    swapchain_.present(swapchain_image, finished_s_[swapchain_image]);
 
     current_frame_ =
       (current_frame_ + 1) % graphics::constants::MAX_FRAMES_IN_FLIGHT;
