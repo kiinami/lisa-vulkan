@@ -13,7 +13,6 @@ namespace lisa::systems::render {
   class Rendergraph;
 
   struct RenderContext {
-    const scene::Scene& scene;
     const graphics::CommandBuffer& cmdb;
     vk::DeviceAddress global_bda = 0;
     vk::DeviceAddress object_bda = 0;

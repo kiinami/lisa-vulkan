@@ -21,7 +21,7 @@ namespace lisa::systems::render {
     explicit Renderer(const path& graph_filepath);
     ~Renderer() = default;
 
-    void render(const scene::Scene& scene);
+    void render();
 
     uint32 current_frame() const { return current_frame_; }
 

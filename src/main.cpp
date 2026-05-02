@@ -111,7 +111,7 @@ int main(const int argc, char** argv) {
         window::context::poll_events();
         update::context::tick();
 
-        renderer_->render(*scene_);
+        renderer_->render();
       }
 
       graphics::context::device()->waitIdle();

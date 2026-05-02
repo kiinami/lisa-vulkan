@@ -31,7 +31,6 @@ namespace lisa::systems::render {
 
     void render(
       const graphics::CommandBuffer& cmdb,
-      const scene::Scene& scene,
       vk::DeviceAddress global_bda,
       vk::DeviceAddress object_bda
     );

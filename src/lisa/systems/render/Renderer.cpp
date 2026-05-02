@@ -81,7 +81,7 @@ namespace lisa::systems::render {
     graphics::context::device().queue().submit(submit_info, *fence_);
   }
 
-  void Renderer::render(const scene::Scene& scene) {
+  void Renderer::render() {
     reset();
 
     cmd_buffer_.begin_onetime();
@@ -230,7 +230,6 @@ namespace lisa::systems::render {
 
     graph_.render(
       cmd_buffer_,
-      scene,
       global_data_buffers_[current_frame_].address(),
       object_data_buffers_[current_frame_].address()
     );

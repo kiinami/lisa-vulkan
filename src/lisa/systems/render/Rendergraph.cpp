@@ -169,7 +169,6 @@ namespace lisa::systems::render {
 
   void Rendergraph::render(
     const graphics::CommandBuffer& cmdb,
-    const scene::Scene& scene,
     const vk::DeviceAddress global_bda,
     const vk::DeviceAddress object_bda
   ) {
@@ -211,7 +210,7 @@ namespace lisa::systems::render {
         cmdb->setScissor(0, {{.extent = extent}});
       }
 
-      RenderContext ctx{scene, cmdb, global_bda, object_bda};
+      RenderContext ctx{cmdb, global_bda, object_bda};
       pass->execute(ctx);
 
       if (has_attachments) cmdb->endRendering();
