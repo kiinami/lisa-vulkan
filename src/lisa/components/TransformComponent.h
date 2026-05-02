@@ -8,13 +8,12 @@
 #include "systems/ecs/Component.h"
 #include "utils/common.h"
 
+#include <glm/gtx/matrix_decompose.hpp>
 #include <pugixml.hpp>
 
 namespace lisa::components {
 
   struct TransformComponent : systems::ecs::Component {
-    TransformComponent(const mat4& matrix);
-
     void parse(const pugi::xml_node& node, const path& base_path);
 
     vec3 position() const { return position_; }
@@ -35,6 +34,13 @@ namespace lisa::components {
 
     void set_scale(const vec3& scale) {
       scale_ = scale;
+      dirty_ = true;
+    }
+
+    void set_matrix(const mat4& matrix) {
+      vec3 skew;
+      vec4 perspective;
+      glm::decompose(matrix, scale_, rotation_, position_, skew, perspective);
       dirty_ = true;
     }
 

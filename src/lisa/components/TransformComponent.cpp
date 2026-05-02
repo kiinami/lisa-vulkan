@@ -24,12 +24,6 @@ namespace lisa::components {
     }();
   }
 
-  TransformComponent::TransformComponent(const mat4& matrix) {
-    vec3 skew;
-    vec4 perspective;
-    glm::decompose(matrix, scale_, rotation_, position_, skew, perspective);
-  }
-
   void TransformComponent::parse(
     const pugi::xml_node& node, const path& base_path
   ) {

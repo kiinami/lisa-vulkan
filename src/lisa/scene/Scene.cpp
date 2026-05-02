@@ -82,14 +82,15 @@ namespace lisa::scene {
       [&](fastgltf::Node& node, fastgltf::math::fmat4x4 matrix) {
         const auto entity = reg.create();
 
-        reg->emplace<components::TransformComponent>(
-          entity, glm::make_mat4(matrix.data())
-        );
+        auto& transform = reg->emplace<components::TransformComponent>(entity);
+        transform.set_matrix(glm::make_mat4(matrix.data()));
 
         if (node.cameraIndex.has_value()) {
           auto& [camera, name] = asset->cameras[node.cameraIndex.value()];
-          if (const auto* persp =
-                std::get_if<fastgltf::Camera::Perspective>(&camera)) {
+          if (
+            const auto* persp =
+              std::get_if<fastgltf::Camera::Perspective>(&camera)
+          ) {
             auto& cam = reg->emplace<components::CameraComponent>(entity);
             cam.fov = persp->yfov;
             cam.aspect_ratio = persp->aspectRatio.value_or(16.0f / 9.0f);
@@ -145,8 +146,10 @@ namespace lisa::scene {
       for (const auto& attr : node.attributes()) {
         auto prop_id = entt::hashed_string(attr.name());
         if (auto metadata = meta_type.data(prop_id)) {
-          if (auto value =
-                parse_value_string(metadata.type(), attr.value(), base_path))
+          if (
+            auto value =
+              parse_value_string(metadata.type(), attr.value(), base_path)
+          )
             metadata.set(instance, value);
         }
       }
