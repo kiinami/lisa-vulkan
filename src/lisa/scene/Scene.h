@@ -18,13 +18,15 @@ namespace lisa::scene {
 
   private:
     static void read_xml(const path& filepath);
-    static void read_gltf(const path& filepath);
+
     static void parse_component(
       entt::entity e, const pugi::xml_node& node, const path& base_path
     );
     static entt::meta_any parse_value_string(
       const entt::meta_type& type, const str& value, const path& base_path
     );
+
+    static void read_gltf(const path& filepath);
   };
 
 }

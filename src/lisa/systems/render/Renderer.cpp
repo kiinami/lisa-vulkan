@@ -10,7 +10,6 @@
 #include "components/MaterialComponent.h"
 #include "components/MeshComponent.h"
 #include "components/PointLightComponent.h"
-#include "components/TextureComponent.h"
 #include "components/TransformComponent.h"
 #include "components/context.h"
 #include "graphics/context.h"
@@ -188,7 +187,7 @@ namespace lisa::systems::render {
           components::context::registry()
             ->try_get<components::MaterialComponent>(entity);
         if (material_component) {
-          object_data[i].color = vec4(material_component->color, 1.0f);
+          object_data[i].color = vec4(material_component->albedo, 1.0f);
           object_data[i].roughness = material_component->roughness;
           object_data[i].metallic = material_component->metallic;
         } else {
@@ -199,7 +198,7 @@ namespace lisa::systems::render {
 
         const auto* texture_component =
           components::context::registry()
-            ->try_get<components::TextureComponent>(entity);
+            ->try_get<components::MaterialComponent>(entity);
         object_data[i].diffuse_texture_index =
           std::numeric_limits<uint32>::max();
         object_data[i].roughness_texture_index =
@@ -210,14 +209,12 @@ namespace lisa::systems::render {
           std::numeric_limits<uint32>::max();
         if (texture_component) {
           object_data[i].diffuse_texture_index =
-            texture_component->diffuse_resource()->descriptor_index();
-          if (
-            auto res = texture_component->roughness_resource(); res != nullptr
-          )
+            texture_component->albedo_texture->descriptor_index();
+          if (auto res = texture_component->roughness_texture; res != nullptr)
             object_data[i].roughness_texture_index = res->descriptor_index();
-          if (auto res = texture_component->metallic_resource(); res != nullptr)
+          if (auto res = texture_component->metallic_texture; res != nullptr)
             object_data[i].metallic_texture_index = res->descriptor_index();
-          if (auto res = texture_component->normal_resource(); res != nullptr)
+          if (auto res = texture_component->normal_texture; res != nullptr)
             object_data[i].normal_texture_index = res->descriptor_index();
         }
 

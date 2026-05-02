@@ -13,13 +13,25 @@
 #include <tiny_obj_loader.h>
 
 namespace lisa::resources {
-  bool Mesh::load_function() {
+  Mesh::Mesh(const path& filepath) {
+    const auto ext = filepath.extension().string();
+
+    if (ext == ".obj") {
+      load_obj(filepath);
+    } else {
+      logging::abort(
+        "Mesh format of file '{}' not supported", filepath.c_str()
+      );
+    }
+  }
+
+  void Mesh::load_obj(const path& filepath) {
     tinyobj::attrib_t attrib;
     vector<tinyobj::shape_t> shapes;
     vector<tinyobj::material_t> materials;
     str warn, error;
 
-    const auto fp = utils::pstr(path_);
+    const auto fp = utils::pstr(filepath);
     auto result =
       tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &error, fp.c_str());
 
@@ -94,9 +106,5 @@ namespace lisa::resources {
         vk::BufferUsageFlagBits::eTransferDst,
       {.usage = vma::MemoryUsage::eAuto}
     );
-
-    return true;
   }
-
-  bool Mesh::unload_function() { return true; }
 }

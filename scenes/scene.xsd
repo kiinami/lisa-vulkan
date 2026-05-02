@@ -56,7 +56,6 @@
                             <!-- Mesh -->
                             <xs:element name="mesh" minOccurs="0">
                                 <xs:complexType>
-                                    <xs:attribute name="type" type="xs:string" use="required"/>
                                     <xs:attribute name="path" type="xs:string" use="required"/>
                                 </xs:complexType>
                             </xs:element>
@@ -64,9 +63,13 @@
                             <!-- Material -->
                             <xs:element name="material" minOccurs="0">
                                 <xs:complexType>
-                                    <xs:attribute name="color" type="floatList" use="required"/>
-                                    <xs:attribute name="roughness" type="xs:float" use="required"/>
-                                    <xs:attribute name="metallic" type="xs:float" use="required"/>
+                                    <xs:attribute name="albedo" type="floatList"/>
+                                    <xs:attribute name="roughness" type="xs:float"/>
+                                    <xs:attribute name="metallic" type="xs:float"/>
+                                    <xs:attribute name="albedo_texture" type="xs:string"/>
+                                    <xs:attribute name="roughness_texture" type="xs:string"/>
+                                    <xs:attribute name="metallic_texture" type="xs:string"/>
+                                    <xs:attribute name="normal_texture" type="xs:string"/>
                                 </xs:complexType>
                             </xs:element>
 

@@ -6,11 +6,12 @@
 #define LISA_VULKAN_MESHCOMPONENT_H
 #pragma once
 #include "resources/Mesh.h"
-#include "systems/ecs/ResourceComponent.h"
 
 namespace lisa::components {
 
-  struct MeshComponent : systems::ecs::ResourceComponent<resources::Mesh> {};
+  struct MeshComponent : systems::ecs::Component {
+    const resources::Mesh* mesh = nullptr;
+  };
 
 }
 

@@ -5,10 +5,10 @@
 #include "ForwardPass.h"
 
 #include "components/MeshComponent.h"
-#include "components/TextureComponent.h"
 #include "components/TransformComponent.h"
 #include "components/context.h"
 #include "graphics/context.h"
+#include "resources/context.h"
 #include "systems/render/RenderPassRegistry.h"
 #include "systems/render/Rendergraph.h"
 
@@ -28,8 +28,10 @@ namespace lisa::render {
     auto color_format = graph.get_resource(color_ref).format();
     auto depth_format = graph.get_resource(depth_ref).format();
 
+    static path shader_path =
+      resources::Shader::SHADERS_PATH / "forward/forward.slang";
     shader_ = resources::context::manager().load<resources::Shader>(
-      "forward/forward.slang"
+      shader_path.string(), shader_path
     );
 
     graphics::Pipeline::CreateParameters params{
@@ -40,7 +42,7 @@ namespace lisa::render {
           .offset = 0,
           .size = sizeof(systems::render::PushConstants)
         },
-      .shader = *shader_.get(),
+      .shader = *shader_,
       .color_attachment_formats = vector<vk::Format>{color_format},
       .depth_test_write = true,
       .depth_attachment_format = depth_format
@@ -61,13 +63,11 @@ namespace lisa::render {
     const auto view = components::context::registry()
                         ->view<
                           const components::TransformComponent,
-                          const components::MeshComponent,
-                          const components::TextureComponent>();
+                          const components::MeshComponent>();
 
     uint32 i = 0;
-    for (auto [entity, transform, mesh_component, texture_component] :
-         view.each()) {
-      const auto mesh = mesh_component.resource();
+    for (auto [entity, transform, mesh_component] : view.each()) {
+      const auto mesh = mesh_component.mesh;
 
       vk::DeviceSize offset = 0;
       ctx.cmdb->bindVertexBuffers(

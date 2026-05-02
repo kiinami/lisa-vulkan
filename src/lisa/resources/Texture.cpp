@@ -6,6 +6,7 @@
 
 #include "graphics/buffer/Buffer.h"
 #include "graphics/context.h"
+#include "utils/logging.h"
 #include "utils/path.h"
 
 #include <cstring>
@@ -197,16 +198,15 @@ namespace lisa::resources {
     return image;
   }
 
-  bool Texture::load_function() {
-    if (
-      const auto ext = path_.extension().string();
-      ext == ".ktx" || ext == ".ktx2"
+  Texture::Texture(const path& filepath) {
+    if (const auto ext = filepath.extension().string();
+        ext == ".ktx" || ext == ".ktx2"
     ) {
-      image_ = load_ktx(path_);
+      image_ = load_ktx(filepath);
     } else if (ext == ".jpg" || ext == ".jpeg" || ext == ".png") {
-      image_ = load_jpg(path_);
+      image_ = load_jpg(filepath);
     } else if (ext == ".exr") {
-      image_ = load_exr(path_);
+      image_ = load_exr(filepath);
     }
 
     sampler_ = graphics::Sampler(static_cast<float>(image_.mipmaps()));
@@ -227,9 +227,5 @@ namespace lisa::resources {
     };
     descriptor_index_ =
       graphics::context::descriptor_container().write(image_info);
-
-    return true;
   }
-
-  bool Texture::unload_function() { return true; }
 }

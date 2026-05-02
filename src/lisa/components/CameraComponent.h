@@ -16,7 +16,13 @@ namespace lisa::components {
     float near_plane = 0.1f;
     float far_plane = 100.0f;
 
-    mat4 projection_matrix() const;
+    mat4 projection_matrix() const {
+      if (dirty_) {
+        matrix_ = glm::perspective(fov, aspect_ratio, near_plane, far_plane);
+        matrix_[1][1] *= -1.0f;
+      }
+      return matrix_;
+    }
 
   private:
     mutable mat4 matrix_;

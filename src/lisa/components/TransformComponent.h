@@ -63,7 +63,15 @@ namespace lisa::components {
       rotate(glm::angleAxis(angle, glm::normalize(axis)));
     }
 
-    mat4 matrix() const;
+    mat4 matrix() const {
+      if (dirty_) {
+        matrix_ = glm::translate(mat4(1.0f), position_) *
+                  glm::mat4_cast(rotation_) *
+                  glm::scale(mat4(1.0f), scale_);
+        dirty_ = false;
+      }
+      return matrix_;
+    }
 
   private:
     vec3 position_;

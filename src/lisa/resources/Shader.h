@@ -22,17 +22,13 @@ namespace lisa::resources {
       const char* entry_point;
     };
 
-    explicit Shader(const path& filepath) : Resource(filepath) {}
+    explicit Shader(const path& filepath);
 
     const vk::raii::ShaderModule& module() const { return module_; }
 
     const vector<ShaderStage>& stages() const { return stages_; }
 
-  protected:
-    bool load_function() override;
-    bool unload_function() override;
-
-    str type_name() override { return "Shader"; }
+    void unload() override {}
 
   private:
     vk::raii::ShaderModule module_ = nullptr;

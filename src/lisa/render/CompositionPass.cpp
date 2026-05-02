@@ -22,8 +22,10 @@ namespace lisa::render {
                         .value())
         .format();
 
+    static path shader_path =
+      resources::Shader::SHADERS_PATH / "deferred/composition.slang";
     shader_ = resources::context::manager().load<resources::Shader>(
-      "deferred/composition.slang"
+      shader_path.string(), shader_path
     );
 
     const graphics::Pipeline::CreateParameters params{
@@ -34,7 +36,7 @@ namespace lisa::render {
           .offset = 0,
           .size = sizeof(CompositionPushConstants)
         },
-      .shader = *shader_.get(),
+      .shader = *shader_,
       .vertex_input = false,
       .color_attachment_formats = vector<vk::Format>{final_fmt},
     };

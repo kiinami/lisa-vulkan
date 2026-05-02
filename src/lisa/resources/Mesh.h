@@ -13,7 +13,9 @@ namespace lisa::resources {
 
   class Mesh : public systems::resources::Resource {
   public:
-    explicit Mesh(const path& filepath) : Resource(filepath) {}
+    explicit Mesh(const path& filepath);
+
+    void unload() override {}
 
     const graphics::Buffer& vertex_buffer() const { return vertex_buffer_; }
 
@@ -23,16 +25,12 @@ namespace lisa::resources {
 
     uint32 index_count() const { return index_count_; }
 
-  protected:
-    bool load_function() override;
-    bool unload_function() override;
-
-    str type_name() override { return "Mesh"; }
-
   private:
     graphics::Buffer vertex_buffer_;
     uint32 vertex_count_ = 0;
     uint32 index_count_ = 0;
+
+    void load_obj(const path& filepath);
   };
 
 }

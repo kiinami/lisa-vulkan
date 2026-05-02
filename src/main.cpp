@@ -8,6 +8,7 @@
 #include "lisa/utils/logging.h"
 #include "resources/context.h"
 #include "scene/Scene.h"
+#include "scene/xml.h"
 #include "systems/render/Renderer.h"
 #include "systems/resources/ResourceManager.h"
 #include "update/context.h"
@@ -102,7 +103,10 @@ int main(const int argc, char** argv) {
     update::context::init();
 
     {
-      scene_ = std::make_unique<scene::Scene>(scene_filepath);
+      const auto ext = scene_filepath.extension().string();
+
+      if (ext == ".xml") scene::xml::load(scene_filepath);
+
       renderer_ =
         std::make_unique<systems::render::Renderer>(rendergraph_filepath);
 

@@ -1,40 +1,20 @@
 //
-// Created by kinami on 3/29/26.
+// Created by kinami on 5/2/26.
 //
 
-#ifndef LISA_RESOURCE_H
-#define LISA_RESOURCE_H
+#ifndef LISA_VULKAN_RESOURCE_H
+#define LISA_VULKAN_RESOURCE_H
+
 #include "utils/common.h"
-#include "utils/logging.h"
 
 namespace lisa::systems::resources {
 
   class Resource {
   public:
-    explicit Resource(const path& filepath) : path_(filepath) {}
-
     virtual ~Resource() = default;
-
-    const path& filepath() const { return path_; }
-
-    bool is_loaded() const { return loaded_; }
-
-    bool load();
-
-    void unload() {
-      unload_function();
-      loaded_ = false;
-    }
-
-  protected:
-    path path_;
-    bool loaded_ = false;
-
-    virtual bool load_function() = 0;
-    virtual bool unload_function() = 0;
-    virtual str type_name() = 0;
+    virtual void unload() = 0;
   };
 
 }
 
-#endif // LISA_RESOURCE_H
+#endif // LISA_VULKAN_RESOURCE_H

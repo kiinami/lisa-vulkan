@@ -5,7 +5,7 @@
             <translate value="0, 0, 0"/>
             <scale value="10.0"/>
         </transform>
-        <mesh type="obj" path="models/cat.obj"/>
+        <mesh path="models/cat.obj"/>
     </entity>
 
     <entity name="main_camera">

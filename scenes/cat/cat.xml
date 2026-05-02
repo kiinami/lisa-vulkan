@@ -5,11 +5,11 @@
             <translate value="0, 0, 0"/>
             <scale value="10.0"/>
         </transform>
-        <mesh type="obj" path="models/cat.obj"/>
-        <texture diffuse="textures/concrete_cat_statue_diff_1k.jpg"
-                 roughness="textures/concrete_cat_statue_rough_1k.exr"
-                 metallic="textures/concrete_cat_statue_metal_1k.exr"
-                 normal="textures/concrete_cat_statue_nor_gl_1k.exr"
+        <mesh path="models/cat.obj"/>
+        <material albedo_texture="textures/concrete_cat_statue_diff_1k.jpg"
+                  roughness_texture="textures/concrete_cat_statue_rough_1k.exr"
+                  metallic_texture="textures/concrete_cat_statue_metal_1k.exr"
+                  normal_texture="textures/concrete_cat_statue_nor_gl_1k.exr"
         />
     </entity>
 

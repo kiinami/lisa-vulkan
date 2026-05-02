@@ -5,9 +5,9 @@
 #include "SSAOPass.h"
 
 #include "components/MeshComponent.h"
-#include "components/TextureComponent.h"
 #include "components/TransformComponent.h"
 #include "graphics/context.h"
+#include "resources/context.h"
 #include "systems/render/RenderPassRegistry.h"
 #include "systems/render/Rendergraph.h"
 
@@ -33,8 +33,10 @@ namespace lisa::render {
                         .value())
         .format();
 
+    static path shader_path =
+      resources::Shader::SHADERS_PATH / "preprocess/ssao.slang";
     shader_ = resources::context::manager().load<resources::Shader>(
-      "preprocess/ssao.slang"
+      shader_path.string(), shader_path
     );
 
     graphics::Pipeline::CreateParameters params{
@@ -45,7 +47,7 @@ namespace lisa::render {
           .offset = 0,
           .size = sizeof(SSAOPushConstants)
         },
-      .shader = *shader_.get(),
+      .shader = *shader_,
       .vertex_input = false,
       .color_attachment_formats = vector<vk::Format>{ssao_fmt},
       .depth_test_write = false,

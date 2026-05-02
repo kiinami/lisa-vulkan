@@ -4,11 +4,12 @@
 
 #include "GeometryPass.h"
 
+#include "components/MaterialComponent.h"
 #include "components/MeshComponent.h"
-#include "components/TextureComponent.h"
 #include "components/TransformComponent.h"
 #include "components/context.h"
 #include "graphics/context.h"
+#include "resources/context.h"
 #include "systems/render/RenderPassRegistry.h"
 #include "systems/render/Rendergraph.h"
 
@@ -49,8 +50,10 @@ namespace lisa::render {
                         .value())
         .format();
 
+    static path shader_path =
+      resources::Shader::SHADERS_PATH / "deferred/geometry.slang";
     shader_ = resources::context::manager().load<resources::Shader>(
-      "deferred/geometry.slang"
+      shader_path.string(), shader_path
     );
 
     graphics::Pipeline::CreateParameters params{
@@ -61,7 +64,7 @@ namespace lisa::render {
           .offset = 0,
           .size = sizeof(systems::render::PushConstants)
         },
-      .shader = *shader_.get(),
+      .shader = *shader_,
       .color_attachment_formats =
         vector<vk::Format>{albedo_fmt, normal_fmt, position_fmt, material_fmt},
       .depth_attachment_format = depth_fmt,
@@ -87,7 +90,7 @@ namespace lisa::render {
 
     uint32 i = 0;
     for (auto [entity, transform, mesh_component] : view.each()) {
-      const auto mesh = mesh_component.resource();
+      const auto mesh = mesh_component.mesh;
 
       vk::DeviceSize offset = 0;
       ctx.cmdb->bindVertexBuffers(

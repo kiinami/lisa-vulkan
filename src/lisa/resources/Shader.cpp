@@ -48,16 +48,14 @@ namespace lisa::resources {
     return session;
   }
 
-  bool Shader::load_function() {
-    const path filepath = SHADERS_PATH / path_;
-
+  Shader::Shader(const path& filepath) {
     const auto session = create_session();
     Slang::ComPtr<ISlangBlob> load_diagnostics;
     const auto module =
       session->loadModule(utils::pstr(filepath).c_str(), load_diagnostics.writeRef());
     if (!module) {
       logging::abort("Failed to load shader module at {}", utils::pstr(filepath).c_str());
-      return false;
+      return;
     }
 
     vector<slang::IComponentType*> components;
@@ -123,9 +121,5 @@ namespace lisa::resources {
 
       stages_.push_back({.stage = vk_stage, .entry_point = entry_name});
     }
-
-    return true;
   }
-
-  bool Shader::unload_function() { return true; }
 }

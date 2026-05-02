@@ -7,7 +7,6 @@
 #include "graphics/descriptors/DescriptorContainer.h"
 #include "graphics/pipeline/Pipeline.h"
 #include "systems/render/RenderPass.h"
-#include "systems/resources/ResourceHandle.h"
 
 namespace lisa::render {
   class ForwardPass : public systems::render::RenderPass {
@@ -23,7 +22,7 @@ namespace lisa::render {
     void execute(const systems::render::RenderContext& ctx) override;
 
   private:
-    systems::resources::ResourceHandle<resources::Shader> shader_;
+    const resources::Shader* shader_;
     uptr<graphics::Pipeline> pipeline_;
   };
 }
