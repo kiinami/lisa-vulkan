@@ -4,12 +4,12 @@
 
 #include "TransformComponent.h"
 
-#include <entt/entity/registry.hpp>
-#include <entt/meta/factory.hpp>
 #include "systems/ecs/meta.h"
 #include "utils/logging.h"
 #include "utils/xml.h"
 
+#include <entt/entity/registry.hpp>
+#include <entt/meta/factory.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
 
 namespace lisa::components {
@@ -22,6 +22,12 @@ namespace lisa::components {
 
       return true;
     }();
+  }
+
+  TransformComponent::TransformComponent(const mat4& matrix) {
+    vec3 skew;
+    vec4 perspective;
+    glm::decompose(matrix, scale_, rotation_, position_, skew, perspective);
   }
 
   void TransformComponent::parse(

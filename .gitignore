@@ -245,6 +245,7 @@ AGENTS.md
 TODO.md
 docs
 examples
+scenes/sponza
 
 subprojects/*
 !subprojects/*.wrap

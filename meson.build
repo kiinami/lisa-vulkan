@@ -78,6 +78,7 @@ endif
 
 cli11 = dependency('CLI11', required: true)
 entt = dependency('entt', required : true)
+fastgltf = dependency('fastgltf', required : true)
 glm = dependency('glm', required: true)
 magic_enum = dependency('magic_enum', required : true)
 miniz = dependency('miniz', required : true, default_options: ['default_library=static'])
@@ -247,14 +248,14 @@ lisa_library = static_library(
     'lisa',
     sources: src,
     include_directories: [inc, sdk_inc, ktx_inc],
-    dependencies : [entt, glm, ktx, magic_enum, miniz, pugixml, sdl3, sdl3pp, shader_dep, slang, spdlog, stb, tinyexr, tinyobjloader, vulkan, vma, vma_hpp],
+    dependencies : [entt, fastgltf, glm, ktx, magic_enum, miniz, pugixml, sdl3, sdl3pp, shader_dep, slang, spdlog, stb, tinyexr, tinyobjloader, vulkan, vma, vma_hpp],
     cpp_pch: 'src/lisa/pch/pch.h'
 )
 
 lisa_dep = declare_dependency(
     include_directories: [include_directories('src/lisa'), sdk_inc, ktx_inc],
     link_whole: lisa_library,
-    dependencies : [entt, glm, ktx, magic_enum, miniz, pugixml, sdl3, sdl3pp, slang, spdlog, stb, tinyexr, tinyobjloader, vulkan, vma, vma_hpp]
+    dependencies : [entt, fastgltf, glm, ktx, magic_enum, miniz, pugixml, sdl3, sdl3pp, slang, spdlog, stb, tinyexr, tinyobjloader, vulkan, vma, vma_hpp]
 )
 
 ###############################################################################

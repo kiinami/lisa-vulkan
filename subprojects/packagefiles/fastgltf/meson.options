@@ -1,0 +1,35 @@
+option('use_custom_smallvector',
+       type : 'boolean',
+       value : false,
+       description : 'Use a custom SmallVector type optimised for small arrays',
+)
+
+option('disable_custom_memory_pool',
+       type : 'boolean',
+       value : false,
+       description : 'Disable the memory allocation algorithm based on polymorphic resources',
+)
+
+option('use_64bit_float',
+       type : 'boolean',
+       value : false,
+       description : 'Default to 64-bit double precision floats for everything',
+)
+
+option('compile_as_cpp20',
+       type : 'boolean',
+       value : false,
+       description : 'Compile the library as C++20 (default is C++17)',
+)
+
+option('enable_khr_implicit_shapes',
+       type : 'boolean',
+       value : false,
+       description : 'Enable support for the experimental KHR_implicit_shapes extension',
+)
+
+option('enable_khr_physics_rigid_bodies',
+       type : 'boolean',
+       value : false,
+       description : 'Enable support for the experimental KHR_physics_rigid_bodies extension (implies enable_khr_implicit_shapes)',
+)

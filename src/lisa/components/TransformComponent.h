@@ -13,6 +13,8 @@
 namespace lisa::components {
 
   struct TransformComponent : systems::ecs::Component {
+    TransformComponent(const mat4& matrix);
+
     void parse(const pugi::xml_node& node, const path& base_path);
 
     vec3 position() const { return position_; }
