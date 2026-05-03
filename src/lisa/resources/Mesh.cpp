@@ -10,6 +10,8 @@
 #include "utils/path.h"
 
 #include <cstring>
+#include <fastgltf/glm_element_traits.hpp>
+#include <numeric>
 #include <tiny_obj_loader.h>
 
 namespace lisa::resources {
@@ -23,6 +25,54 @@ namespace lisa::resources {
         "Mesh format of file '{}' not supported", filepath.c_str()
       );
     }
+  }
+
+  Mesh::Mesh(const fastgltf::Primitive& p, const fastgltf::Asset& asset) {
+    auto* pos_attr = p.findAttribute("POSITION");
+    auto* norm_attr = p.findAttribute("NORMAL");
+    auto* uv_attr = p.findAttribute("TEXCOORD_0");
+
+    if (!pos_attr)
+      throw std::runtime_error("Primitive missing POSITION attribute");
+
+    auto& pos_accessor = asset.accessors[pos_attr->accessorIndex];
+    auto& norm_accessor = asset.accessors[norm_attr->accessorIndex];
+    auto& uv_accessor = asset.accessors[uv_attr->accessorIndex];
+
+    vector<Vertex> vertices(pos_accessor.count);
+
+    fastgltf::iterateAccessorWithIndex<vec3>(
+      asset, pos_accessor, [&](const vec3 pos, const size i) {
+        vertices[i].pos = pos;
+      }
+    );
+    fastgltf::iterateAccessorWithIndex<vec3>(
+      asset, norm_accessor, [&](const vec3 n, const size i) {
+        vertices[i].normal = n;
+      }
+    );
+    fastgltf::iterateAccessorWithIndex<vec2>(
+      asset, uv_accessor, [&](const vec2 uv, const size i) {
+        vertices[i].uv = uv;
+      }
+    );
+
+    vector<uint16> indices;
+    if (p.indicesAccessor.has_value()) {
+      auto& idx_accessor = asset.accessors[p.indicesAccessor.value()];
+      indices.resize(idx_accessor.count);
+      fastgltf::iterateAccessorWithIndex<uint16>(
+        asset, idx_accessor, [&](const uint16 idx, const size i) {
+          indices[i] = idx;
+        }
+      );
+    } else {
+      indices.resize(pos_accessor.count);
+      std::iota(indices.begin(), indices.end(), 0);
+    }
+
+    calculate_tangents(vertices, indices);
+    load(vertices, indices);
   }
 
   void Mesh::load_obj(const path& filepath) {
@@ -42,8 +92,8 @@ namespace lisa::resources {
 
     vertex_count_ = shapes[0].mesh.indices.size();
 
-    vector<Vertex> vertices{};
-    vector<uint16_t> indices{};
+    vector<Vertex> vertices;
+    vector<uint16> indices;
     for (const auto& [vertex_index, normal_index, texcoord_index] :
          shapes[0].mesh.indices) {
       Vertex v{
@@ -64,45 +114,63 @@ namespace lisa::resources {
       indices.push_back(indices.size());
     }
 
-    for (size i = 0; i < vertices.size(); i += 3) {
-      auto& v0 = vertices[i].pos;
-      auto& v1 = vertices[i + 1].pos;
-      auto& v2 = vertices[i + 2].pos;
+    calculate_tangents(vertices, indices);
+    load(vertices, indices);
+  }
 
-      auto& uv0 = vertices[i].uv;
-      auto& uv1 = vertices[i + 1].uv;
-      auto& uv2 = vertices[i + 2].uv;
+  void Mesh::calculate_tangents(
+    vector<Vertex>& vertices, const vector<uint16>& indices
+  ) {
+    for (size i = 0; i < indices.size(); i += 3) {
+      const uint16 i0 = indices[i];
+      const uint16 i1 = indices[i + 1];
+      const uint16 i2 = indices[i + 2];
+
+      auto& v0 = vertices[i0].pos;
+      auto& v1 = vertices[i1].pos;
+      auto& v2 = vertices[i2].pos;
+
+      auto& uv0 = vertices[i0].uv;
+      auto& uv1 = vertices[i1].uv;
+      auto& uv2 = vertices[i2].uv;
 
       auto edge1 = v1 - v0;
       auto edge2 = v2 - v0;
-      auto deltaUV1 = uv1 - uv0;
-      auto deltaUV2 = uv2 - uv0;
+      const auto deltaUV1 = uv1 - uv0;
+      const auto deltaUV2 = uv2 - uv0;
 
-      auto f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
-      auto tangent =
+      const float denom = (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
+      const auto f = (std::abs(denom) < 1e-6f) ? 1.0f : 1.0f / denom;
+
+      const auto tangent =
         glm::normalize(f * (deltaUV2.y * edge1 - deltaUV1.y * edge2));
 
-      vertices[i].tangent = tangent;
-      vertices[i + 1].tangent = tangent;
-      vertices[i + 2].tangent = tangent;
+      vertices[i0].tangent += tangent;
+      vertices[i1].tangent += tangent;
+      vertices[i2].tangent += tangent;
     }
 
+    for (auto& v : vertices)
+      v.tangent = glm::normalize(v.tangent);
+  }
+
+  void
+    Mesh::load(const vector<Vertex>& vertices, const vector<uint16>& indices) {
     vertex_count_ = vertices.size();
     index_count_ = indices.size();
 
-    const auto v_size = sizeof(Vertex) * vertices.size();
-    const auto i_size = sizeof(uint16_t) * indices.size();
-    const auto size = v_size + i_size;
-
-    vector<uint8> buffer_data(size);
-    std::memcpy(buffer_data.data(), vertices.data(), v_size);
-    std::memcpy(buffer_data.data() + v_size, indices.data(), i_size);
-
     vertex_buffer_ = graphics::Buffer::from_data(
-      buffer_data.data(),
-      size,
+      vertices.data(),
+      sizeof(Vertex) * vertices.size(),
       vk::BufferUsageFlagBits::eVertexBuffer |
-        vk::BufferUsageFlagBits::eIndexBuffer |
+        vk::BufferUsageFlagBits::eTransferDst,
+      {.usage = vma::MemoryUsage::eAuto}
+    );
+
+    index_buffer_ = graphics::Buffer::from_data(
+      indices.data(),
+      sizeof(uint16_t) * indices.size(),
+      vk::BufferUsageFlagBits::eIndexBuffer |
         vk::BufferUsageFlagBits::eTransferDst,
       {.usage = vma::MemoryUsage::eAuto}
     );

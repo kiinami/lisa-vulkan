@@ -167,10 +167,10 @@ src = files(
     'src/lisa/render/ConvolutionalPass.h',
     'src/lisa/render/ConvolutionalPass.cpp',
 
-    'src/lisa/scene/Scene.h',
-    'src/lisa/scene/Scene.cpp',
     'src/lisa/scene/xml.h',
     'src/lisa/scene/xml.cpp',
+    'src/lisa/scene/gltf.h',
+    'src/lisa/scene/gltf.cpp',
 
     'src/lisa/systems/ecs/Registry.h',
     'src/lisa/systems/ecs/Registry.cpp',

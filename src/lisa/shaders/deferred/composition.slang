@@ -64,7 +64,7 @@ Vertex2Fragment vertex(uint32_t vertex_id: SV_VertexID) {
 [shader("fragment")]
 float4 fragment(Vertex2Fragment input) : SV_Target {
   float3 albedo = textures[push_constants.albedo_idx].Sample(input.uv).rgb;
-  float3 N = normalize(textures[push_constants.normal_idx].Sample(input.uv).xyz);
+  float3 N = normalize(textures[push_constants.normal_idx].Sample(input.uv).xyz * 2.0 - 1.0);
   float3 world_position = textures[push_constants.position_idx].Sample(input.uv).xyz;
   float4 material = textures[push_constants.material_idx].Sample(input.uv);
   float roughness = material.x;

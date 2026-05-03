@@ -5,21 +5,12 @@
 #ifndef LISA_VULKAN_GLTF_H
 #define LISA_VULKAN_GLTF_H
 
-namespace lisa {
-namespace scene {
-namespace gltf {
+#include "utils/common.h"
 
-  class gltf {
-  public:
-    gltf();
-    ~gltf();
-    
-  private:
-    
-  };
+namespace lisa::scene::gltf {
 
-} // gltf
-} // scene
-} // lisa
+  void load(const path& filepath);
+
+}
 
 #endif //LISA_VULKAN_GLTF_H

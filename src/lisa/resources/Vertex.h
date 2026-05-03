@@ -11,7 +11,7 @@ namespace lisa::resources {
     vec3 pos;
     vec3 normal;
     vec2 uv;
-    vec3 tangent;
+    vec3 tangent{0.0f};
 
     static vector<vk::VertexInputAttributeDescription>
       attribute_descriptions(const uint32 binding) {

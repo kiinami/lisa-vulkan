@@ -7,7 +7,6 @@
 
 #include "ShaderData.h"
 #include "graphics/commands/CommandBuffer.h"
-#include "scene/Scene.h"
 
 namespace lisa::systems::render {
   class Rendergraph;

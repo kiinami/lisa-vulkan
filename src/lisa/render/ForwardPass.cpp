@@ -74,7 +74,7 @@ namespace lisa::render {
         0, static_cast<const vk::Buffer&>(mesh->vertex_buffer()), offset
       );
       ctx.cmdb->bindIndexBuffer(
-        mesh->index_buffer(), mesh->index_offset(), vk::IndexType::eUint16
+        mesh->index_buffer(), 0, vk::IndexType::eUint16
       );
 
       auto push_constants = systems::render::PushConstants{

@@ -39,6 +39,8 @@ namespace lisa::render {
       .shader = *shader_,
       .vertex_input = false,
       .color_attachment_formats = vector<vk::Format>{final_fmt},
+      .depth_test_read = false,
+      .depth_test_write = false
     };
     pipeline_ = std::make_unique<graphics::Pipeline>(params);
   }

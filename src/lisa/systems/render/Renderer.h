@@ -11,7 +11,6 @@
 #include "graphics/swapchain/Swapchain.h"
 #include "graphics/sync/Fence.h"
 #include "graphics/sync/Semaphore.h"
-#include "scene/Scene.h"
 #include "utils/common.h"
 
 namespace lisa::systems::render {
