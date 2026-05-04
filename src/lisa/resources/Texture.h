@@ -14,7 +14,7 @@ namespace lisa::resources {
 
   class Texture : public systems::resources::Resource {
   public:
-    explicit Texture(const path& filepath);
+    explicit Texture(const path& filepath, int channel = -1);
 
     explicit Texture(const std::byte* bytes, size size, int channel = -1);
 
@@ -37,9 +37,9 @@ namespace lisa::resources {
     uint32 levels_ = 1;
 
     static graphics::Image load_bytes(const std::byte* bytes, size s, int channel = -1);
-    static graphics::Image load_ktx(const path& filepath);
-    static graphics::Image load_jpg(const path& filepath);
-    static graphics::Image load_exr(const path& filepath);
+    static graphics::Image load_ktx(const path& filepath, int channel = -1);
+    static graphics::Image load_jpg(const path& filepath, int channel = -1);
+    static graphics::Image load_exr(const path& filepath, int channel = -1);
   };
 
 }

@@ -16,6 +16,7 @@
 
 #include <fastgltf/core.hpp>
 #include <fastgltf/tools.hpp>
+#include <fstream>
 
 namespace lisa::scene::gltf {
 
@@ -74,18 +75,17 @@ namespace lisa::scene::gltf {
         fastgltf::visitor{
           [&](const fastgltf::sources::URI& filepath) {
             texture = resources::context::manager().load<resources::Texture>(
-              static_cast<str>(filepath.uri.string()),
-              base_path_ / filepath.uri.string()
+              id, base_path_ / filepath.uri.string(), channel
             );
           },
           [&](const fastgltf::sources::Vector& file) {
             texture = resources::context::manager().load<resources::Texture>(
-              id, file.bytes.data(), file.bytes.size()
+              id, file.bytes.data(), file.bytes.size(), channel
             );
           },
           [&](const fastgltf::sources::ByteView& view) {
             texture = resources::context::manager().load<resources::Texture>(
-              id, view.bytes.data(), view.bytes.size()
+              id, view.bytes.data(), view.bytes.size(), channel
             );
           },
 
@@ -208,13 +208,22 @@ namespace lisa::scene::gltf {
                               .textureIndex];
               if (tex.imageIndex.has_value()) {
                 auto& img = asset_.images[tex.imageIndex.value()];
-                const auto base_id = "img::" + std::to_string(tex.imageIndex.value());
+                const auto base_id =
+                  "img::" + std::to_string(tex.imageIndex.value());
 
                 material_component.roughness_texture = load_texture(
-                    img, base_id + "::roughness", asset_.buffers, asset_.bufferViews, 1
+                  img,
+                  base_id + "::roughness",
+                  asset_.buffers,
+                  asset_.bufferViews,
+                  1
                 );
                 material_component.metallic_texture = load_texture(
-                    img, base_id + "::metallic", asset_.buffers, asset_.bufferViews, 2
+                  img,
+                  base_id + "::metallic",
+                  asset_.buffers,
+                  asset_.bufferViews,
+                  2
                 );
               }
             }
