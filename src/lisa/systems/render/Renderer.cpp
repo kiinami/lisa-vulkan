@@ -190,32 +190,46 @@ namespace lisa::systems::render {
           object_data[i].color = vec4(material_component->albedo, 1.0f);
           object_data[i].roughness = material_component->roughness;
           object_data[i].metallic = material_component->metallic;
+
+          object_data[i].diffuse_texture_index =
+            std::numeric_limits<uint32>::max();
+          object_data[i].roughness_texture_index =
+            std::numeric_limits<uint32>::max();
+          object_data[i].metallic_texture_index =
+            std::numeric_limits<uint32>::max();
+          object_data[i].normal_texture_index =
+            std::numeric_limits<uint32>::max();
+          if (
+            const auto res = material_component->albedo_texture; res != nullptr
+          )
+            object_data[i].diffuse_texture_index = res->descriptor_index();
+          if (
+            const auto res = material_component->roughness_texture;
+            res != nullptr
+          )
+            object_data[i].roughness_texture_index = res->descriptor_index();
+          if (
+            const auto res = material_component->metallic_texture;
+            res != nullptr
+          )
+            object_data[i].metallic_texture_index = res->descriptor_index();
+          if (
+            const auto res = material_component->normal_texture; res != nullptr
+          )
+            object_data[i].normal_texture_index = res->descriptor_index();
         } else {
           object_data[i].color = vec4(1.0f);
           object_data[i].roughness = 1.0f;
           object_data[i].metallic = 0.0f;
-        }
 
-        const auto* texture_component =
-          components::context::registry()
-            ->try_get<components::MaterialComponent>(entity);
-        object_data[i].diffuse_texture_index =
-          std::numeric_limits<uint32>::max();
-        object_data[i].roughness_texture_index =
-          std::numeric_limits<uint32>::max();
-        object_data[i].metallic_texture_index =
-          std::numeric_limits<uint32>::max();
-        object_data[i].normal_texture_index =
-          std::numeric_limits<uint32>::max();
-        if (texture_component) {
           object_data[i].diffuse_texture_index =
-            texture_component->albedo_texture->descriptor_index();
-          if (auto res = texture_component->roughness_texture; res != nullptr)
-            object_data[i].roughness_texture_index = res->descriptor_index();
-          if (auto res = texture_component->metallic_texture; res != nullptr)
-            object_data[i].metallic_texture_index = res->descriptor_index();
-          if (auto res = texture_component->normal_texture; res != nullptr)
-            object_data[i].normal_texture_index = res->descriptor_index();
+            std::numeric_limits<uint32>::max();
+          object_data[i].roughness_texture_index =
+            std::numeric_limits<uint32>::max();
+          object_data[i].metallic_texture_index =
+            std::numeric_limits<uint32>::max();
+          object_data[i].normal_texture_index =
+            std::numeric_limits<uint32>::max();
         }
 
         i++;

@@ -16,6 +16,8 @@ namespace lisa::resources {
   public:
     explicit Texture(const path& filepath);
 
+    explicit Texture(const std::byte* bytes, size size, int channel = -1);
+
     void unload() override {}
 
     graphics::Image& image() { return image_; }
@@ -34,6 +36,7 @@ namespace lisa::resources {
     DescriptorIndex descriptor_index_ = 0;
     uint32 levels_ = 1;
 
+    static graphics::Image load_bytes(const std::byte* bytes, size s, int channel = -1);
     static graphics::Image load_ktx(const path& filepath);
     static graphics::Image load_jpg(const path& filepath);
     static graphics::Image load_exr(const path& filepath);

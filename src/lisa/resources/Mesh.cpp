@@ -9,7 +9,6 @@
 #include "utils/chk.h"
 #include "utils/path.h"
 
-#include <cstring>
 #include <fastgltf/glm_element_traits.hpp>
 #include <numeric>
 #include <tiny_obj_loader.h>
