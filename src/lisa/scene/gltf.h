@@ -9,7 +9,7 @@
 
 namespace lisa::scene::gltf {
 
-  void load(const path& filepath);
+  void load(const path& filepath, mat4 transform = mat4(1.0f));
 
 }
 

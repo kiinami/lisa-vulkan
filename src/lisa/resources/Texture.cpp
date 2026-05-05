@@ -15,9 +15,47 @@
 #include <tinyexr.h>
 
 namespace lisa::resources {
-  Texture::Texture(const std::byte* bytes, const size size, const int channel) {
-    image_ = load_bytes(bytes, size, channel);
+  Texture::Texture(
+    const path& filepath, const graphics::CommandBuffer& cmdb, const int channel
+  ) {
+    const auto ext = filepath.extension().string();
+    if (ext == ".exr") {
+      image_ = load_exr(filepath, cmdb, channel);
+    } else {
+      const auto bytes = utils::read_file(filepath);
 
+      if (ext == ".jpg" || ext == ".jpeg" || ext == ".png")
+        image_ = load_jpg(bytes, cmdb, channel);
+      else if (ext == ".ktx" || ext == ".ktx2")
+        image_ = load_ktx(bytes, cmdb, channel);
+      else {
+        logging::error("Unsupported texture format: {}", ext);
+        return;
+      }
+    }
+
+    setup();
+  }
+
+  Texture::Texture(
+    const vector<std::byte>& data,
+    const fastgltf::MimeType mime,
+    const graphics::CommandBuffer& cmdb,
+    const int channel
+  ) {
+    if (mime == fastgltf::MimeType::KTX2)
+      image_ = load_ktx(data, cmdb, channel);
+    else if (mime ==
+             fastgltf::MimeType::JPEG ||
+             mime == fastgltf::MimeType::PNG)
+      image_ = load_jpg(data, cmdb, channel);
+    else
+      logging::error("Unsupported texture format");
+
+    setup();
+  }
+
+  void Texture::setup() {
     sampler_ = graphics::Sampler(static_cast<float>(image_.mipmaps()));
 
     const vk::DescriptorImageInfo image_info{
@@ -38,76 +76,38 @@ namespace lisa::resources {
       graphics::context::descriptor_container().write(image_info);
   }
 
-  graphics::Image Texture::load_bytes(
-    const std::byte* bytes, const size s, const int channel
+  graphics::Image Texture::load_ktx(
+    const vector<std::byte>& data,
+    const graphics::CommandBuffer& cmdb,
+    int channel
   ) {
-    int w, h, channels;
-    stbi_set_flip_vertically_on_load(true);
-
-    stbi_uc* pixels = stbi_load_from_memory(
-      reinterpret_cast<const stbi_uc*>(bytes),
-      static_cast<int>(s),
-      &w,
-      &h,
-      &channels,
-      STBI_rgb_alpha
-    );
-
-    if (!pixels) logging::abort("Failed to load STB image from memory");
-
-    const auto width = static_cast<uint32>(w);
-    const auto height = static_cast<uint32>(h);
-
-    vector<stbi_uc> data;
-    const size n_pixels = width * height;
-    auto format = graphics::ImageFormat(vk::Format::eR8G8B8A8Unorm);
-    if (channel != -1) {
-      data.resize(n_pixels);
-      for (size i = 0; i < n_pixels; i++)
-        data[i] = pixels[i * 4 + channel];
-
-      stbi_image_free(pixels);
-      format = graphics::ImageFormat(vk::Format::eR8Unorm);
-    }
-
-    const size upload_size = data.empty() ? (n_pixels * 4) : n_pixels;
-
-    const uint32 mip_levels =
-      static_cast<uint32>(
-        std::log2(static_cast<float>(std::max(width, height)))
-      ) +
-      1;
-
-    auto image = graphics::Image::from_data(
-      data.empty() ? pixels : data.data(),
-      upload_size,
-      {static_cast<float>(width), static_cast<float>(height), 1.0f},
-      format,
-      vk::ImageUsageFlagBits::eSampled,
-      mip_levels
-    );
-
-    if (data.empty()) stbi_image_free(pixels);
-
-    return image;
-  }
-
-  graphics::Image Texture::load_ktx(const path& filepath, int channel) {
-    ktxTexture* texture;
-    const auto fp = utils::pstr(filepath);
-    ktxTexture_CreateFromNamedFile(
-      fp.c_str(), KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &texture
+    ktxTexture2* texture;
+    ktxTexture2_CreateFromMemory(
+      reinterpret_cast<const ktx_uint8_t*>(data.data()),
+      data.size(),
+      KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT,
+      &texture
     );
 
     if (channel >= 0 && channel <= 3) {
       logging::error(
         "Extracting a single channel from KTX textures is not supported"
       );
+      ktxTexture2_Destroy(texture);
+      return {};
     }
 
-    auto cmdb = graphics::context::device().cmd_buffer();
+    if (ktxTexture2_NeedsTranscoding(texture)) {
+      static auto target_format = KTX_TTF_BC7_RGBA;
 
-    cmdb.begin_onetime();
+      KTX_error_code result =
+        ktxTexture2_TranscodeBasis(texture, target_format, 0);
+      if (result != KTX_SUCCESS) {
+        logging::error(
+          "Failed to transcode KTX texture: {}", ktxErrorString(result)
+        );
+      }
+    }
 
     auto transfer_buffer = graphics::Buffer(
       texture->dataSize,
@@ -120,7 +120,7 @@ namespace lisa::resources {
       transfer_buffer.mapped_data(), texture->pData, texture->dataSize
     );
 
-    const auto format = graphics::ImageFormat(ktxTexture_GetVkFormat(texture));
+    const auto format = graphics::ImageFormat(ktxTexture2_GetVkFormat(texture));
 
     auto image = graphics::Image(
       format,
@@ -154,7 +154,7 @@ namespace lisa::resources {
     vector<vk::BufferImageCopy> copy_regions;
     for (auto i = 0; i < texture->numLevels; i++) {
       ktx_size_t offset = 0;
-      ktxTexture_GetImageOffset(texture, i, 0, 0, &offset);
+      ktxTexture2_GetImageOffset(texture, i, 0, 0, &offset);
 
       const vk::BufferImageCopy buffer_image_copy{
         .bufferOffset = offset,
@@ -163,8 +163,8 @@ namespace lisa::resources {
            .mipLevel = static_cast<uint32>(i),
            .layerCount = 1},
         .imageExtent = {
-          .width = texture->baseWidth >> i,
-          .height = texture->baseHeight >> i,
+          .width = std::max(1u, texture->baseWidth >> i),
+          .height = std::max(1u, texture->baseHeight >> i),
           .depth = 1
         }
       };
@@ -191,30 +191,36 @@ namespace lisa::resources {
     dependency_i.pImageMemoryBarriers = &barrier_read_info;
     cmdb->pipelineBarrier2(dependency_i);
 
-    cmdb->end();
-    graphics::context::device().submit_cmd_buffer_with_fence(cmdb);
+    ktxTexture2_Destroy(texture);
 
-    ktxTexture_Destroy(texture);
+    cmdb.keep_alive(std::move(transfer_buffer));
 
     return image;
   }
 
-  graphics::Image Texture::load_jpg(const path& filepath, const int channel) {
+  graphics::Image Texture::load_jpg(
+    const vector<std::byte>& data,
+    const graphics::CommandBuffer& cmdb,
+    const int channel
+  ) {
     int w, h, channels;
 
-    stbi_set_flip_vertically_on_load(true);
-
-    stbi_uc* pixels = stbi_load(
-      utils::pstr(filepath).c_str(), &w, &h, &channels, STBI_rgb_alpha
+    stbi_uc* pixels = stbi_load_from_memory(
+      reinterpret_cast<const stbi_uc*>(data.data()),
+      data.size(),
+      &w,
+      &h,
+      &channels,
+      STBI_rgb_alpha
     );
 
     if (!pixels)
-      logging::abort("Failed to load STB image: {}", filepath.string());
+      logging::error("Failed to load STB image: {}", stbi_failure_reason());
 
     const bool extract_channel = channel >= 0 && channel <= 3;
 
-    const uint32 width = static_cast<uint32>(w);
-    const uint32 height = static_cast<uint32>(h);
+    const auto width = static_cast<uint32>(w);
+    const auto height = static_cast<uint32>(h);
 
     const uint32 mip_levels =
       static_cast<uint32>(
@@ -233,6 +239,7 @@ namespace lisa::resources {
         {static_cast<float>(width), static_cast<float>(height), 1.0f},
         graphics::ImageFormat(vk::Format::eR8G8B8A8Unorm),
         vk::ImageUsageFlagBits::eSampled,
+        cmdb,
         mip_levels
       );
     } else {
@@ -247,6 +254,7 @@ namespace lisa::resources {
         {static_cast<float>(width), static_cast<float>(height), 1.0f},
         graphics::ImageFormat(vk::Format::eR8Unorm),
         vk::ImageUsageFlagBits::eSampled,
+        cmdb,
         mip_levels
       );
     }
@@ -256,7 +264,9 @@ namespace lisa::resources {
     return image;
   }
 
-  graphics::Image Texture::load_exr(const path& filepath, const int channel) {
+  graphics::Image Texture::load_exr(
+    const path& filepath, const graphics::CommandBuffer& cmdb, const int channel
+  ) {
     float* out_rgba = nullptr;
     int w, h;
     const char* err = nullptr;
@@ -341,35 +351,4 @@ namespace lisa::resources {
     return image;
   }
 
-  Texture::Texture(const path& filepath, int channel) {
-    if (
-      const auto ext = filepath.extension().string();
-      ext == ".ktx" || ext == ".ktx2"
-    ) {
-      image_ = load_ktx(filepath, channel);
-    } else if (ext == ".jpg" || ext == ".jpeg" || ext == ".png") {
-      image_ = load_jpg(filepath, channel);
-    } else if (ext == ".exr") {
-      image_ = load_exr(filepath, channel);
-    }
-
-    sampler_ = graphics::Sampler(static_cast<float>(image_.mipmaps()));
-
-    const vk::DescriptorImageInfo image_info{
-      .sampler = *sampler_,
-      .imageView = image_.view(
-        {.type = vk::ImageViewType::e2D,
-         .format = image_.format(),
-         .range =
-           {.aspectMask = vk::ImageAspectFlagBits::eColor,
-            .baseMipLevel = 0,
-            .levelCount = image_.mipmaps(),
-            .baseArrayLayer = 0,
-            .layerCount = 1}}
-      ),
-      .imageLayout = vk::ImageLayout::eReadOnlyOptimal
-    };
-    descriptor_index_ =
-      graphics::context::descriptor_container().write(image_info);
-  }
 }

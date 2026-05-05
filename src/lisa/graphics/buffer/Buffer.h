@@ -4,6 +4,7 @@
 
 #ifndef LISA_VULKAN_BUFFER_H
 #define LISA_VULKAN_BUFFER_H
+#include "graphics/commands/CommandBuffer.h"
 #include "utils/common.h"
 
 #include <vk_mem_alloc_raii.hpp>
@@ -35,6 +36,13 @@ namespace lisa::graphics {
       return buffer_.getAllocation();
     }
 
+    static Buffer from_data(
+      const CommandBuffer& cmdb,
+      const void* data,
+      size size,
+      vk::BufferUsageFlags usage,
+      const vma::AllocationCreateInfo& allocation_ci = {}
+    );
     static Buffer from_data(
       const void* data,
       size size,

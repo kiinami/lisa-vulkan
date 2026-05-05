@@ -199,23 +199,19 @@ namespace lisa::systems::render {
             std::numeric_limits<uint32>::max();
           object_data[i].normal_texture_index =
             std::numeric_limits<uint32>::max();
-          if (
-            const auto res = material_component->albedo_texture; res != nullptr
-          )
+          if (const auto res = material_component->albedo_texture();
+              res != nullptr)
             object_data[i].diffuse_texture_index = res->descriptor_index();
-          if (
-            const auto res = material_component->roughness_texture;
-            res != nullptr
+          if (const auto res = material_component->roughness_texture();
+              res != nullptr
           )
             object_data[i].roughness_texture_index = res->descriptor_index();
-          if (
-            const auto res = material_component->metallic_texture;
-            res != nullptr
+          if (const auto res = material_component->metallic_texture();
+              res != nullptr
           )
             object_data[i].metallic_texture_index = res->descriptor_index();
-          if (
-            const auto res = material_component->normal_texture; res != nullptr
-          )
+          if (const auto res = material_component->normal_texture();
+              res != nullptr)
             object_data[i].normal_texture_index = res->descriptor_index();
         } else {
           object_data[i].color = vec4(1.0f);

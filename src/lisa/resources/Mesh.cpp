@@ -14,67 +14,46 @@
 #include <tiny_obj_loader.h>
 
 namespace lisa::resources {
-  Mesh::Mesh(const path& filepath) {
+  Mesh::Mesh(
+    const vector<Vertex>& vertices,
+    const vector<uint32>& indices,
+    const graphics::CommandBuffer& cmdb
+  ) {
+    vertex_count_ = static_cast<uint32>(vertices.size());
+    index_count_ = static_cast<uint32>(indices.size());
+
+    vertex_buffer_ = graphics::Buffer::from_data(
+      cmdb,
+      vertices.data(),
+      sizeof(Vertex) * vertices.size(),
+      vk::BufferUsageFlagBits::eVertexBuffer |
+        vk::BufferUsageFlagBits::eTransferDst,
+      {.usage = vma::MemoryUsage::eAuto}
+    );
+
+    index_buffer_ = graphics::Buffer::from_data(
+      cmdb,
+      indices.data(),
+      sizeof(uint32) * indices.size(),
+      vk::BufferUsageFlagBits::eIndexBuffer |
+        vk::BufferUsageFlagBits::eTransferDst,
+      {.usage = vma::MemoryUsage::eAuto}
+    );
+  }
+
+  MeshSpec::MeshSpec(const path& filepath) {
     const auto ext = filepath.extension().string();
 
     if (ext == ".obj") {
       load_obj(filepath);
     } else {
-      logging::abort(
+      logging::error(
         "Mesh format of file '{}' not supported", filepath.c_str()
       );
     }
   }
 
-  Mesh::Mesh(const fastgltf::Primitive& p, const fastgltf::Asset& asset) {
-    auto* pos_attr = p.findAttribute("POSITION");
-    auto* norm_attr = p.findAttribute("NORMAL");
-    auto* uv_attr = p.findAttribute("TEXCOORD_0");
-
-    if (!pos_attr)
-      throw std::runtime_error("Primitive missing POSITION attribute");
-
-    auto& pos_accessor = asset.accessors[pos_attr->accessorIndex];
-    auto& norm_accessor = asset.accessors[norm_attr->accessorIndex];
-    auto& uv_accessor = asset.accessors[uv_attr->accessorIndex];
-
-    vector<Vertex> vertices(pos_accessor.count);
-
-    fastgltf::iterateAccessorWithIndex<vec3>(
-      asset, pos_accessor, [&](const vec3 pos, const size i) {
-        vertices[i].pos = pos;
-      }
-    );
-    fastgltf::iterateAccessorWithIndex<vec3>(
-      asset, norm_accessor, [&](const vec3 n, const size i) {
-        vertices[i].normal = n;
-      }
-    );
-    fastgltf::iterateAccessorWithIndex<vec2>(
-      asset, uv_accessor, [&](const vec2 uv, const size i) {
-        vertices[i].uv = uv;
-      }
-    );
-
-    vector<uint16> indices;
-    if (p.indicesAccessor.has_value()) {
-      auto& idx_accessor = asset.accessors[p.indicesAccessor.value()];
-      indices.resize(idx_accessor.count);
-      fastgltf::iterateAccessorWithIndex<uint16>(
-        asset, idx_accessor, [&](const uint16 idx, const size i) {
-          indices[i] = idx;
-        }
-      );
-    } else {
-      indices.resize(pos_accessor.count);
-      std::iota(indices.begin(), indices.end(), 0);
-    }
-
-    calculate_tangents(vertices, indices);
-    load(vertices, indices);
-  }
-
-  void Mesh::load_obj(const path& filepath) {
+  void MeshSpec::load_obj(const path& filepath) {
     tinyobj::attrib_t attrib;
     vector<tinyobj::shape_t> shapes;
     vector<tinyobj::material_t> materials;
@@ -89,10 +68,8 @@ namespace lisa::resources {
     if (!result || shapes.empty())
       throw std::runtime_error("Failed to load OBJ: " + fp);
 
-    vertex_count_ = shapes[0].mesh.indices.size();
+    vertex_count = shapes[0].mesh.indices.size();
 
-    vector<Vertex> vertices;
-    vector<uint16> indices;
     for (const auto& [vertex_index, normal_index, texcoord_index] :
          shapes[0].mesh.indices) {
       Vertex v{
@@ -113,17 +90,63 @@ namespace lisa::resources {
       indices.push_back(indices.size());
     }
 
-    calculate_tangents(vertices, indices);
-    load(vertices, indices);
+    calculate_tangents();
   }
 
-  void Mesh::calculate_tangents(
-    vector<Vertex>& vertices, const vector<uint16>& indices
+  MeshSpec::MeshSpec(
+    const fastgltf::Primitive& p, const fastgltf::Asset& asset
   ) {
+    auto* pos_attr = p.findAttribute("POSITION");
+    auto* norm_attr = p.findAttribute("NORMAL");
+    auto* uv_attr = p.findAttribute("TEXCOORD_0");
+
+    if (!pos_attr)
+      throw std::runtime_error("Primitive missing POSITION attribute");
+
+    auto& pos_accessor = asset.accessors[pos_attr->accessorIndex];
+    auto& norm_accessor = asset.accessors[norm_attr->accessorIndex];
+    auto& uv_accessor = asset.accessors[uv_attr->accessorIndex];
+
+    vertices.resize(pos_accessor.count);
+
+    fastgltf::iterateAccessorWithIndex<vec3>(
+      asset, pos_accessor, [&](const vec3 pos, const size i) {
+        vertices[i].pos = pos;
+      }
+    );
+    fastgltf::iterateAccessorWithIndex<vec3>(
+      asset, norm_accessor, [&](const vec3 n, const size i) {
+        vertices[i].normal = n;
+      }
+    );
+    fastgltf::iterateAccessorWithIndex<vec2>(
+      asset, uv_accessor, [&](const vec2 uv, const size i) {
+        vertices[i].uv = uv;
+      }
+    );
+
+    if (p.indicesAccessor.has_value()) {
+      auto& idx_accessor = asset.accessors[p.indicesAccessor.value()];
+      indices.resize(idx_accessor.count);
+
+      fastgltf::iterateAccessorWithIndex<uint32>(
+        asset, idx_accessor, [&](const uint32 idx, const size i) {
+          indices[i] = idx;
+        }
+      );
+    } else {
+      indices.resize(pos_accessor.count);
+      std::iota(indices.begin(), indices.end(), 0);
+    }
+
+    calculate_tangents();
+  }
+
+  void MeshSpec::calculate_tangents() {
     for (size i = 0; i < indices.size(); i += 3) {
-      const uint16 i0 = indices[i];
-      const uint16 i1 = indices[i + 1];
-      const uint16 i2 = indices[i + 2];
+      const uint32 i0 = indices[i];
+      const uint32 i1 = indices[i + 1];
+      const uint32 i2 = indices[i + 2];
 
       auto& v0 = vertices[i0].pos;
       auto& v1 = vertices[i1].pos;
@@ -153,25 +176,7 @@ namespace lisa::resources {
       v.tangent = glm::normalize(v.tangent);
   }
 
-  void
-    Mesh::load(const vector<Vertex>& vertices, const vector<uint16>& indices) {
-    vertex_count_ = vertices.size();
-    index_count_ = indices.size();
-
-    vertex_buffer_ = graphics::Buffer::from_data(
-      vertices.data(),
-      sizeof(Vertex) * vertices.size(),
-      vk::BufferUsageFlagBits::eVertexBuffer |
-        vk::BufferUsageFlagBits::eTransferDst,
-      {.usage = vma::MemoryUsage::eAuto}
-    );
-
-    index_buffer_ = graphics::Buffer::from_data(
-      indices.data(),
-      sizeof(uint16_t) * indices.size(),
-      vk::BufferUsageFlagBits::eIndexBuffer |
-        vk::BufferUsageFlagBits::eTransferDst,
-      {.usage = vma::MemoryUsage::eAuto}
-    );
+  Mesh MeshSpec::load_resource(const graphics::CommandBuffer& cmdb) {
+    return Mesh(vertices, indices, cmdb);
   }
 }

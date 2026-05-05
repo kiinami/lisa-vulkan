@@ -4,19 +4,29 @@
 
 #ifndef LISA_VULKAN_TEXTURE_H
 #define LISA_VULKAN_TEXTURE_H
+#include "fastgltf/types.hpp"
 #include "graphics/descriptors/DescriptorAllocator.h"
 #include "graphics/images/Image.h"
 #include "graphics/images/Sampler.h"
 #include "systems/resources/Resource.h"
 #include "utils/common.h"
+#include "utils/logging.h"
 
 namespace lisa::resources {
 
   class Texture : public systems::resources::Resource {
   public:
-    explicit Texture(const path& filepath, int channel = -1);
-
-    explicit Texture(const std::byte* bytes, size size, int channel = -1);
+    explicit Texture(
+      const path& filepath,
+      const graphics::CommandBuffer& cmdb,
+      int channel = -1
+    );
+    explicit Texture(
+      const vector<std::byte>& data,
+      fastgltf::MimeType mime,
+      const graphics::CommandBuffer& cmdb,
+      int channel = -1
+    );
 
     void unload() override {}
 
@@ -36,10 +46,50 @@ namespace lisa::resources {
     DescriptorIndex descriptor_index_ = 0;
     uint32 levels_ = 1;
 
-    static graphics::Image load_bytes(const std::byte* bytes, size s, int channel = -1);
-    static graphics::Image load_ktx(const path& filepath, int channel = -1);
-    static graphics::Image load_jpg(const path& filepath, int channel = -1);
-    static graphics::Image load_exr(const path& filepath, int channel = -1);
+    static graphics::Image load_ktx(
+      const vector<std::byte>& data,
+      const graphics::CommandBuffer& cmdb,
+      int channel = -1
+    );
+    static graphics::Image load_jpg(
+      const vector<std::byte>& data,
+      const graphics::CommandBuffer& cmdb,
+      int channel = -1
+    );
+    static graphics::Image load_exr(
+      const path& filepath,
+      const graphics::CommandBuffer& cmdb,
+      int channel = -1
+    );
+
+    void setup();
+  };
+
+  struct TextureSpec : systems::resources::ResourceSpec<Texture> {
+    optional<path> filepath;
+    optional<pair<fastgltf::MimeType, vector<std::byte>>> data;
+    int channel = -1;
+
+    explicit TextureSpec(const path& filepath, const int channel = -1) :
+      filepath(filepath),
+      channel(channel) {}
+
+    explicit TextureSpec(
+      const fastgltf::MimeType& mime,
+      const vector<std::byte>& data,
+      const int channel = -1
+    ) :
+      data({mime, data}),
+      channel(channel) {}
+
+    Texture load_resource(const graphics::CommandBuffer& cmdb) override {
+      if (data.has_value())
+        return Texture(data->second, data->first, cmdb, channel);
+      if (filepath.has_value()) return Texture(filepath.value(), cmdb, channel);
+
+      logging::error("TextureSpec must have either a filepath or data");
+      return Texture(path(), cmdb, channel);
+    }
   };
 
 }

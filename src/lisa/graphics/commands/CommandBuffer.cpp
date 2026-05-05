@@ -8,7 +8,10 @@
 #include "utils/logging.h"
 
 namespace lisa::graphics {
-  void CommandBuffer::reset() const { buffer_.reset(); }
+  void CommandBuffer::reset() const {
+    buffer_.reset();
+    dependencies_.clear();
+  }
 
   void CommandBuffer::begin_onetime() const {
     buffer_.begin({.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit});

@@ -6,6 +6,7 @@
 #define LISA_VULKAN_IMAGE_H
 
 #include "ImageFormat.h"
+#include "graphics/commands/CommandBuffer.h"
 #include "utils/common.h"
 
 #include <unordered_map>
@@ -103,6 +104,16 @@ namespace lisa::graphics {
     vk::ImageUsageFlags usage() const { return usage_; }
 
     vk::ImageLayout initial_layout() const { return initial_layout_; }
+
+    static Image from_data(
+      const void* data,
+      size_t size,
+      const vec3& extent,
+      ImageFormat format,
+      vk::ImageUsageFlags usage,
+      const CommandBuffer& cmdb,
+      uint32 mip_levels = 1
+    );
 
     static Image from_data(
       const void* data,

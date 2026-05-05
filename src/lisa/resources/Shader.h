@@ -37,6 +37,18 @@ namespace lisa::resources {
     static const Slang::ComPtr<slang::IGlobalSession>& get_global_session();
     static Slang::ComPtr<slang::ISession> create_session();
   };
+
+  struct ShaderSpec : systems::resources::ResourceSpec<Shader> {
+    path filepath;
+
+    ShaderSpec() = default;
+
+    explicit ShaderSpec(const path& filepath) : filepath(filepath) {}
+
+    Shader load_resource(const graphics::CommandBuffer& cmdb) override {
+      return Shader(filepath);
+    }
+  };
 }
 
 #endif // LISA_VULKAN_SHADER_H

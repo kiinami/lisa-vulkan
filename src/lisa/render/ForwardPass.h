@@ -22,7 +22,7 @@ namespace lisa::render {
     void execute(const systems::render::RenderContext& ctx) override;
 
   private:
-    const resources::Shader* shader_;
+    const resources::Shader* shader_ = nullptr;
     uptr<graphics::Pipeline> pipeline_;
   };
 }

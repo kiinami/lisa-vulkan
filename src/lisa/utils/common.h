@@ -39,4 +39,6 @@ namespace lisa {
 
   typedef glm::mat3 mat3;
   typedef glm::mat4 mat4;
+
+  using std::nullopt;
 }

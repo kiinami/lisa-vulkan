@@ -8,7 +8,7 @@
 
 namespace lisa::scene::xml {
 
-  void load(const path& filepath);
+  void load(const path& filepath, const mat4& transform = mat4(1.0f));
 
 }
 

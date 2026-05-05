@@ -30,8 +30,12 @@ namespace lisa::render {
 
     static path shader_path =
       resources::Shader::SHADERS_PATH / "forward/forward.slang";
-    shader_ = resources::context::manager().load<resources::Shader>(
+    resources::context::manager().add<resources::Shader, resources::ShaderSpec>(
       shader_path.string(), shader_path
+    );
+    resources::context::manager().load<resources::Shader>(shader_path.string());
+    shader_ = resources::context::manager().get<resources::Shader>(
+      shader_path.string()
     );
 
     graphics::Pipeline::CreateParameters params{
@@ -67,14 +71,14 @@ namespace lisa::render {
 
     uint32 i = 0;
     for (auto [entity, transform, mesh_component] : view.each()) {
-      const auto mesh = mesh_component.mesh;
+      const auto mesh = mesh_component.resource();
 
       vk::DeviceSize offset = 0;
       ctx.cmdb->bindVertexBuffers(
         0, static_cast<const vk::Buffer&>(mesh->vertex_buffer()), offset
       );
       ctx.cmdb->bindIndexBuffer(
-        mesh->index_buffer(), 0, vk::IndexType::eUint16
+        mesh->index_buffer(), 0, vk::IndexType::eUint32
       );
 
       auto push_constants = systems::render::PushConstants{

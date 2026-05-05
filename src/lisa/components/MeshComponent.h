@@ -6,11 +6,22 @@
 #define LISA_VULKAN_MESHCOMPONENT_H
 #pragma once
 #include "resources/Mesh.h"
+#include "resources/context.h"
+#include "utils/logging.h"
 
 namespace lisa::components {
 
   struct MeshComponent : systems::ecs::Component {
-    const resources::Mesh* mesh = nullptr;
+    explicit MeshComponent(const str& id) : id_(id) {}
+
+    resources::Mesh* resource() const {
+      auto* mesh = resources::context::manager().get<resources::Mesh>(id_);
+      if (!mesh) logging::error("Mesh with token '{}' not found", id_.c_str());
+      return mesh;
+    }
+
+  private:
+    const str id_;
   };
 
 }

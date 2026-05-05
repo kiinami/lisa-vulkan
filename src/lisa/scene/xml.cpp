@@ -12,6 +12,7 @@
 #include "components/PointLightComponent.h"
 #include "components/TransformComponent.h"
 #include "components/context.h"
+#include "gltf.h"
 #include "resources/Mesh.h"
 #include "resources/Texture.h"
 #include "resources/context.h"
@@ -140,9 +141,8 @@ namespace lisa::scene::xml {
       vector<LookAt> lookat;
       vector<Matrix> matrix;
 
-      components::TransformComponent to_component() const {
-        auto model = mat4(1.0f);
-
+      components::TransformComponent
+        to_component(mat4 model = mat4(1.0f)) const {
         for (const auto& [value] : translate)
           model = glm::translate(model, value);
 
@@ -171,11 +171,10 @@ namespace lisa::scene::xml {
 
       components::MeshComponent
         to_component(const std::filesystem::path& parent) const {
-        components::MeshComponent component;
-        component.mesh = resources::context::manager().load<resources::Mesh>(
-          path, parent / path
+        return components::MeshComponent(
+          resources::context::manager()
+            .add<resources::Mesh, resources::MeshSpec>(path, parent / path)
         );
-        return component;
       }
     };
 
@@ -191,34 +190,45 @@ namespace lisa::scene::xml {
 
       components::MaterialComponent
         to_component(const std::filesystem::path& parent) const {
-        components::MaterialComponent component;
+        optional<str> albedo_tx = nullopt;
+        optional<str> normal_tx = nullopt;
+        optional<str> roughness_tx = nullopt;
+        optional<str> metallic_tx = nullopt;
 
-        if (albedo.has_value()) component.albedo = albedo.value();
-        if (roughness.has_value())
-          component.roughness = roughness.value().get();
-        if (metallic.has_value()) component.metallic = metallic.value().get();
         if (albedo_texture.has_value())
-          component.albedo_texture =
-            resources::context::manager().load<resources::Texture>(
-              albedo_texture.value(), parent / albedo_texture.value()
-            );
-        if (roughness_texture.has_value())
-          component.roughness_texture =
-            resources::context::manager().load<resources::Texture>(
-              roughness_texture.value(), parent / roughness_texture.value()
-            );
-        if (metallic_texture.has_value())
-          component.metallic_texture =
-            resources::context::manager().load<resources::Texture>(
-              metallic_texture.value(), parent / metallic_texture.value()
-            );
+          albedo_tx =
+            resources::context::manager()
+              .add<resources::Texture, resources::TextureSpec>(
+                albedo_texture.value(), parent / albedo_texture.value()
+              );
         if (normal_texture.has_value())
-          component.normal_texture =
-            resources::context::manager().load<resources::Texture>(
-              normal_texture.value(), parent / normal_texture.value()
-            );
+          normal_tx =
+            resources::context::manager()
+              .add<resources::Texture, resources::TextureSpec>(
+                normal_texture.value(), parent / normal_texture.value()
+              );
+        if (roughness_texture.has_value())
+          roughness_tx =
+            resources::context::manager()
+              .add<resources::Texture, resources::TextureSpec>(
+                roughness_texture.value(), parent / roughness_texture.value()
+              );
+        if (metallic_texture.has_value())
+          metallic_tx =
+            resources::context::manager()
+              .add<resources::Texture, resources::TextureSpec>(
+                metallic_texture.value(), parent / metallic_texture.value()
+              );
 
-        return component;
+        return components::MaterialComponent(
+          albedo.value_or(vec3(1.0f)),
+          roughness.value_or(1.0f).get(),
+          metallic.value_or(0.0f).get(),
+          albedo_tx,
+          normal_tx,
+          roughness_tx,
+          metallic_tx
+        );
       }
     };
 
@@ -290,8 +300,15 @@ namespace lisa::scene::xml {
       optional<AmbientLight> ambient_light;
     };
 
+    struct External {
+      path file;
+
+      optional<Transform> transform;
+    };
+
     struct Scene {
       vector<Entity> entity;
+      vector<External> external;
     };
 
     str read_file(const path& path) {
@@ -308,14 +325,14 @@ namespace lisa::scene::xml {
 
   }
 
-  void load(const path& filepath) {
+  void load(const path& filepath, const mat4& transform) {
     const auto result = rfl::xml::read<Scene>(read_file(filepath));
     if (!result)
       logging::abort("Failed to parse XML scene: {}", result.error().what());
 
     auto scene = result.value();
 
-    if (scene.entity.empty()) {
+    if (scene.entity.empty() && scene.external.empty()) {
       logging::warning("Scene '{}' has no entities", filepath.string());
       return;
     }
@@ -364,6 +381,27 @@ namespace lisa::scene::xml {
           entity, xml_entity.ambient_light.value().to_component()
         );
     }
+
+    for (const auto& [file, t] : scene.external) {
+      mat4 external_transform(1.0f);
+      if (t.has_value()) {
+        auto component = t.value().to_component(transform);
+        external_transform = component.matrix();
+      }
+
+      const auto ext = file.extension().string();
+      if (ext == ".xml") {
+        load(scene_parent / file, external_transform);
+      } else if (ext == ".gltf" || ext == ".glb") {
+        gltf::load(scene_parent / file, external_transform);
+      } else {
+        logging::error(
+          "Unsupported external scene format: '{}', skipping", ext
+        );
+      }
+    }
+
+    resources::context::manager().load_all();
 
     logging::info(
       "Scene '{}' loaded successfully with {} entities",

@@ -6,30 +6,66 @@
 #define LISA_VULKAN_RESOURCEMANAGER_H
 
 #include "Resource.h"
+#include "graphics/context.h"
 #include "utils/common.h"
 
 #include <typeindex>
 
 namespace lisa::systems::resources {
-  template<typename T>
-  concept ResourceDerived = std::derived_from<T, Resource>;
+  template<typename R>
+  concept ResourceDerived = std::derived_from<R, Resource>;
+
+  template<typename S>
+  concept ResourceSpecDerived = requires(S* s) {
+    []<typename R>(ResourceSpec<R>*)
+      requires ResourceDerived<R>
+    {}(s);
+  };
 
   class ResourceManager {
   public:
     ResourceManager() = default;
     ~ResourceManager() = default;
 
-    template<ResourceDerived T, typename... Args>
-    T* load(const str& id, Args&&... args) {
-      if (auto* existing = get<T>(id); existing)
-        return existing;
+    template<ResourceDerived R, ResourceSpecDerived S, typename... Args>
+    str add(const str& id, Args&&... args) {
+      if (auto* existing = get<R>(id); existing) return id;
+      auto& bucket = specs_[std::type_index(typeid(R))];
 
-      auto& bucket = resources_[std::type_index(typeid(T))];
-      auto resource = std::make_unique<T>(std::forward<Args>(args)...);
+      bucket[id] = std::make_unique<S>(std::forward<Args>(args)...);
+      return id;
+    }
 
-      auto* ptr = resource.get();
-      bucket[id] = std::move(resource);
-      return ptr;
+    template<ResourceDerived R> void load(const str& id) {
+      auto& bucket = specs_[std::type_index(typeid(R))];
+
+      if (const auto it = bucket.find(id); it != bucket.end()) {
+        const auto& cmdb = graphics::context::device().cmd_buffer();
+        cmdb.begin_onetime();
+        resources_[std::type_index(typeid(R))][id] = it->second->load(cmdb);
+        cmdb->end();
+        graphics::context::device().submit_cmd_buffer_with_fence(cmdb);
+        bucket.erase(it);
+      }
+    }
+
+    void load_all() {
+      const auto& cmdb = graphics::context::device().cmd_buffer();
+      cmdb.begin_onetime();
+
+      for (auto& [type, bucket] : specs_)
+        for (auto& [id, spec] : bucket)
+          resources_[type][id] = spec->load(cmdb);
+
+      cmdb->end();
+      graphics::context::device().submit_cmd_buffer_with_fence(cmdb);
+
+      specs_.clear();
+    }
+
+    template<ResourceDerived R> bool is_added(const str& id) {
+      const auto& bucket = specs_[std::type_index(typeid(R))];
+      return bucket.contains(id);
     }
 
     template<ResourceDerived T> T* get(const str& id) {
@@ -41,6 +77,7 @@ namespace lisa::systems::resources {
     }
 
   private:
+    umap<std::type_index, umap<str, uptr<ResourceSpecBase>>> specs_;
     umap<std::type_index, umap<str, uptr<Resource>>> resources_;
   };
 

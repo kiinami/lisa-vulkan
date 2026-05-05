@@ -71,6 +71,7 @@ namespace lisa::graphics {
     const vec3& extent,
     ImageFormat format,
     vk::ImageUsageFlags usage,
+    const CommandBuffer& cmdb,
     uint32 mip_levels
   ) {
     auto transfer_buffer = Buffer(
@@ -93,9 +94,6 @@ namespace lisa::graphics {
       vk::ImageLayout::eUndefined,
       DEFAULT_ALLOCATION_CI
     );
-
-    auto cmdb = context::device().cmd_buffer();
-    cmdb.begin_onetime();
 
     const auto aspect_mask = format.aspect_mask();
 
@@ -217,6 +215,24 @@ namespace lisa::graphics {
     barrier.dstStageMask = vk::PipelineStageFlagBits2::eFragmentShader;
     barrier.dstAccessMask = vk::AccessFlagBits2::eShaderRead;
     cmdb->pipelineBarrier2(dependency_i);
+
+    cmdb.keep_alive(std::move(transfer_buffer));
+
+    return image;
+  }
+
+  Image Image::from_data(
+    const void* data,
+    const size_t size,
+    const vec3& extent,
+    const ImageFormat format,
+    const vk::ImageUsageFlags usage,
+    const uint32 mip_levels
+  ) {
+    const auto cmdb = context::device().cmd_buffer();
+    cmdb.begin_onetime();
+
+    auto image = from_data(data, size, extent, format, usage, cmdb, mip_levels);
 
     cmdb->end();
     context::device().submit_cmd_buffer_with_fence(cmdb);

@@ -59,48 +59,79 @@ namespace lisa::scene::gltf {
       return asset.defaultScene.value_or(0);
     }
 
-    resources::Texture* load_texture(
+    optional<str> load_texture(
       const fastgltf::Image& image,
       const str& id,
       const vector<fastgltf::Buffer>& buffers,
       const vector<fastgltf::BufferView>& buffer_views,
       int channel = -1
     ) {
-      resources::Texture* texture =
-        resources::context::manager().get<resources::Texture>(id);
+      if (resources::context::manager().is_added<resources::Texture>(id))
+        return id;
 
-      if (texture) return texture;
+      optional<str> result = nullopt;
 
       std::visit(
         fastgltf::visitor{
           [&](const fastgltf::sources::URI& filepath) {
-            texture = resources::context::manager().load<resources::Texture>(
-              id, base_path_ / filepath.uri.string(), channel
-            );
+            result =
+              optional{resources::context::manager()
+                         .add<resources::Texture, resources::TextureSpec>(
+                           id, base_path_ / filepath.uri.string(), channel
+                         )};
           },
-          [&](const fastgltf::sources::Vector& file) {
-            texture = resources::context::manager().load<resources::Texture>(
-              id, file.bytes.data(), file.bytes.size(), channel
-            );
+          [&](const fastgltf::sources::Vector& v) {
+            result = resources::context::manager()
+                       .add<resources::Texture, resources::TextureSpec>(
+                         id, v.mimeType, v.bytes, channel
+                       );
           },
-          [&](const fastgltf::sources::ByteView& view) {
-            texture = resources::context::manager().load<resources::Texture>(
-              id, view.bytes.data(), view.bytes.size(), channel
-            );
+          [&](const fastgltf::sources::Array& a) {
+            if (a.mimeType != fastgltf::MimeType::None) {
+              const auto data = std::vector(a.bytes.begin(), a.bytes.end());
+              result = resources::context::manager()
+                         .add<resources::Texture, resources::TextureSpec>(
+                           id, a.mimeType, data, channel
+                         );
+            }
           },
-
+          [&](const fastgltf::sources::ByteView& v) {
+            const auto data =
+              std::vector(v.bytes.data(), v.bytes.data() + v.bytes.size());
+            result = resources::context::manager()
+                       .add<resources::Texture, resources::TextureSpec>(
+                         id, v.mimeType, data, channel
+                       );
+          },
           [&](const fastgltf::sources::BufferView& bv) {
             const auto& buffer_view = buffer_views[bv.bufferViewIndex];
-            auto& buffer = buffers[buffer_view.bufferIndex];
-
+            const auto& buffer = buffers[buffer_view.bufferIndex];
             std::visit(
               fastgltf::visitor{
-                [](auto& arg) {},
-                [&](const fastgltf::sources::Vector& vec) {
-                  texture =
-                    resources::context::manager().load<resources::Texture>(
-                      id, vec.bytes.data(), vec.bytes.size(), channel
-                    );
+                [&](const fastgltf::sources::Vector& v) {
+                  const auto* start = v.bytes.data() + buffer_view.byteOffset;
+                  const auto data =
+                    std::vector(start, start + buffer_view.byteLength);
+                  result = resources::context::manager()
+                             .add<resources::Texture, resources::TextureSpec>(
+                               id, bv.mimeType, data, channel
+                             );
+                },
+                [&](const fastgltf::sources::Array& a) {
+                  if (a.mimeType != fastgltf::MimeType::None) {
+                    const auto* start = a.bytes.data() + buffer_view.byteOffset;
+                    const auto data =
+                      std::vector(start, start + buffer_view.byteLength);
+                    result = resources::context::manager()
+                               .add<resources::Texture, resources::TextureSpec>(
+                                 id, bv.mimeType, data, channel
+                               );
+                  }
+                },
+                [](auto&) {
+                  logging::warning(
+                    "Unsupported glTF buffer view texture source"
+                  );
                 }
               },
               buffer.data
@@ -112,149 +143,163 @@ namespace lisa::scene::gltf {
         },
         image.data
       );
-      return texture;
+
+      return result;
+    }
+  }
+
+  void node_iterator(fastgltf::Node& node, fastgltf::math::fmat4x4 matrix) {
+    auto& reg = components::context::registry();
+    const auto entity = reg.create();
+
+    auto& transform = reg->emplace<components::TransformComponent>(entity);
+    transform.set_matrix(glm::make_mat4(matrix.data()));
+
+    if (node.cameraIndex.has_value()) {
+      auto& [camera, name] = asset_.cameras[node.cameraIndex.value()];
+      if (const auto* persp =
+            std::get_if<fastgltf::Camera::Perspective>(&camera)) {
+        auto& cam = reg->emplace<components::CameraComponent>(entity);
+        cam.fov = persp->yfov;
+        cam.aspect_ratio = persp->aspectRatio.value_or(16.0f / 9.0f);
+        cam.near_plane = persp->znear;
+        cam.far_plane = persp->zfar.value_or(100.0f);
+      } else
+        logging::abort("Orthographic camera not supported.");
     }
 
-    void node_iterator(fastgltf::Node& node, fastgltf::math::fmat4x4 matrix) {
-      auto& reg = components::context::registry();
-      const auto entity = reg.create();
+    if (node.lightIndex.has_value()) {
+      auto& light = asset_.lights[node.lightIndex.value()];
 
-      auto& transform = reg->emplace<components::TransformComponent>(entity);
-      transform.set_matrix(glm::make_mat4(matrix.data()));
-
-      if (node.cameraIndex.has_value()) {
-        auto& [camera, name] = asset_.cameras[node.cameraIndex.value()];
-        if (
-          const auto* persp =
-            std::get_if<fastgltf::Camera::Perspective>(&camera)
-        ) {
-          auto& cam = reg->emplace<components::CameraComponent>(entity);
-          cam.fov = persp->yfov;
-          cam.aspect_ratio = persp->aspectRatio.value_or(16.0f / 9.0f);
-          cam.near_plane = persp->znear;
-          cam.far_plane = persp->zfar.value_or(100.0f);
-        } else
-          logging::abort("Orthographic camera not supported.");
+      if (light.type == fastgltf::LightType::Point) {
+        auto& light_component =
+          reg->emplace<components::PointLightComponent>(entity);
+        light_component.color = glm::make_vec3(light.color.data());
+        light_component.radius = light.range.value_or(10000.0f);
+        light_component.intensity = light.intensity;
+        light_component.attenuation = 1.0;
+      } else if (light.type == fastgltf::LightType::Directional) {
+        auto& light_component =
+          reg->emplace<components::DirectionalLightComponent>(entity);
+        light_component.color = glm::make_vec3(light.color.data());
+        light_component.intensity =
+          light.intensity > 1e4f ? light.intensity : 1.0f;
+      } else if (light.type == fastgltf::LightType::Spot) {
+        logging::warning("Lights of type Spot are not supported, ignoring");
       }
+    }
 
-      if (node.lightIndex.has_value()) {
-        auto& light = asset_.lights[node.lightIndex.value()];
+    if (node.meshIndex.has_value()) {
+      const auto& mesh = asset_.meshes[node.meshIndex.value()];
+      const auto mesh_id = "mesh::" + std::to_string(node.meshIndex.value());
 
-        if (light.type == fastgltf::LightType::Point) {
-          auto& light_component =
-            reg->emplace<components::PointLightComponent>(entity);
-          light_component.color = glm::make_vec3(light.color.data());
-          light_component.radius = light.range.value_or(10000.0f);
-          light_component.intensity = light.intensity;
-          light_component.attenuation = 1.0;
-        } else if (light.type == fastgltf::LightType::Directional) {
-          auto& light_component =
-            reg->emplace<components::DirectionalLightComponent>(entity);
-          light_component.color = glm::make_vec3(light.color.data());
-          light_component.intensity =
-            light.intensity > 1e4f ? light.intensity : 1.0f;
-        } else if (light.type == fastgltf::LightType::Spot) {
-          logging::warning("Lights of type Spot are not supported, ignoring");
-        }
-      }
+      for (auto i = 0; i < mesh.primitives.size(); i++) {
+        const auto& p = mesh.primitives[i];
+        const auto p_id = mesh_id + "::p::" + std::to_string(i);
 
-      if (node.meshIndex.has_value()) {
-        const auto& mesh = asset_.meshes[node.meshIndex.value()];
-        const auto mesh_id = "mesh::" + std::to_string(node.meshIndex.value());
+        const auto p_entity = reg.create();
+        auto& p_transform =
+          reg->emplace<components::TransformComponent>(p_entity);
+        p_transform.set_matrix(glm::make_mat4(matrix.data()));
 
-        for (auto i = 0; i < mesh.primitives.size(); i++) {
-          const auto& p = mesh.primitives[i];
-          const auto p_id = mesh_id + "::p::" + std::to_string(i);
+        const auto mesh_token =
+          resources::context::manager()
+            .add<resources::Mesh, resources::MeshSpec>(p_id, p, asset_);
+        reg->emplace<components::MeshComponent>(p_entity, mesh_token);
 
-          const auto p_entity = reg.create();
-          auto& p_transform =
-            reg->emplace<components::TransformComponent>(p_entity);
-          p_transform.set_matrix(glm::make_mat4(matrix.data()));
+        if (p.materialIndex.has_value()) {
+          auto& material = asset_.materials[p.materialIndex.value()];
 
-          const auto* mesh_res =
-            resources::context::manager().load<resources::Mesh>(
-              p_id, p, asset_
-            );
-          auto& mesh_component =
-            reg->emplace<components::MeshComponent>(p_entity);
-          mesh_component.mesh = mesh_res;
+          optional<str> albedo_texture = nullopt;
+          optional<str> normal_texture = nullopt;
+          optional<str> roughness_texture = nullopt;
+          optional<str> metallic_texture = nullopt;
 
-          if (p.materialIndex.has_value()) {
-            auto& material = asset_.materials[p.materialIndex.value()];
-
-            auto& material_component =
-              reg->emplace<components::MaterialComponent>(p_entity);
-
-            material_component.albedo =
-              glm::make_vec3(material.pbrData.baseColorFactor.data());
-            material_component.roughness = material.pbrData.roughnessFactor;
-            material_component.metallic = material.pbrData.metallicFactor;
-
-            if (material.pbrData.baseColorTexture.has_value()) {
-              auto& tex =
-                asset_.textures[material.pbrData.baseColorTexture.value()
-                                  .textureIndex];
-              if (tex.imageIndex.has_value()) {
-                auto& img = asset_.images[tex.imageIndex.value()];
-                auto img_id = "img::" + std::to_string(tex.imageIndex.value());
-                material_component.albedo_texture =
-                  load_texture(img, img_id, asset_.buffers, asset_.bufferViews);
-              }
-            }
-            if (material.pbrData.metallicRoughnessTexture.has_value()) {
-              auto& tex =
-                asset_
-                  .textures[material.pbrData.metallicRoughnessTexture.value()
-                              .textureIndex];
-              if (tex.imageIndex.has_value()) {
-                auto& img = asset_.images[tex.imageIndex.value()];
-                const auto base_id =
-                  "img::" + std::to_string(tex.imageIndex.value());
-
-                material_component.roughness_texture = load_texture(
-                  img,
-                  base_id + "::roughness",
-                  asset_.buffers,
-                  asset_.bufferViews,
-                  1
-                );
-                material_component.metallic_texture = load_texture(
-                  img,
-                  base_id + "::metallic",
-                  asset_.buffers,
-                  asset_.bufferViews,
-                  2
-                );
-              }
-            }
-            if (material.normalTexture.has_value()) {
-              auto& tex =
-                asset_.textures[material.normalTexture.value().textureIndex];
-              if (tex.imageIndex.has_value()) {
-                auto& img = asset_.images[tex.imageIndex.value()];
-                auto img_id = "img::" + std::to_string(tex.imageIndex.value());
-                material_component.normal_texture =
-                  load_texture(img, img_id, asset_.buffers, asset_.bufferViews);
-              }
+          if (material.pbrData.baseColorTexture.has_value()) {
+            auto& tex =
+              asset_.textures[material.pbrData.baseColorTexture.value()
+                                .textureIndex];
+            if (tex.imageIndex.has_value()) {
+              auto& img = asset_.images[tex.imageIndex.value()];
+              auto img_id = "img::" + std::to_string(tex.imageIndex.value());
+              albedo_texture =
+                load_texture(img, img_id, asset_.buffers, asset_.bufferViews);
             }
           }
+
+          if (material.pbrData.metallicRoughnessTexture.has_value()) {
+            auto& tex =
+              asset_.textures[material.pbrData.metallicRoughnessTexture.value()
+                                .textureIndex];
+            if (tex.imageIndex.has_value()) {
+              auto& img = asset_.images[tex.imageIndex.value()];
+              const auto base_id =
+                "img::" + std::to_string(tex.imageIndex.value());
+
+              roughness_texture = load_texture(
+                img,
+                base_id + "::roughness",
+                asset_.buffers,
+                asset_.bufferViews,
+                1
+              );
+              metallic_texture = load_texture(
+                img,
+                base_id + "::metallic",
+                asset_.buffers,
+                asset_.bufferViews,
+                2
+              );
+            }
+          }
+
+          if (material.normalTexture.has_value()) {
+            auto& tex =
+              asset_.textures[material.normalTexture.value().textureIndex];
+            if (tex.imageIndex.has_value()) {
+              auto& img = asset_.images[tex.imageIndex.value()];
+              auto img_id = "img::" + std::to_string(tex.imageIndex.value());
+              normal_texture =
+                load_texture(img, img_id, asset_.buffers, asset_.bufferViews);
+            }
+          }
+
+          reg->emplace<components::MaterialComponent>(
+            p_entity,
+            glm::make_vec3(material.pbrData.baseColorFactor.data()),
+            material.pbrData.roughnessFactor,
+            material.pbrData.metallicFactor,
+            albedo_texture,
+            normal_texture,
+            roughness_texture,
+            metallic_texture
+          );
         }
       }
     }
   }
 
-  void load(const path& filepath) {
+  void load(const path& filepath, mat4 transform) {
     base_path_ = filepath.parent_path();
 
     load_asset(filepath);
 
     const auto scene_id = select_scene(asset_);
 
-    fastgltf::iterateSceneNodes(
-      asset_, scene_id, fastgltf::math::fmat4x4(), node_iterator
+    fastgltf::math::fmat4x4 fastgltf_transform;
+    std::memcpy(
+      fastgltf_transform.data(), &transform[0][0], sizeof(float) * 16
     );
 
-    auto& reg = components::context::registry();
-    logging::info("Scene loaded successfully with {} entities", reg->size());
+    fastgltf::iterateSceneNodes(
+      asset_, scene_id, fastgltf_transform, node_iterator
+    );
+
+    resources::context::manager().load_all();
+
+    logging::info(
+      "Scene loaded successfully with {} entities",
+      components::context::registry()->size()
+    );
   }
 }

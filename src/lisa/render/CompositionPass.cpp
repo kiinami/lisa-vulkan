@@ -24,8 +24,12 @@ namespace lisa::render {
 
     static path shader_path =
       resources::Shader::SHADERS_PATH / "deferred/composition.slang";
-    shader_ = resources::context::manager().load<resources::Shader>(
+    resources::context::manager().add<resources::Shader, resources::ShaderSpec>(
       shader_path.string(), shader_path
+    );
+    resources::context::manager().load<resources::Shader>(shader_path.string());
+    shader_ = resources::context::manager().get<resources::Shader>(
+      shader_path.string()
     );
 
     const graphics::Pipeline::CreateParameters params{

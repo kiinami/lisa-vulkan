@@ -14,17 +14,19 @@ namespace lisa::resources {
 
   class Mesh : public systems::resources::Resource {
   public:
-    explicit Mesh(const path& filepath);
+    Mesh() = default;
 
-    explicit Mesh(const fastgltf::Primitive& p, const fastgltf::Asset& asset);
+    Mesh(
+      const vector<Vertex>& vertices,
+      const vector<uint32>& indices,
+      const graphics::CommandBuffer& cmdb
+    );
 
     void unload() override {}
 
     const graphics::Buffer& vertex_buffer() const { return vertex_buffer_; }
 
     const graphics::Buffer& index_buffer() const { return index_buffer_; }
-
-    uint32 index_offset() const { return vertex_count_ * sizeof(Vertex); }
 
     uint32 index_count() const { return index_count_; }
 
@@ -33,13 +35,23 @@ namespace lisa::resources {
     graphics::Buffer index_buffer_;
     uint32 vertex_count_ = 0;
     uint32 index_count_ = 0;
+  };
 
+  struct MeshSpec : systems::resources::ResourceSpec<Mesh> {
+    vector<Vertex> vertices;
+    vector<uint32> indices;
+    uint32 vertex_count = 0;
+    uint32 index_count = 0;
+
+    explicit MeshSpec(const path& filepath);
+    MeshSpec(const fastgltf::Primitive& p, const fastgltf::Asset& asset);
+
+    Mesh load_resource(const graphics::CommandBuffer& cmdb) override;
+
+  private:
     void load_obj(const path& filepath);
 
-    static void calculate_tangents(
-      vector<Vertex>& vertices, const vector<uint16>& indices
-    );
-    void load(const vector<Vertex>& vertices, const vector<uint16>& indices);
+    void calculate_tangents();
   };
 
 }
