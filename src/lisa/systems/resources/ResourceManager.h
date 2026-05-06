@@ -64,6 +64,8 @@ namespace lisa::systems::resources {
     }
 
     template<ResourceDerived R> bool is_added(const str& id) {
+      if (const auto it = specs_.find(std::type_index(typeid(R))); it == specs_.end())
+        return false;
       const auto& bucket = specs_[std::type_index(typeid(R))];
       return bucket.contains(id);
     }

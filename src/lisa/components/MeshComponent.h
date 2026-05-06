@@ -7,7 +7,6 @@
 #pragma once
 #include "resources/Mesh.h"
 #include "resources/context.h"
-#include "utils/logging.h"
 
 namespace lisa::components {
 
@@ -16,7 +15,10 @@ namespace lisa::components {
 
     resources::Mesh* resource() const {
       auto* mesh = resources::context::manager().get<resources::Mesh>(id_);
-      if (!mesh) logging::error("Mesh with token '{}' not found", id_.c_str());
+      if (!mesh) {
+        const auto error = "Mesh with token '" + id_ + "' not found";
+        throw std::runtime_error(error);
+      }
       return mesh;
     }
 

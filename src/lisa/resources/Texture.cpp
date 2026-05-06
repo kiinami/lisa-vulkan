@@ -45,12 +45,12 @@ namespace lisa::resources {
   ) {
     if (mime == fastgltf::MimeType::KTX2)
       image_ = load_ktx(data, cmdb, channel);
-    else if (mime ==
-             fastgltf::MimeType::JPEG ||
-             mime == fastgltf::MimeType::PNG)
+    else if (
+      mime == fastgltf::MimeType::JPEG || mime == fastgltf::MimeType::PNG
+    )
       image_ = load_jpg(data, cmdb, channel);
     else
-      logging::error("Unsupported texture format");
+      throw std::runtime_error("Unsupported texture format");
 
     setup();
   }
@@ -82,12 +82,17 @@ namespace lisa::resources {
     int channel
   ) {
     ktxTexture2* texture;
-    ktxTexture2_CreateFromMemory(
+
+    auto result = ktxTexture2_CreateFromMemory(
       reinterpret_cast<const ktx_uint8_t*>(data.data()),
       data.size(),
       KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT,
       &texture
     );
+    if (result != KTX_SUCCESS) {
+      logging::error("Failed to load KTX texture: {}", ktxErrorString(result));
+      return {};
+    }
 
     if (channel >= 0 && channel <= 3) {
       logging::error(
@@ -100,8 +105,7 @@ namespace lisa::resources {
     if (ktxTexture2_NeedsTranscoding(texture)) {
       static auto target_format = KTX_TTF_BC7_RGBA;
 
-      KTX_error_code result =
-        ktxTexture2_TranscodeBasis(texture, target_format, 0);
+      auto result = ktxTexture2_TranscodeBasis(texture, target_format, 0);
       if (result != KTX_SUCCESS) {
         logging::error(
           "Failed to transcode KTX texture: {}", ktxErrorString(result)
@@ -214,8 +218,10 @@ namespace lisa::resources {
       STBI_rgb_alpha
     );
 
-    if (!pixels)
+    if (!pixels) {
       logging::error("Failed to load STB image: {}", stbi_failure_reason());
+      return {};
+    }
 
     const bool extract_channel = channel >= 0 && channel <= 3;
 
@@ -324,6 +330,7 @@ namespace lisa::resources {
         {static_cast<float>(width), static_cast<float>(height), 1.0f},
         graphics::ImageFormat(vk::Format::eR32G32B32A32Sfloat),
         vk::ImageUsageFlagBits::eSampled,
+        cmdb,
         mip_levels
       );
     } else {
@@ -342,6 +349,7 @@ namespace lisa::resources {
         {static_cast<float>(width), static_cast<float>(height), 1.0f},
         graphics::ImageFormat(vk::Format::eR32Sfloat),
         vk::ImageUsageFlagBits::eSampled,
+        cmdb,
         mip_levels
       );
     }

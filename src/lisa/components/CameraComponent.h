@@ -20,6 +20,7 @@ namespace lisa::components {
       if (dirty_) {
         matrix_ = glm::perspective(fov, aspect_ratio, near_plane, far_plane);
         matrix_[1][1] *= -1.0f;
+        dirty_ = false;
       }
       return matrix_;
     }

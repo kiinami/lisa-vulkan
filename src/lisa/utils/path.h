@@ -26,6 +26,9 @@ namespace lisa::utils {
     const std::streamsize size = file.tellg();
     file.seekg(0, std::ios::beg);
 
+    if (size <= 0)
+      throw std::runtime_error("File is empty: " + filepath.string());
+    
     vector<std::byte> buffer(size);
     if (!file.read(reinterpret_cast<char*>(buffer.data()), size))
       throw std::runtime_error("Failed to read file: " + filepath.string());

@@ -87,8 +87,9 @@ namespace lisa::resources {
         return Texture(data->second, data->first, cmdb, channel);
       if (filepath.has_value()) return Texture(filepath.value(), cmdb, channel);
 
-      logging::error("TextureSpec must have either a filepath or data");
-      return Texture(path(), cmdb, channel);
+      throw std::runtime_error(
+        "TextureSpec must have either a filepath or data"
+      );
     }
   };
 
