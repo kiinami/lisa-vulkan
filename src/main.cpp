@@ -7,9 +7,9 @@
 #include "lisa/graphics/pipeline/Pipeline.h"
 #include "lisa/utils/logging.h"
 #include "resources/context.h"
-#include "scene/Scene.h"
+#include "scene/gltf.h"
+#include "scene/xml.h"
 #include "systems/render/Renderer.h"
-#include "systems/resources/ResourceManager.h"
 #include "update/context.h"
 #include "window/context.h"
 #include "window/events.h"
@@ -29,7 +29,6 @@ namespace {
 }
 
 namespace {
-  uptr<scene::Scene> scene_;
   uptr<systems::render::Renderer> renderer_;
 
   bool should_close = false;
@@ -63,9 +62,7 @@ static optional<int> cli_args(int argc, char** argv) {
 
   try {
     app.parse(argc, argv);
-  } catch (const CLI::ParseError& e) {
-    return app.exit(e);
-  }
+  } catch (const CLI::ParseError& e) { return app.exit(e); }
   return std::nullopt;
 }
 
@@ -102,7 +99,15 @@ int main(const int argc, char** argv) {
     update::context::init();
 
     {
-      scene_ = std::make_unique<scene::Scene>(scene_filepath);
+      const auto ext = scene_filepath.extension().string();
+
+      if (ext == ".xml")
+        scene::xml::load(scene_filepath);
+      else if (ext == ".gltf" || ext == ".glb")
+        scene::gltf::load(scene_filepath);
+      else
+        logging::abort("Unsupported scene file format: '{}'", ext.c_str());
+
       renderer_ =
         std::make_unique<systems::render::Renderer>(rendergraph_filepath);
 
@@ -111,12 +116,11 @@ int main(const int argc, char** argv) {
         window::context::poll_events();
         update::context::tick();
 
-        renderer_->render(*scene_);
+        renderer_->render();
       }
 
       graphics::context::device()->waitIdle();
       renderer_.reset();
-      scene_.reset();
     }
 
     update::context::destroy();

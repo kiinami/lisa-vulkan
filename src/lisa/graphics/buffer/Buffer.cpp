@@ -17,12 +17,13 @@ namespace lisa::graphics {
   }
 
   Buffer Buffer::from_data(
+    const CommandBuffer& cmdb,
     const void* data,
     const size size,
     const vk::BufferUsageFlags usage,
     const vma::AllocationCreateInfo& allocation_ci
   ) {
-    const auto staging_buffer = Buffer(
+    auto staging_buffer = Buffer(
       size,
       vk::BufferUsageFlagBits::eTransferSrc,
       {.flags = vma::AllocationCreateFlagBits::eMapped |
@@ -33,13 +34,24 @@ namespace lisa::graphics {
 
     auto buffer = Buffer(size, usage, allocation_ci);
 
-    auto cmdb = context::device().cmd_buffer();
-    cmdb.begin_onetime();
     const vk::BufferCopy copy_region{.size = size};
     cmdb->copyBuffer(staging_buffer, buffer, copy_region);
+    cmdb.keep_alive(std::move(staging_buffer));
+
+    return buffer;
+  }
+
+  Buffer Buffer::from_data(
+    const void* data,
+    const size size,
+    const vk::BufferUsageFlags usage,
+    const vma::AllocationCreateInfo& allocation_ci
+  ) {
+    const auto cmdb = context::device().cmd_buffer();
+    cmdb.begin_onetime();
+    auto buffer = from_data(cmdb, data, size, usage, allocation_ci);
     cmdb->end();
     context::device().submit_cmd_buffer_with_fence(cmdb);
-
     return buffer;
   }
 

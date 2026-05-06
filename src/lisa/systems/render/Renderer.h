@@ -11,7 +11,6 @@
 #include "graphics/swapchain/Swapchain.h"
 #include "graphics/sync/Fence.h"
 #include "graphics/sync/Semaphore.h"
-#include "scene/Scene.h"
 #include "utils/common.h"
 
 namespace lisa::systems::render {
@@ -21,7 +20,7 @@ namespace lisa::systems::render {
     explicit Renderer(const path& graph_filepath);
     ~Renderer() = default;
 
-    void render(const scene::Scene& scene);
+    void render();
 
     uint32 current_frame() const { return current_frame_; }
 

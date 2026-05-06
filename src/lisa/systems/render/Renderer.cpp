@@ -10,7 +10,6 @@
 #include "components/MaterialComponent.h"
 #include "components/MeshComponent.h"
 #include "components/PointLightComponent.h"
-#include "components/TextureComponent.h"
 #include "components/TransformComponent.h"
 #include "components/context.h"
 #include "graphics/context.h"
@@ -81,7 +80,7 @@ namespace lisa::systems::render {
     graphics::context::device().queue().submit(submit_info, *fence_);
   }
 
-  void Renderer::render(const scene::Scene& scene) {
+  void Renderer::render() {
     reset();
 
     cmd_buffer_.begin_onetime();
@@ -188,37 +187,45 @@ namespace lisa::systems::render {
           components::context::registry()
             ->try_get<components::MaterialComponent>(entity);
         if (material_component) {
-          object_data[i].color = vec4(material_component->color, 1.0f);
+          object_data[i].color = vec4(material_component->albedo, 1.0f);
           object_data[i].roughness = material_component->roughness;
           object_data[i].metallic = material_component->metallic;
+
+          object_data[i].diffuse_texture_index =
+            std::numeric_limits<uint32>::max();
+          object_data[i].roughness_texture_index =
+            std::numeric_limits<uint32>::max();
+          object_data[i].metallic_texture_index =
+            std::numeric_limits<uint32>::max();
+          object_data[i].normal_texture_index =
+            std::numeric_limits<uint32>::max();
+          if (const auto res = material_component->albedo_texture();
+              res != nullptr)
+            object_data[i].diffuse_texture_index = res->descriptor_index();
+          if (const auto res = material_component->roughness_texture();
+              res != nullptr
+          )
+            object_data[i].roughness_texture_index = res->descriptor_index();
+          if (const auto res = material_component->metallic_texture();
+              res != nullptr
+          )
+            object_data[i].metallic_texture_index = res->descriptor_index();
+          if (const auto res = material_component->normal_texture();
+              res != nullptr)
+            object_data[i].normal_texture_index = res->descriptor_index();
         } else {
           object_data[i].color = vec4(1.0f);
           object_data[i].roughness = 1.0f;
           object_data[i].metallic = 0.0f;
-        }
 
-        const auto* texture_component =
-          components::context::registry()
-            ->try_get<components::TextureComponent>(entity);
-        object_data[i].diffuse_texture_index =
-          std::numeric_limits<uint32>::max();
-        object_data[i].roughness_texture_index =
-          std::numeric_limits<uint32>::max();
-        object_data[i].metallic_texture_index =
-          std::numeric_limits<uint32>::max();
-        object_data[i].normal_texture_index =
-          std::numeric_limits<uint32>::max();
-        if (texture_component) {
           object_data[i].diffuse_texture_index =
-            texture_component->diffuse_resource()->descriptor_index();
-          if (
-            auto res = texture_component->roughness_resource(); res != nullptr
-          )
-            object_data[i].roughness_texture_index = res->descriptor_index();
-          if (auto res = texture_component->metallic_resource(); res != nullptr)
-            object_data[i].metallic_texture_index = res->descriptor_index();
-          if (auto res = texture_component->normal_resource(); res != nullptr)
-            object_data[i].normal_texture_index = res->descriptor_index();
+            std::numeric_limits<uint32>::max();
+          object_data[i].roughness_texture_index =
+            std::numeric_limits<uint32>::max();
+          object_data[i].metallic_texture_index =
+            std::numeric_limits<uint32>::max();
+          object_data[i].normal_texture_index =
+            std::numeric_limits<uint32>::max();
         }
 
         i++;
@@ -230,7 +237,6 @@ namespace lisa::systems::render {
 
     graph_.render(
       cmd_buffer_,
-      scene,
       global_data_buffers_[current_frame_].address(),
       object_data_buffers_[current_frame_].address()
     );

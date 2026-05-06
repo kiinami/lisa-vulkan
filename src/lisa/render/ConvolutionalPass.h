@@ -8,7 +8,6 @@
 #include "graphics/buffer/Buffer.h"
 #include "graphics/pipeline/Pipeline.h"
 #include "systems/render/RenderPass.h"
-#include "systems/resources/ResourceHandle.h"
 
 namespace lisa::render {
 
@@ -33,7 +32,7 @@ namespace lisa::render {
     void execute(const systems::render::RenderContext& ctx) override;
 
   private:
-    systems::resources::ResourceHandle<resources::Shader> shader_;
+    const resources::Shader* shader_ = nullptr;
     uptr<graphics::Pipeline> pipeline_;
     graphics::Buffer kernel_buffer_;
     uint32 kernel_size_;

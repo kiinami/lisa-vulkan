@@ -22,8 +22,14 @@ namespace lisa::render {
                         .value())
         .format();
 
-    shader_ = resources::context::manager().load<resources::Shader>(
-      "deferred/composition.slang"
+    static path shader_path =
+      resources::Shader::SHADERS_PATH / "deferred/composition.slang";
+    resources::context::manager().add<resources::Shader, resources::ShaderSpec>(
+      shader_path.string(), shader_path
+    );
+    resources::context::manager().load<resources::Shader>(shader_path.string());
+    shader_ = resources::context::manager().get<resources::Shader>(
+      shader_path.string()
     );
 
     const graphics::Pipeline::CreateParameters params{
@@ -34,9 +40,11 @@ namespace lisa::render {
           .offset = 0,
           .size = sizeof(CompositionPushConstants)
         },
-      .shader = *shader_.get(),
+      .shader = *shader_,
       .vertex_input = false,
       .color_attachment_formats = vector<vk::Format>{final_fmt},
+      .depth_test_read = false,
+      .depth_test_write = false
     };
     pipeline_ = std::make_unique<graphics::Pipeline>(params);
   }

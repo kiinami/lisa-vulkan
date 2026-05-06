@@ -5,10 +5,10 @@
 #include "ForwardPass.h"
 
 #include "components/MeshComponent.h"
-#include "components/TextureComponent.h"
 #include "components/TransformComponent.h"
 #include "components/context.h"
 #include "graphics/context.h"
+#include "resources/context.h"
 #include "systems/render/RenderPassRegistry.h"
 #include "systems/render/Rendergraph.h"
 
@@ -28,8 +28,14 @@ namespace lisa::render {
     auto color_format = graph.get_resource(color_ref).format();
     auto depth_format = graph.get_resource(depth_ref).format();
 
-    shader_ = resources::context::manager().load<resources::Shader>(
-      "forward/forward.slang"
+    static path shader_path =
+      resources::Shader::SHADERS_PATH / "forward/forward.slang";
+    resources::context::manager().add<resources::Shader, resources::ShaderSpec>(
+      shader_path.string(), shader_path
+    );
+    resources::context::manager().load<resources::Shader>(shader_path.string());
+    shader_ = resources::context::manager().get<resources::Shader>(
+      shader_path.string()
     );
 
     graphics::Pipeline::CreateParameters params{
@@ -40,7 +46,7 @@ namespace lisa::render {
           .offset = 0,
           .size = sizeof(systems::render::PushConstants)
         },
-      .shader = *shader_.get(),
+      .shader = *shader_,
       .color_attachment_formats = vector<vk::Format>{color_format},
       .depth_test_write = true,
       .depth_attachment_format = depth_format
@@ -61,12 +67,10 @@ namespace lisa::render {
     const auto view = components::context::registry()
                         ->view<
                           const components::TransformComponent,
-                          const components::MeshComponent,
-                          const components::TextureComponent>();
+                          const components::MeshComponent>();
 
     uint32 i = 0;
-    for (auto [entity, transform, mesh_component, texture_component] :
-         view.each()) {
+    for (auto [entity, transform, mesh_component] : view.each()) {
       const auto mesh = mesh_component.resource();
 
       vk::DeviceSize offset = 0;
@@ -74,7 +78,7 @@ namespace lisa::render {
         0, static_cast<const vk::Buffer&>(mesh->vertex_buffer()), offset
       );
       ctx.cmdb->bindIndexBuffer(
-        mesh->index_buffer(), mesh->index_offset(), vk::IndexType::eUint16
+        mesh->index_buffer(), 0, vk::IndexType::eUint32
       );
 
       auto push_constants = systems::render::PushConstants{

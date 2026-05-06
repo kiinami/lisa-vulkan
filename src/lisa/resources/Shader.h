@@ -22,17 +22,13 @@ namespace lisa::resources {
       const char* entry_point;
     };
 
-    explicit Shader(const path& filepath) : Resource(filepath) {}
+    explicit Shader(const path& filepath);
 
     const vk::raii::ShaderModule& module() const { return module_; }
 
     const vector<ShaderStage>& stages() const { return stages_; }
 
-  protected:
-    bool load_function() override;
-    bool unload_function() override;
-
-    str type_name() override { return "Shader"; }
+    void unload() override {}
 
   private:
     vk::raii::ShaderModule module_ = nullptr;
@@ -40,6 +36,18 @@ namespace lisa::resources {
 
     static const Slang::ComPtr<slang::IGlobalSession>& get_global_session();
     static Slang::ComPtr<slang::ISession> create_session();
+  };
+
+  struct ShaderSpec : systems::resources::ResourceSpec<Shader> {
+    path filepath;
+
+    ShaderSpec() = default;
+
+    explicit ShaderSpec(const path& filepath) : filepath(filepath) {}
+
+    Shader load_resource(const graphics::CommandBuffer& cmdb) override {
+      return Shader(filepath);
+    }
   };
 }
 

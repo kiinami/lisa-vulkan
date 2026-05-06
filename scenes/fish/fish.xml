@@ -1,0 +1,27 @@
+<scene xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="../scene.xsd">
+    <external file="fish.glb">
+        <transform>
+            <translate value="0, 0, 0"/>
+            <scale value="1.0"/>
+        </transform>
+    </external>
+
+    <entity name="main_camera">
+        <transform>
+            <lookat origin="0, 1, 4" target="0, 1, 0" up="0, 1, 0"/>
+        </transform>
+        <camera/>
+    </entity>
+
+    <entity name="sun_light">
+        <transform>
+            <lookat origin="0, 0, 0" target="0, -1, -1" up="0, 1, 0"/>
+        </transform>
+        <directional_light color="1.0, 0.9, 0.8" intensity="10"/>
+    </entity>
+
+    <entity name="ambient_light">
+        <ambient_light color="1.0, 0.9, 0.8" intensity="1"/>
+    </entity>
+</scene>

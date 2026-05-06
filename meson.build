@@ -78,10 +78,12 @@ endif
 
 cli11 = dependency('CLI11', required: true)
 entt = dependency('entt', required : true)
+fastgltf = dependency('fastgltf', required : true)
 glm = dependency('glm', required: true)
 magic_enum = dependency('magic_enum', required : true)
 miniz = dependency('miniz', required : true, default_options: ['default_library=static'])
 pugixml = dependency('pugixml', required : true, default_options: ['default_library=static'])
+reflectcpp = dependency('reflectcpp', required : true, default_options : ['xml=true'])
 sdl3 = dependency('sdl3', required: true, default_options: ['default_library=static'])
 sdl3pp = dependency('sdl3pp', required: true)
 spdlog = dependency('spdlog', required: true, default_options: ['default_library=static'])
@@ -165,35 +167,25 @@ src = files(
     'src/lisa/render/ConvolutionalPass.h',
     'src/lisa/render/ConvolutionalPass.cpp',
 
-    'src/lisa/scene/Scene.h',
-    'src/lisa/scene/Scene.cpp',
+    'src/lisa/scene/xml.h',
+    'src/lisa/scene/xml.cpp',
+    'src/lisa/scene/gltf.h',
+    'src/lisa/scene/gltf.cpp',
 
     'src/lisa/systems/ecs/Registry.h',
     'src/lisa/systems/ecs/Registry.cpp',
     'src/lisa/systems/ecs/Component.h',
     'src/lisa/systems/ecs/Component.cpp',
-    'src/lisa/systems/ecs/ResourceComponent.h',
-    'src/lisa/systems/ecs/ResourceComponent.cpp',
-    'src/lisa/systems/ecs/meta.h',
 
     'src/lisa/components/context.h',
     'src/lisa/components/context.cpp',
     'src/lisa/components/TransformComponent.h',
-    'src/lisa/components/TransformComponent.cpp',
     'src/lisa/components/MeshComponent.h',
-    'src/lisa/components/MeshComponent.cpp',
-    'src/lisa/components/TextureComponent.h',
-    'src/lisa/components/TextureComponent.cpp',
     'src/lisa/components/CameraComponent.h',
-    'src/lisa/components/CameraComponent.cpp',
     'src/lisa/components/PointLightComponent.h',
-    'src/lisa/components/PointLightComponent.cpp',
     'src/lisa/components/DirectionalLightComponent.h',
-    'src/lisa/components/DirectionalLightComponent.cpp',
     'src/lisa/components/MaterialComponent.h',
-    'src/lisa/components/MaterialComponent.cpp',
     'src/lisa/components/AmbientLightComponent.h',
-    'src/lisa/components/AmbientLightComponent.cpp',
 
     'src/lisa/systems/render/Renderer.h',
     'src/lisa/systems/render/Renderer.cpp',
@@ -207,8 +199,6 @@ src = files(
 
     'src/lisa/systems/resources/Resource.h',
     'src/lisa/systems/resources/Resource.cpp',
-    'src/lisa/systems/resources/ResourceHandle.h',
-    'src/lisa/systems/resources/ResourceHandle.cpp',
     'src/lisa/systems/resources/ResourceManager.h',
     'src/lisa/systems/resources/ResourceManager.cpp',
 
@@ -247,14 +237,14 @@ lisa_library = static_library(
     'lisa',
     sources: src,
     include_directories: [inc, sdk_inc, ktx_inc],
-    dependencies : [entt, glm, ktx, magic_enum, miniz, pugixml, sdl3, sdl3pp, shader_dep, slang, spdlog, stb, tinyexr, tinyobjloader, vulkan, vma, vma_hpp],
+    dependencies : [entt, fastgltf, glm, ktx, magic_enum, miniz, pugixml, reflectcpp, sdl3, sdl3pp, shader_dep, slang, spdlog, stb, tinyexr, tinyobjloader, vulkan, vma, vma_hpp],
     cpp_pch: 'src/lisa/pch/pch.h'
 )
 
 lisa_dep = declare_dependency(
     include_directories: [include_directories('src/lisa'), sdk_inc, ktx_inc],
     link_whole: lisa_library,
-    dependencies : [entt, glm, ktx, magic_enum, miniz, pugixml, sdl3, sdl3pp, slang, spdlog, stb, tinyexr, tinyobjloader, vulkan, vma, vma_hpp]
+    dependencies : [entt, fastgltf, glm, ktx, magic_enum, miniz, pugixml, reflectcpp, sdl3, sdl3pp, slang, spdlog, stb, tinyexr, tinyobjloader, vulkan, vma, vma_hpp]
 )
 
 ###############################################################################

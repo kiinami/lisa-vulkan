@@ -1,106 +1,88 @@
 //
-// Created by kinami on 3/29/26.
+// Created by kinami on 5/2/26.
 //
 
-#ifndef LISA_RESOURCEMANAGER_H
-#define LISA_RESOURCEMANAGER_H
+#ifndef LISA_VULKAN_RESOURCEMANAGER_H
+#define LISA_VULKAN_RESOURCEMANAGER_H
+
 #include "Resource.h"
+#include "graphics/context.h"
 #include "utils/common.h"
 
-#include <memory>
-#include <ranges>
 #include <typeindex>
-#include <unordered_map>
-#include <vector>
 
 namespace lisa::systems::resources {
-  template<typename T>
-  concept ResourceDerived = std::derived_from<T, Resource>;
+  template<typename R>
+  concept ResourceDerived = std::derived_from<R, Resource>;
 
-  template<typename T> class ResourceHandle;
+  template<typename S>
+  concept ResourceSpecDerived = requires(S* s) {
+    []<typename R>(ResourceSpec<R>*)
+      requires ResourceDerived<R>
+    {}(s);
+  };
 
   class ResourceManager {
   public:
-    template<ResourceDerived T> ResourceHandle<T> load(const path& filepath);
+    ResourceManager() = default;
+    ~ResourceManager() = default;
 
-    template<ResourceDerived T> T* get(const path& filepath);
+    template<ResourceDerived R, ResourceSpecDerived S, typename... Args>
+    str add(const str& id, Args&&... args) {
+      if (auto* existing = get<R>(id); existing) return id;
+      auto& bucket = specs_[std::type_index(typeid(R))];
 
-    template<ResourceDerived T> bool exists(const path& filepath);
-
-    template<ResourceDerived T> void add_ref(const path& filepath);
-
-    template<ResourceDerived T> void release(const path& filepath);
-
-    void flush_deleted_resources();
-
-    void unload_all();
-
-  private:
-    struct ResourceData {
-      uptr<Resource> resource;
-      int references = 0;
-    };
-
-    umap<std::type_index, umap<path, ResourceData>> resources_;
-    vector<uptr<Resource>> dead_resources_;
-  };
-
-  template<ResourceDerived T>
-  ResourceHandle<T> ResourceManager::load(const path& filepath) {
-    auto& type_resources = resources_[std::type_index(typeid(T))];
-
-    if (type_resources.contains(filepath)) {
-      ++type_resources[filepath].references;
-      return ResourceHandle<T>(filepath, this);
+      bucket[id] = std::make_unique<S>(std::forward<Args>(args)...);
+      return id;
     }
 
-    auto resource = std::make_unique<T>(filepath);
-    if (!resource->load()) return ResourceHandle<T>();
+    template<ResourceDerived R> void load(const str& id) {
+      auto& bucket = specs_[std::type_index(typeid(R))];
 
-    type_resources[filepath] = ResourceData{std::move(resource), 1};
-
-    return ResourceHandle<T>(filepath, this);
-  }
-
-  template<ResourceDerived T> T* ResourceManager::get(const path& filepath) {
-    auto& type_resources = resources_[std::type_index(typeid(T))];
-
-    if (
-      const auto it = type_resources.find(filepath); it != type_resources.end()
-    )
-      return static_cast<T*>(it->second.resource.get());
-
-    return nullptr;
-  }
-
-  template<ResourceDerived T>
-  bool ResourceManager::exists(const path& filepath) {
-    const auto& type_resources = resources_[std::type_index(typeid(T))];
-    return type_resources.contains(filepath);
-  }
-
-  template<ResourceDerived T>
-  void ResourceManager::add_ref(const path& filepath) {
-    auto& type_resources = resources_[std::type_index(typeid(T))];
-    if (
-      const auto it = type_resources.find(filepath); it != type_resources.end()
-    )
-      ++it->second.references;
-  }
-
-  template<ResourceDerived T>
-  void ResourceManager::release(const path& filepath) {
-    auto& type_resources = resources_[std::type_index(typeid(T))];
-    if (
-      const auto it = type_resources.find(filepath); it != type_resources.end()
-    ) {
-      --it->second.references;
-      if (it->second.references <= 0) {
-        dead_resources_.push_back(std::move(it->second.resource));
-        type_resources.erase(it);
+      if (const auto it = bucket.find(id); it != bucket.end()) {
+        const auto& cmdb = graphics::context::device().cmd_buffer();
+        cmdb.begin_onetime();
+        resources_[std::type_index(typeid(R))][id] = it->second->load(cmdb);
+        cmdb->end();
+        graphics::context::device().submit_cmd_buffer_with_fence(cmdb);
+        bucket.erase(it);
       }
     }
-  }
+
+    void load_all() {
+      const auto& cmdb = graphics::context::device().cmd_buffer();
+      cmdb.begin_onetime();
+
+      for (auto& [type, bucket] : specs_)
+        for (auto& [id, spec] : bucket)
+          resources_[type][id] = spec->load(cmdb);
+
+      cmdb->end();
+      graphics::context::device().submit_cmd_buffer_with_fence(cmdb);
+
+      specs_.clear();
+    }
+
+    template<ResourceDerived R> bool is_added(const str& id) {
+      if (const auto it = specs_.find(std::type_index(typeid(R))); it == specs_.end())
+        return false;
+      const auto& bucket = specs_[std::type_index(typeid(R))];
+      return bucket.contains(id);
+    }
+
+    template<ResourceDerived T> T* get(const str& id) {
+      auto& bucket = resources_[std::type_index(typeid(T))];
+
+      if (const auto it = bucket.find(id); it != bucket.end())
+        return static_cast<T*>(it->second.get());
+      return nullptr;
+    }
+
+  private:
+    umap<std::type_index, umap<str, uptr<ResourceSpecBase>>> specs_;
+    umap<std::type_index, umap<str, uptr<Resource>>> resources_;
+  };
+
 }
 
-#endif // LISA_RESOURCEMANAGER_H
+#endif // LISA_VULKAN_RESOURCEMANAGER_H

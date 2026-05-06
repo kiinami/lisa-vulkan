@@ -4,29 +4,29 @@
         <transform>
             <translate value="3, 0, 0"/>
         </transform>
-        <mesh type="obj" path="models/sphere.obj"/>
-        <material color="0.5 0.0 0.0" roughness="0.05" metallic="0.0"/>
+        <mesh path="models/sphere.obj"/>
+        <material albedo="0.5 0.0 0.0" roughness="0.05" metallic="0.0"/>
     </entity>
     <entity name="sphere2">
         <transform>
             <translate value="1, 0, 0"/>
         </transform>
-        <mesh type="obj" path="models/sphere.obj"/>
-        <material color="0.5 0.0 0.0" roughness="1.0" metallic="0.0"/>
+        <mesh path="models/sphere.obj"/>
+        <material albedo="0.5 0.0 0.0" roughness="1.0" metallic="0.0"/>
     </entity>
     <entity name="sphere3">
         <transform>
             <translate value="-1, 0, 0"/>
         </transform>
-        <mesh type="obj" path="models/sphere.obj"/>
-        <material color="0.5 0.0 0.0" roughness="0.05" metallic="1.0"/>
+        <mesh path="models/sphere.obj"/>
+        <material albedo="0.5 0.0 0.0" roughness="0.05" metallic="1.0"/>
     </entity>
     <entity name="sphere4">
         <transform>
             <translate value="-3, 0, 0"/>
         </transform>
-        <mesh type="obj" path="models/sphere.obj"/>
-        <material color="0.5 0.0 0.0" roughness="1" metallic="1"/>
+        <mesh path="models/sphere.obj"/>
+        <material albedo="0.5 0.0 0.0" roughness="1" metallic="1"/>
     </entity>
     <entity name="sun_light">
         <transform>

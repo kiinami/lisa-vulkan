@@ -9,17 +9,57 @@
 #include "utils/chk.h"
 #include "utils/path.h"
 
-#include <cstring>
+#include <fastgltf/glm_element_traits.hpp>
+#include <numeric>
 #include <tiny_obj_loader.h>
 
 namespace lisa::resources {
-  bool Mesh::load_function() {
+  Mesh::Mesh(
+    const vector<Vertex>& vertices,
+    const vector<uint32>& indices,
+    const graphics::CommandBuffer& cmdb
+  ) {
+    vertex_count_ = static_cast<uint32>(vertices.size());
+    index_count_ = static_cast<uint32>(indices.size());
+
+    vertex_buffer_ = graphics::Buffer::from_data(
+      cmdb,
+      vertices.data(),
+      sizeof(Vertex) * vertices.size(),
+      vk::BufferUsageFlagBits::eVertexBuffer |
+        vk::BufferUsageFlagBits::eTransferDst,
+      {.usage = vma::MemoryUsage::eAuto}
+    );
+
+    index_buffer_ = graphics::Buffer::from_data(
+      cmdb,
+      indices.data(),
+      sizeof(uint32) * indices.size(),
+      vk::BufferUsageFlagBits::eIndexBuffer |
+        vk::BufferUsageFlagBits::eTransferDst,
+      {.usage = vma::MemoryUsage::eAuto}
+    );
+  }
+
+  MeshSpec::MeshSpec(const path& filepath) {
+    const auto ext = filepath.extension().string();
+
+    if (ext == ".obj") {
+      load_obj(filepath);
+    } else {
+      logging::error(
+        "Mesh format of file '{}' not supported", filepath.c_str()
+      );
+    }
+  }
+
+  void MeshSpec::load_obj(const path& filepath) {
     tinyobj::attrib_t attrib;
     vector<tinyobj::shape_t> shapes;
     vector<tinyobj::material_t> materials;
     str warn, error;
 
-    const auto fp = utils::pstr(path_);
+    const auto fp = utils::pstr(filepath);
     auto result =
       tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &error, fp.c_str());
 
@@ -28,10 +68,8 @@ namespace lisa::resources {
     if (!result || shapes.empty())
       throw std::runtime_error("Failed to load OBJ: " + fp);
 
-    vertex_count_ = shapes[0].mesh.indices.size();
+    vertex_count = shapes[0].mesh.indices.size();
 
-    vector<Vertex> vertices{};
-    vector<uint16_t> indices{};
     for (const auto& [vertex_index, normal_index, texcoord_index] :
          shapes[0].mesh.indices) {
       Vertex v{
@@ -52,51 +90,93 @@ namespace lisa::resources {
       indices.push_back(indices.size());
     }
 
-    for (size i = 0; i < vertices.size(); i += 3) {
-      auto& v0 = vertices[i].pos;
-      auto& v1 = vertices[i + 1].pos;
-      auto& v2 = vertices[i + 2].pos;
+    calculate_tangents();
+  }
 
-      auto& uv0 = vertices[i].uv;
-      auto& uv1 = vertices[i + 1].uv;
-      auto& uv2 = vertices[i + 2].uv;
+  MeshSpec::MeshSpec(
+    const fastgltf::Primitive& p, const fastgltf::Asset& asset
+  ) {
+    auto* pos_attr = p.findAttribute("POSITION");
+    auto* norm_attr = p.findAttribute("NORMAL");
+    auto* uv_attr = p.findAttribute("TEXCOORD_0");
+
+    if (!pos_attr)
+      throw std::runtime_error("Primitive missing POSITION attribute");
+
+    auto& pos_accessor = asset.accessors[pos_attr->accessorIndex];
+    auto& norm_accessor = asset.accessors[norm_attr->accessorIndex];
+    auto& uv_accessor = asset.accessors[uv_attr->accessorIndex];
+
+    vertices.resize(pos_accessor.count);
+
+    fastgltf::iterateAccessorWithIndex<vec3>(
+      asset, pos_accessor, [&](const vec3 pos, const size i) {
+        vertices[i].pos = pos;
+      }
+    );
+    fastgltf::iterateAccessorWithIndex<vec3>(
+      asset, norm_accessor, [&](const vec3 n, const size i) {
+        vertices[i].normal = n;
+      }
+    );
+    fastgltf::iterateAccessorWithIndex<vec2>(
+      asset, uv_accessor, [&](const vec2 uv, const size i) {
+        vertices[i].uv = uv;
+      }
+    );
+
+    if (p.indicesAccessor.has_value()) {
+      auto& idx_accessor = asset.accessors[p.indicesAccessor.value()];
+      indices.resize(idx_accessor.count);
+
+      fastgltf::iterateAccessorWithIndex<uint32>(
+        asset, idx_accessor, [&](const uint32 idx, const size i) {
+          indices[i] = idx;
+        }
+      );
+    } else {
+      indices.resize(pos_accessor.count);
+      std::iota(indices.begin(), indices.end(), 0);
+    }
+
+    calculate_tangents();
+  }
+
+  void MeshSpec::calculate_tangents() {
+    for (size i = 0; i < indices.size(); i += 3) {
+      const uint32 i0 = indices[i];
+      const uint32 i1 = indices[i + 1];
+      const uint32 i2 = indices[i + 2];
+
+      auto& v0 = vertices[i0].pos;
+      auto& v1 = vertices[i1].pos;
+      auto& v2 = vertices[i2].pos;
+
+      auto& uv0 = vertices[i0].uv;
+      auto& uv1 = vertices[i1].uv;
+      auto& uv2 = vertices[i2].uv;
 
       auto edge1 = v1 - v0;
       auto edge2 = v2 - v0;
-      auto deltaUV1 = uv1 - uv0;
-      auto deltaUV2 = uv2 - uv0;
+      const auto deltaUV1 = uv1 - uv0;
+      const auto deltaUV2 = uv2 - uv0;
 
-      auto f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
-      auto tangent =
+      const float denom = (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
+      const auto f = (std::abs(denom) < 1e-6f) ? 1.0f : 1.0f / denom;
+
+      const auto tangent =
         glm::normalize(f * (deltaUV2.y * edge1 - deltaUV1.y * edge2));
 
-      vertices[i].tangent = tangent;
-      vertices[i + 1].tangent = tangent;
-      vertices[i + 2].tangent = tangent;
+      vertices[i0].tangent += tangent;
+      vertices[i1].tangent += tangent;
+      vertices[i2].tangent += tangent;
     }
 
-    vertex_count_ = vertices.size();
-    index_count_ = indices.size();
-
-    const auto v_size = sizeof(Vertex) * vertices.size();
-    const auto i_size = sizeof(uint16_t) * indices.size();
-    const auto size = v_size + i_size;
-
-    vector<uint8> buffer_data(size);
-    std::memcpy(buffer_data.data(), vertices.data(), v_size);
-    std::memcpy(buffer_data.data() + v_size, indices.data(), i_size);
-
-    vertex_buffer_ = graphics::Buffer::from_data(
-      buffer_data.data(),
-      size,
-      vk::BufferUsageFlagBits::eVertexBuffer |
-        vk::BufferUsageFlagBits::eIndexBuffer |
-        vk::BufferUsageFlagBits::eTransferDst,
-      {.usage = vma::MemoryUsage::eAuto}
-    );
-
-    return true;
+    for (auto& v : vertices)
+      v.tangent = glm::normalize(v.tangent);
   }
 
-  bool Mesh::unload_function() { return true; }
+  Mesh MeshSpec::load_resource(const graphics::CommandBuffer& cmdb) {
+    return Mesh(vertices, indices, cmdb);
+  }
 }

@@ -4,6 +4,8 @@
 
 #include "context.h"
 
+#include "utils/logging.h"
+
 namespace lisa::resources::context {
   namespace {
     uptr<systems::resources::ResourceManager> manager_;
