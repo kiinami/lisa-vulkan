@@ -137,6 +137,42 @@
 
                     </xs:complexType>
                 </xs:element>
+                <xs:element name="external" maxOccurs="unbounded">
+                    <xs:complexType>
+                        <xs:all>
+                            <xs:element name="transform" minOccurs="0">
+                                <xs:complexType>
+                                    <xs:choice>
+                                        <xs:choice maxOccurs="unbounded">
+                                            <xs:element name="translate">
+                                                <xs:complexType>
+                                                    <xs:attribute name="value" type="floatList" use="required"/>
+                                                </xs:complexType>
+                                            </xs:element>
+                                            <xs:element name="rotate">
+                                                <xs:complexType>
+                                                    <xs:attribute name="axis" type="floatList" use="required"/>
+                                                    <xs:attribute name="angle" type="xs:float" use="required"/>
+                                                </xs:complexType>
+                                            </xs:element>
+                                            <xs:element name="scale">
+                                                <xs:complexType>
+                                                    <xs:attribute name="value" type="floatList" use="required"/>
+                                                </xs:complexType>
+                                            </xs:element>
+                                        </xs:choice>
+                                        <xs:element name="matrix">
+                                            <xs:complexType>
+                                                <xs:attribute name="value" type="floatList" use="required"/>
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:choice>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:all>
+                        <xs:attribute name="file" type="xs:string" use="required"/>
+                    </xs:complexType>
+                </xs:element>
             </xs:sequence>
         </xs:complexType>
     </xs:element>
