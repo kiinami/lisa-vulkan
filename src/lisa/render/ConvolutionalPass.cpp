@@ -34,15 +34,7 @@ namespace lisa::render {
                         .value())
         .format();
 
-    static path shader_path =
-      resources::Shader::SHADERS_PATH / "postprocess/convolutional.slang";
-    resources::context::manager().add<resources::Shader, resources::ShaderSpec>(
-      shader_path.string(), shader_path
-    );
-    resources::context::manager().load<resources::Shader>(shader_path.string());
-    shader_ = resources::context::manager().get<resources::Shader>(
-      shader_path.string()
-    );
+    set_shader("postprocess/convolutional.slang");
 
     graphics::Pipeline::CreateParameters params{
       .push_constant_range =
@@ -52,7 +44,7 @@ namespace lisa::render {
           .offset = 0,
           .size = sizeof(ConvolutionalPushConstants)
         },
-      .shader = *shader_,
+      .shader = *shader(),
       .vertex_input = false,
       .color_attachment_formats = vector<vk::Format>{output_format},
       .depth_test_write = false,

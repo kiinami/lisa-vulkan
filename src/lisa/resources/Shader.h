@@ -22,7 +22,7 @@ namespace lisa::resources {
       const char* entry_point;
     };
 
-    explicit Shader(const path& filepath);
+    explicit Shader(const str& id, const path& filepath);
 
     const vk::raii::ShaderModule& module() const { return module_; }
 
@@ -41,12 +41,12 @@ namespace lisa::resources {
   struct ShaderSpec : systems::resources::ResourceSpec<Shader> {
     path filepath;
 
-    ShaderSpec() = default;
-
-    explicit ShaderSpec(const path& filepath) : filepath(filepath) {}
+    explicit ShaderSpec(const str& id, const path& filepath) :
+      ResourceSpec(id),
+      filepath(filepath) {}
 
     Shader load_resource(const graphics::CommandBuffer& cmdb) override {
-      return Shader(filepath);
+      return Shader(id, filepath);
     }
   };
 }

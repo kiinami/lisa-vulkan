@@ -17,11 +17,13 @@ namespace lisa::resources {
   class Texture : public systems::resources::Resource {
   public:
     explicit Texture(
+      const str& id,
       const path& filepath,
       const graphics::CommandBuffer& cmdb,
       int channel = -1
     );
     explicit Texture(
+      const str& id,
       const vector<std::byte>& data,
       fastgltf::MimeType mime,
       const graphics::CommandBuffer& cmdb,
@@ -70,22 +72,28 @@ namespace lisa::resources {
     optional<pair<fastgltf::MimeType, vector<std::byte>>> data;
     int channel = -1;
 
-    explicit TextureSpec(const path& filepath, const int channel = -1) :
+    explicit TextureSpec(
+      const str& id, const path& filepath, const int channel = -1
+    ) :
+      ResourceSpec(id),
       filepath(filepath),
       channel(channel) {}
 
     explicit TextureSpec(
+      const str& id,
       const fastgltf::MimeType& mime,
       const vector<std::byte>& data,
       const int channel = -1
     ) :
+      ResourceSpec(id),
       data({mime, data}),
       channel(channel) {}
 
     Texture load_resource(const graphics::CommandBuffer& cmdb) override {
       if (data.has_value())
-        return Texture(data->second, data->first, cmdb, channel);
-      if (filepath.has_value()) return Texture(filepath.value(), cmdb, channel);
+        return Texture(id, data->second, data->first, cmdb, channel);
+      if (filepath.has_value())
+        return Texture(id, filepath.value(), cmdb, channel);
 
       throw std::runtime_error(
         "TextureSpec must have either a filepath or data"

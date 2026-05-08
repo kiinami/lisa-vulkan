@@ -28,15 +28,7 @@ namespace lisa::render {
     auto color_format = graph.get_resource(color_ref).format();
     auto depth_format = graph.get_resource(depth_ref).format();
 
-    static path shader_path =
-      resources::Shader::SHADERS_PATH / "forward/forward.slang";
-    resources::context::manager().add<resources::Shader, resources::ShaderSpec>(
-      shader_path.string(), shader_path
-    );
-    resources::context::manager().load<resources::Shader>(shader_path.string());
-    shader_ = resources::context::manager().get<resources::Shader>(
-      shader_path.string()
-    );
+    set_shader("forward/forward.slang");
 
     graphics::Pipeline::CreateParameters params{
       .push_constant_range =
@@ -46,7 +38,7 @@ namespace lisa::render {
           .offset = 0,
           .size = sizeof(systems::render::PushConstants)
         },
-      .shader = *shader_,
+      .shader = *shader(),
       .color_attachment_formats = vector<vk::Format>{color_format},
       .depth_test_write = true,
       .depth_attachment_format = depth_format

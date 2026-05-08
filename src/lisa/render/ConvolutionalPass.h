@@ -5,6 +5,7 @@
 #ifndef LISA_VULKAN_CONVOLUTIONALPASS_H
 #define LISA_VULKAN_CONVOLUTIONALPASS_H
 #pragma once
+#include "ShaderPass.h"
 #include "graphics/buffer/Buffer.h"
 #include "graphics/pipeline/Pipeline.h"
 #include "systems/render/RenderPass.h"
@@ -18,11 +19,11 @@ namespace lisa::render {
     DescriptorIndex input_idx;
   };
 
-  class ConvolutionalPass : public systems::render::RenderPass {
+  class ConvolutionalPass : public ShaderPass {
   public:
     static constexpr auto TYPE_ID = "postprocess::convolutional";
 
-    explicit ConvolutionalPass(const pugi::xml_node& node) : RenderPass(node) {}
+    explicit ConvolutionalPass(const pugi::xml_node& node) : ShaderPass(node) {}
 
     ~ConvolutionalPass() override = default;
 
@@ -32,7 +33,6 @@ namespace lisa::render {
     void execute(const systems::render::RenderContext& ctx) override;
 
   private:
-    const resources::Shader* shader_ = nullptr;
     uptr<graphics::Pipeline> pipeline_;
     graphics::Buffer kernel_buffer_;
     uint32 kernel_size_;

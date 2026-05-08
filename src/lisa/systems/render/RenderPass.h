@@ -19,6 +19,8 @@ namespace lisa::systems::render {
 
   class RenderPass {
   public:
+    explicit RenderPass(const str& id) : id_(id) {}
+
     explicit RenderPass(const pugi::xml_node& node) :
       id_(node.attribute("id").value()) {}
 

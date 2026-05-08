@@ -48,13 +48,21 @@ namespace lisa::resources {
     return session;
   }
 
-  Shader::Shader(const path& filepath) {
+  Shader::Shader(const str& id, const path& filepath) : Resource(id) {
+    if (!exists(filepath)) {
+      logging::abort("Shader file '{}' does not exist", filepath.string());
+      return;
+    }
+
     const auto session = create_session();
     Slang::ComPtr<ISlangBlob> load_diagnostics;
-    const auto module =
-      session->loadModule(utils::pstr(filepath).c_str(), load_diagnostics.writeRef());
+    const auto module = session->loadModule(
+      utils::pstr(filepath).c_str(), load_diagnostics.writeRef()
+    );
     if (!module) {
-      logging::abort("Failed to load shader module at {}", utils::pstr(filepath).c_str());
+      logging::abort(
+        "Failed to load shader module at {}", utils::pstr(filepath).c_str()
+      );
       return;
     }
 
