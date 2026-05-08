@@ -50,15 +50,7 @@ namespace lisa::render {
                         .value())
         .format();
 
-    static path shader_path =
-      resources::Shader::SHADERS_PATH / "deferred/geometry.slang";
-    resources::context::manager().add<resources::Shader, resources::ShaderSpec>(
-      shader_path.string(), shader_path
-    );
-    resources::context::manager().load<resources::Shader>(shader_path.string());
-    shader_ = resources::context::manager().get<resources::Shader>(
-      shader_path.string()
-    );
+    set_shader("deferred/geometry.slang");
 
     graphics::Pipeline::CreateParameters params{
       .push_constant_range =
@@ -68,7 +60,7 @@ namespace lisa::render {
           .offset = 0,
           .size = sizeof(systems::render::PushConstants)
         },
-      .shader = *shader_,
+      .shader = *shader(),
       .color_attachment_formats =
         vector<vk::Format>{albedo_fmt, normal_fmt, position_fmt, material_fmt},
       .depth_attachment_format = depth_fmt,

@@ -5,6 +5,7 @@
 #ifndef LISA_VULKAN_SSAOPASS_H
 #define LISA_VULKAN_SSAOPASS_H
 #pragma once
+#include "ShaderPass.h"
 #include "graphics/buffer/Buffer.h"
 #include "graphics/pipeline/Pipeline.h"
 #include "systems/render/RenderPass.h"
@@ -20,11 +21,11 @@ namespace lisa::render {
     DescriptorIndex noise_idx;
   };
 
-  class SSAOPass : public systems::render::RenderPass {
+  class SSAOPass : public ShaderPass {
   public:
     static constexpr auto TYPE_ID = "preprocess::ssao";
 
-    explicit SSAOPass(const pugi::xml_node& node) : RenderPass(node) {}
+    explicit SSAOPass(const pugi::xml_node& node) : ShaderPass(node) {}
 
     ~SSAOPass() override;
 
@@ -34,7 +35,6 @@ namespace lisa::render {
     void execute(const systems::render::RenderContext& ctx) override;
 
   private:
-    const resources::Shader* shader_ = nullptr;
     uptr<graphics::Pipeline> pipeline_;
     graphics::Buffer kernel_buffer_;
     graphics::Image noise_image_;

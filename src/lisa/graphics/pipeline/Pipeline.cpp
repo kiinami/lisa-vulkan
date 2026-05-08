@@ -45,7 +45,7 @@ namespace lisa::graphics {
         resources::Vertex::attribute_descriptions(vertex_binding.binding);
 
       if (params.position_only && !vertex_attributes.empty())
-        vertex_attributes.resize(1); // Keep only the position attribute
+        vertex_attributes.resize(1);
 
       vertex_input_state.vertexBindingDescriptionCount = 1u;
       vertex_input_state.pVertexBindingDescriptions = &vertex_binding;

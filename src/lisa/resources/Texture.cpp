@@ -16,8 +16,12 @@
 
 namespace lisa::resources {
   Texture::Texture(
-    const path& filepath, const graphics::CommandBuffer& cmdb, const int channel
-  ) {
+    const str& id,
+    const path& filepath,
+    const graphics::CommandBuffer& cmdb,
+    const int channel
+  ) :
+    Resource(id) {
     const auto ext = filepath.extension().string();
     if (ext == ".exr") {
       image_ = load_exr(filepath, cmdb, channel);
@@ -38,11 +42,13 @@ namespace lisa::resources {
   }
 
   Texture::Texture(
+    const str& id,
     const vector<std::byte>& data,
     const fastgltf::MimeType mime,
     const graphics::CommandBuffer& cmdb,
     const int channel
-  ) {
+  ) :
+    Resource(id) {
     if (mime == fastgltf::MimeType::KTX2)
       image_ = load_ktx(data, cmdb, channel);
     else if (

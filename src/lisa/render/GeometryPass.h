@@ -5,16 +5,17 @@
 #ifndef LISA_VULKAN_GEOMETRYPASS_H
 #define LISA_VULKAN_GEOMETRYPASS_H
 #pragma once
+#include "ShaderPass.h"
 #include "graphics/pipeline/Pipeline.h"
 #include "systems/render/RenderPass.h"
 
 namespace lisa::render {
 
-  class GeometryPass : public systems::render::RenderPass {
+  class GeometryPass : public ShaderPass {
   public:
     static constexpr auto TYPE_ID = "deferred::geometry";
 
-    explicit GeometryPass(const pugi::xml_node& node) : RenderPass(node) {}
+    explicit GeometryPass(const pugi::xml_node& node) : ShaderPass(node) {}
 
     ~GeometryPass() override = default;
 
@@ -24,7 +25,6 @@ namespace lisa::render {
     void execute(const systems::render::RenderContext& ctx) override;
 
   private:
-    const resources::Shader* shader_ = nullptr;
     uptr<graphics::Pipeline> pipeline_;
   };
 

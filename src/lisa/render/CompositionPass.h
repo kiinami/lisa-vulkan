@@ -6,6 +6,7 @@
 #define LISA_VULKAN_COMPOSITIONPASS_H
 #pragma once
 
+#include "ShaderPass.h"
 #include "graphics/descriptors/DescriptorAllocator.h"
 #include "graphics/pipeline/Pipeline.h"
 #include "systems/render/RenderPass.h"
@@ -20,11 +21,11 @@ namespace lisa::render {
     DescriptorIndex ssao_idx;
   };
 
-  class CompositionPass : public systems::render::RenderPass {
+  class CompositionPass : public ShaderPass {
   public:
     static constexpr auto TYPE_ID = "deferred::composition";
 
-    explicit CompositionPass(const pugi::xml_node& node) : RenderPass(node) {}
+    explicit CompositionPass(const pugi::xml_node& node) : ShaderPass(node) {}
 
     void setup(
       systems::render::Rendergraph& graph, const pugi::xml_node& node
@@ -32,7 +33,6 @@ namespace lisa::render {
     void execute(const systems::render::RenderContext& ctx) override;
 
   private:
-    const resources::Shader* shader_ = nullptr;
     uptr<graphics::Pipeline> pipeline_;
   };
 

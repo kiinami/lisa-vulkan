@@ -76,7 +76,7 @@ else
     ktx_inc = []
 endif
 
-boost = dependency('boost', required: true, modules : ['multi_index'])
+boost_multi_index = dependency('boost', required : true, modules : ['multi_index'])
 cli11 = dependency('CLI11', required: true)
 entt = dependency('entt', required : true)
 fastgltf = dependency('fastgltf', required : true)
@@ -155,6 +155,8 @@ src = files(
     'src/lisa/resources/Texture.cpp',
     'src/lisa/resources/Vertex.h',
 
+    'src/lisa/render/ShaderPass.h',
+    'src/lisa/render/ShaderPass.cpp',
     'src/lisa/render/ForwardPass.h',
     'src/lisa/render/ForwardPass.cpp',
     'src/lisa/render/GeometryPass.h',
@@ -238,14 +240,14 @@ lisa_library = static_library(
     'lisa',
     sources: src,
     include_directories: [inc, sdk_inc, ktx_inc],
-    dependencies : [boost, entt, fastgltf, glm, ktx, magic_enum, miniz, pugixml, reflectcpp, sdl3, sdl3pp, shader_dep, slang, spdlog, stb, tinyexr, tinyobjloader, vulkan, vma, vma_hpp],
+    dependencies : [boost_multi_index, entt, fastgltf, glm, ktx, magic_enum, miniz, pugixml, reflectcpp, sdl3, sdl3pp, shader_dep, slang, spdlog, stb, tinyexr, tinyobjloader, vulkan, vma, vma_hpp],
     cpp_pch: 'src/lisa/pch/pch.h'
 )
 
 lisa_dep = declare_dependency(
     include_directories: [include_directories('src/lisa'), sdk_inc, ktx_inc],
     link_whole: lisa_library,
-    dependencies : [boost, entt, fastgltf, glm, ktx, magic_enum, miniz, pugixml, reflectcpp, sdl3, sdl3pp, slang, spdlog, stb, tinyexr, tinyobjloader, vulkan, vma, vma_hpp]
+    dependencies : [boost_multi_index, entt, fastgltf, glm, ktx, magic_enum, miniz, pugixml, reflectcpp, sdl3, sdl3pp, slang, spdlog, stb, tinyexr, tinyobjloader, vulkan, vma, vma_hpp]
 )
 
 ###############################################################################
