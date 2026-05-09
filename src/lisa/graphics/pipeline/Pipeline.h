@@ -5,6 +5,7 @@
 #ifndef LISA_VULKAN_PIPELINE_H
 #define LISA_VULKAN_PIPELINE_H
 
+#include "graphics/descriptors/DescriptorContainer.h"
 #include "graphics/context.h"
 #include "resources/Shader.h"
 #include "utils/common.h"

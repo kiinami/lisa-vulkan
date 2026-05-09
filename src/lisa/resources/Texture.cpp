@@ -6,6 +6,7 @@
 
 #include "graphics/buffer/Buffer.h"
 #include "graphics/context.h"
+#include "graphics/descriptors/DescriptorContainer.h"
 #include "utils/logging.h"
 #include "utils/path.h"
 
@@ -24,14 +25,14 @@ namespace lisa::resources {
     Resource(id) {
     const auto ext = filepath.extension().string();
     if (ext == ".exr") {
-      image_ = load_exr(filepath, cmdb, channel);
+      image_ = load_exr(id, filepath, cmdb, channel);
     } else {
       const auto bytes = utils::read_file(filepath);
 
       if (ext == ".jpg" || ext == ".jpeg" || ext == ".png")
-        image_ = load_jpg(bytes, cmdb, channel);
+        image_ = load_jpg(id, bytes, cmdb, channel);
       else if (ext == ".ktx" || ext == ".ktx2")
-        image_ = load_ktx(bytes, cmdb, channel);
+        image_ = load_ktx(id, bytes, cmdb, channel);
       else {
         logging::error("Unsupported texture format: {}", ext);
         return;
@@ -50,11 +51,11 @@ namespace lisa::resources {
   ) :
     Resource(id) {
     if (mime == fastgltf::MimeType::KTX2)
-      image_ = load_ktx(data, cmdb, channel);
+      image_ = load_ktx(id, data, cmdb, channel);
     else if (
       mime == fastgltf::MimeType::JPEG || mime == fastgltf::MimeType::PNG
     )
-      image_ = load_jpg(data, cmdb, channel);
+      image_ = load_jpg(id, data, cmdb, channel);
     else
       throw std::runtime_error("Unsupported texture format");
 
@@ -83,6 +84,7 @@ namespace lisa::resources {
   }
 
   graphics::Image Texture::load_ktx(
+    const str& id,
     const vector<std::byte>& data,
     const graphics::CommandBuffer& cmdb,
     int channel
@@ -120,6 +122,7 @@ namespace lisa::resources {
     }
 
     auto transfer_buffer = graphics::Buffer(
+      id + "::transfer[ktx]",
       texture->dataSize,
       vk::BufferUsageFlagBits::eTransferSrc,
       {.flags = vma::AllocationCreateFlagBits::eMapped |
@@ -133,6 +136,7 @@ namespace lisa::resources {
     const auto format = graphics::ImageFormat(ktxTexture2_GetVkFormat(texture));
 
     auto image = graphics::Image(
+      id + "::image[ktx]",
       format,
       vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled,
       {texture->baseWidth, texture->baseHeight, 1},
@@ -209,6 +213,7 @@ namespace lisa::resources {
   }
 
   graphics::Image Texture::load_jpg(
+    const str& id,
     const vector<std::byte>& data,
     const graphics::CommandBuffer& cmdb,
     const int channel
@@ -246,6 +251,7 @@ namespace lisa::resources {
       const size buffer_size = width * height * 4;
 
       image = graphics::Image::from_data(
+        id + "::image[jpg]",
         pixels,
         buffer_size,
         {static_cast<float>(width), static_cast<float>(height), 1.0f},
@@ -261,6 +267,7 @@ namespace lisa::resources {
         single_channel[i] = pixels[i * 4 + channel];
 
       image = graphics::Image::from_data(
+        id + "::image[jpg,single_channel]",
         single_channel.data(),
         single_channel.size(),
         {static_cast<float>(width), static_cast<float>(height), 1.0f},
@@ -277,7 +284,10 @@ namespace lisa::resources {
   }
 
   graphics::Image Texture::load_exr(
-    const path& filepath, const graphics::CommandBuffer& cmdb, const int channel
+    const str& id,
+    const path& filepath,
+    const graphics::CommandBuffer& cmdb,
+    const int channel
   ) {
     float* out_rgba = nullptr;
     int w, h;
@@ -331,6 +341,7 @@ namespace lisa::resources {
                                sizeof(float);
 
       image = graphics::Image::from_data(
+        id + "::image[exr]",
         out_rgba,
         buffer_size,
         {static_cast<float>(width), static_cast<float>(height), 1.0f},
@@ -350,6 +361,7 @@ namespace lisa::resources {
       }
 
       image = graphics::Image::from_data(
+        id + "::image[exr,single_channel]",
         single_channel.data(),
         single_channel.size() * sizeof(float),
         {static_cast<float>(width), static_cast<float>(height), 1.0f},

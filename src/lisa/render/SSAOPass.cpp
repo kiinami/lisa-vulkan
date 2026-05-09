@@ -119,6 +119,7 @@ namespace lisa::render {
     }
 
     return graphics::Buffer::from_data(
+      "ssao_kernel_buffer",
       kernel.data(),
       kernel.size() * sizeof(vec4),
       vk::BufferUsageFlagBits::eTransferDst |
@@ -144,6 +145,7 @@ namespace lisa::render {
     }
 
     return graphics::Image::from_data(
+      "ssao_noise_texture",
       noise.data(),
       noise.size() * sizeof(vec4),
       vec3{4, 4, 1},

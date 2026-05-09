@@ -41,6 +41,7 @@ namespace lisa::graphics {
 
   Image DescriptorContainer::create_dummy_image() {
     return Image(
+      "descriptor_dummy_image", // TODO: add ID
       ImageFormat(vk::Format::eR8G8B8A8Unorm),
       vk::ImageUsageFlagBits::eSampled,
       vec3(1, 1, 1),

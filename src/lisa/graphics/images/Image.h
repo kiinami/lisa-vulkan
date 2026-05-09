@@ -7,6 +7,7 @@
 
 #include "ImageFormat.h"
 #include "graphics/commands/CommandBuffer.h"
+#include "graphics/vk/NamedVkObject.h"
 #include "utils/common.h"
 
 #include <unordered_map>
@@ -51,13 +52,12 @@ namespace lisa::graphics {
     .usage = vma::MemoryUsage::eAuto
   };
 
-  class Image {
+  class Image : public NamedVkObject<vma::raii::Image> {
   public:
-    Image() {}
-
-    ~Image() = default;
+    Image() = default;
 
     Image(
+      const str& id,
       ImageFormat format,
       vk::ImageUsageFlags usage,
       const vec3& size,
@@ -66,32 +66,6 @@ namespace lisa::graphics {
       vk::ImageLayout initial_layout = vk::ImageLayout::eUndefined,
       const vma::AllocationCreateInfo& allocation_ci = DEFAULT_ALLOCATION_CI
     );
-
-    Image(
-      const vk::Image& image,
-      const ImageFormat format,
-      const vec3& size,
-      const vk::ImageUsageFlags usage
-    ) :
-      image_(image),
-      size_(size),
-      format_(format),
-      usage_(usage),
-      type_(vk::ImageType::e2D),
-      initial_layout_(vk::ImageLayout::eUndefined) {}
-
-    Image(const Image&) = delete;
-    Image& operator=(const Image&) = delete;
-
-    Image(Image&&) noexcept = default;
-    Image& operator=(Image&&) noexcept = default;
-
-    operator const vk::Image&() const {
-      if (std::holds_alternative<vma::raii::Image>(image_))
-        return *std::get<vma::raii::Image>(image_);
-
-      return std::get<vk::Image>(image_);
-    }
 
     const vk::raii::ImageView& view(const ImageViewDesc& desc) const;
 
@@ -106,6 +80,7 @@ namespace lisa::graphics {
     vk::ImageLayout initial_layout() const { return initial_layout_; }
 
     static Image from_data(
+      const str& id,
       const void* data,
       size_t size,
       const vec3& extent,
@@ -116,6 +91,7 @@ namespace lisa::graphics {
     );
 
     static Image from_data(
+      const str& id,
       const void* data,
       size_t size,
       const vec3& extent,
@@ -125,8 +101,6 @@ namespace lisa::graphics {
     );
 
   protected:
-    std::variant<vma::raii::Image, vk::Image> image_ = vk::Image(nullptr);
-
     mutable umap<ImageViewDesc, vk::raii::ImageView, ImageViewDescHash> views_;
 
     vec3 size_;

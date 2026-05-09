@@ -102,6 +102,7 @@ namespace lisa::render {
 
     return {
       graphics::Buffer::from_data(
+        "convolutional_kernel_buffer",
         normalized_kernel.data(),
         normalized_kernel.size() * sizeof(float),
         vk::BufferUsageFlagBits::eTransferDst |

@@ -4,6 +4,7 @@
 
 #include "MemoryAllocator.h"
 
+#include "build.h"
 #include "graphics/device/Instance.h"
 #include "graphics/device/LogicalDevice.h"
 #include "utils/logging.h"
@@ -25,7 +26,7 @@ namespace lisa::graphics {
         }
       }
     ) {
-    logging::debug("Memory allocator created");
+    if constexpr (build::debug) logging::debug("Memory allocator created");
   }
 
   vma::raii::Image MemoryAllocator::create_image(

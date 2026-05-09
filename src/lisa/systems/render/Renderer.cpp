@@ -29,24 +29,29 @@ namespace lisa::systems::render {
       .usage = vma::MemoryUsage::eAuto
     };
     for (size i = 0; i < graphics::constants::MAX_FRAMES_IN_FLIGHT; i++) {
-      global_data_buffers_[i] =
-        graphics::Buffer(sizeof(GlobalData), usage, allocation_ci);
+      global_data_buffers_[i] = graphics::Buffer(
+        "global_data", sizeof(GlobalData), usage, allocation_ci
+      );
       object_data_buffers_[i] = graphics::Buffer(
+        "object_data",
         sizeof(ObjectData) * graphics::constants::MAX_OBJECTS,
         usage,
         allocation_ci
       );
       point_lights_buffers_[i] = graphics::Buffer(
+        "point_lights",
         sizeof(PointLightData) * graphics::constants::MAX_POINT_LIGHTS,
         usage,
         allocation_ci
       );
       dir_lights_buffers_[i] = graphics::Buffer(
+        "dir_lights",
         sizeof(DirLightData) * graphics::constants::MAX_DIR_LIGHTS,
         usage,
         allocation_ci
       );
       ambient_lights_buffers_[i] = graphics::Buffer(
+        "ambient_lights",
         sizeof(AmbientLightData) * graphics::constants::MAX_AMBIENT_LIGHTS,
         usage,
         allocation_ci
@@ -73,7 +78,7 @@ namespace lisa::systems::render {
       .pWaitSemaphores = &wait_semaphore,
       .pWaitDstStageMask = &wait_stage,
       .commandBufferCount = 1,
-      .pCommandBuffers = &*cmd_buffer_,
+      .pCommandBuffers = &cmd_buffer_.handle(),
       .signalSemaphoreCount = 1,
       .pSignalSemaphores = &signal_semaphore
     };
