@@ -83,7 +83,12 @@ namespace lisa::systems::render {
     ImageGraphResource(
       const ImageGraphResourceMetadata metadata, const vec3& size
     ) :
-      image(metadata.format, metadata.usage, size) {}
+      image(
+        "", // TODO: id
+        metadata.format,
+        metadata.usage,
+        size
+      ) {}
 
     vk::ImageMemoryBarrier2 transition(
       GraphResourceState& src_state, GraphResourceUsage dst_usage

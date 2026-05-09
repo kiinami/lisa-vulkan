@@ -98,7 +98,7 @@ vma_hpp = dependency('VulkanMemoryAllocator-Hpp', required: true)
 # Sources
 ###############################################################################
 src = files(
-    'src/lisa/utils/common.h',
+    'src/lisa/build.h',
     'src/lisa/implementations.cpp',
 
     'src/lisa/graphics/context.h',
@@ -144,6 +144,11 @@ src = files(
     'src/lisa/graphics/sync/Fence.cpp',
     'src/lisa/graphics/sync/Semaphore.h',
     'src/lisa/graphics/sync/Semaphore.cpp',
+
+    'src/lisa/graphics/vk/VkObject.h',
+    'src/lisa/graphics/vk/VkObject.cpp',
+    'src/lisa/graphics/vk/NamedVkObject.h',
+    'src/lisa/graphics/vk/NamedVkObject.cpp',
 
     'src/lisa/resources/context.h',
     'src/lisa/resources/context.cpp',
@@ -210,6 +215,7 @@ src = files(
     'src/lisa/update/CameraMovement.h',
     'src/lisa/update/CameraMovement.cpp',
 
+    'src/lisa/utils/common.h',
     'src/lisa/utils/chk.h',
     'src/lisa/utils/defer.h',
     'src/lisa/utils/logging.h',

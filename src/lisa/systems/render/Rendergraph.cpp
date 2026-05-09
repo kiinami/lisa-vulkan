@@ -7,6 +7,7 @@
 #include "GraphResources.h"
 #include "RenderPassRegistry.h"
 #include "graphics/context.h"
+#include "graphics/descriptors/DescriptorContainer.h"
 #include "utils/logging.h"
 #include "utils/xml.h"
 #include "window/context.h"

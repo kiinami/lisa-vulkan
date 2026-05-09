@@ -134,5 +134,14 @@ namespace lisa::graphics {
       .layout = layout_
     };
     pipeline_ = context::device()->createGraphicsPipeline(nullptr, pipeline_ci);
+
+    vk::DebugUtilsObjectNameInfoEXT name_info{
+      .objectType = pipeline_.objectType,
+      .objectHandle = reinterpret_cast<uint64_t>(
+        static_cast<vk::Pipeline::CType>(*pipeline_)
+      ),
+      .pObjectName = "pipeline"
+    };
+    context::device()->setDebugUtilsObjectNameEXT(name_info);
   }
 }

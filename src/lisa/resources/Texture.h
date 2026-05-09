@@ -49,16 +49,19 @@ namespace lisa::resources {
     uint32 levels_ = 1;
 
     static graphics::Image load_ktx(
+      const str& id,
       const vector<std::byte>& data,
       const graphics::CommandBuffer& cmdb,
       int channel = -1
     );
     static graphics::Image load_jpg(
+      const str& id,
       const vector<std::byte>& data,
       const graphics::CommandBuffer& cmdb,
       int channel = -1
     );
     static graphics::Image load_exr(
+      const str& id,
       const path& filepath,
       const graphics::CommandBuffer& cmdb,
       int channel = -1

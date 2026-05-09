@@ -5,6 +5,7 @@
 #include "RenderPass.h"
 
 #include "graphics/context.h"
+#include "graphics/descriptors/DescriptorContainer.h"
 
 namespace lisa::systems::render {
   RenderPass::~RenderPass() {

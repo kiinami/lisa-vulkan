@@ -5,38 +5,29 @@
 #ifndef LISA_VULKAN_BUFFER_H
 #define LISA_VULKAN_BUFFER_H
 #include "graphics/commands/CommandBuffer.h"
+#include "graphics/vk/NamedVkObject.h"
 #include "utils/common.h"
 
 #include <vk_mem_alloc_raii.hpp>
-#include <vulkan/vulkan_raii.hpp>
 
 namespace lisa::graphics {
 
-  class Buffer {
+  class Buffer : public NamedVkObject<vma::raii::Buffer> {
   public:
     Buffer() = default;
     Buffer(
+      const str& id,
       vk::DeviceSize size,
       vk::BufferUsageFlags usage,
       const vma::AllocationCreateInfo& allocation_ci = {}
     );
-    ~Buffer() = default;
-
-    Buffer(const Buffer&) = delete;
-    Buffer& operator=(const Buffer&) = delete;
-
-    Buffer(Buffer&&) noexcept = default;
-    Buffer& operator=(Buffer&&) noexcept = default;
-
-    operator const vma::raii::Buffer&() const { return buffer_; }
-
-    operator const vk::Buffer&() const { return *buffer_; }
 
     const vma::raii::Allocation& allocation() const {
-      return buffer_.getAllocation();
+      return object_.getAllocation();
     }
 
     static Buffer from_data(
+      const str& id,
       const CommandBuffer& cmdb,
       const void* data,
       size size,
@@ -44,6 +35,7 @@ namespace lisa::graphics {
       const vma::AllocationCreateInfo& allocation_ci = {}
     );
     static Buffer from_data(
+      const str& id,
       const void* data,
       size size,
       vk::BufferUsageFlags usage,
@@ -51,9 +43,6 @@ namespace lisa::graphics {
     );
     vk::DeviceAddress address() const;
     void* mapped_data() const;
-
-  private:
-    vma::raii::Buffer buffer_ = nullptr;
   };
 
 }
