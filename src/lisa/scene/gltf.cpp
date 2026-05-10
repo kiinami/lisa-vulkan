@@ -24,8 +24,9 @@ namespace lisa::scene::gltf {
     fastgltf::Parser parser_{fastgltf::Extensions::KHR_lights_punctual};
     fastgltf::Asset asset_;
     path base_path_;
+    str id_;
 
-    void load_asset(const path& filepath) {
+    void load_asset(const path& filepath, const str& parent_id = "") {
       auto data = fastgltf::GltfDataBuffer::FromPath(filepath);
       if (data.error() != fastgltf::Error::None)
         logging::abort(
@@ -46,17 +47,20 @@ namespace lisa::scene::gltf {
         );
 
       asset_ = *std::move(asset);
+      id_ = parent_id == "" ? logging::genid(filepath)
+                            : logging::genid(parent_id, filepath);
     }
 
     size select_scene(const fastgltf::Asset& asset) {
+      const auto scene = asset.defaultScene.value_or(0);
       if (const auto n_scenes = asset.scenes.size(); n_scenes > 1)
         logging::warning(
           "Only glTF files with one scene are officially supported, and this "
-          "file has {} scenes. Only the default scene or first scene will be "
-          "rendered.",
-          n_scenes
+          "file has {} scenes. Only scene {} will be rendered.",
+          n_scenes,
+          scene
         );
-      return asset.defaultScene.value_or(0);
+      return scene;
     }
 
     optional<str> load_texture(
@@ -151,14 +155,16 @@ namespace lisa::scene::gltf {
   void node_iterator(fastgltf::Node& node, fastgltf::math::fmat4x4 matrix) {
     auto& reg = components::context::registry();
     const auto entity = reg.create();
+    const auto entity_id = logging::genid(id_, "nodes", node.name);
 
     auto& transform = reg->emplace<components::TransformComponent>(entity);
     transform.set_matrix(glm::make_mat4(matrix.data()));
 
     if (node.cameraIndex.has_value()) {
       auto& [camera, name] = asset_.cameras[node.cameraIndex.value()];
-      if (const auto* persp =
-            std::get_if<fastgltf::Camera::Perspective>(&camera)) {
+      if (
+        const auto* persp = std::get_if<fastgltf::Camera::Perspective>(&camera)
+      ) {
         auto& cam = reg->emplace<components::CameraComponent>(entity);
         cam.fov = persp->yfov;
         cam.aspect_ratio = persp->aspectRatio.value_or(16.0f / 9.0f);
@@ -191,11 +197,12 @@ namespace lisa::scene::gltf {
 
     if (node.meshIndex.has_value()) {
       const auto& mesh = asset_.meshes[node.meshIndex.value()];
-      const auto mesh_id = "mesh::" + std::to_string(node.meshIndex.value());
+      const auto mesh_id =
+        logging::genid(id_, "meshes", node.meshIndex.value());
 
       for (auto i = 0; i < mesh.primitives.size(); i++) {
         const auto& p = mesh.primitives[i];
-        const auto p_id = mesh_id + "::p::" + std::to_string(i);
+        const auto p_id = logging::genid(mesh_id, "primitives", i);
 
         const auto p_entity = reg.create();
         auto& p_transform =
@@ -209,6 +216,8 @@ namespace lisa::scene::gltf {
 
         if (p.materialIndex.has_value()) {
           auto& material = asset_.materials[p.materialIndex.value()];
+          auto material_id =
+            logging::genid(id_, "materials", p.materialIndex.value());
 
           optional<str> albedo_texture = nullopt;
           optional<str> normal_texture = nullopt;
@@ -221,7 +230,8 @@ namespace lisa::scene::gltf {
                                 .textureIndex];
             if (tex.imageIndex.has_value()) {
               auto& img = asset_.images[tex.imageIndex.value()];
-              auto img_id = "img::" + std::to_string(tex.imageIndex.value());
+              auto img_id =
+                logging::genid(id_, "images", tex.imageIndex.value());
               albedo_texture =
                 load_texture(img, img_id, asset_.buffers, asset_.bufferViews);
             }
@@ -233,19 +243,19 @@ namespace lisa::scene::gltf {
                                 .textureIndex];
             if (tex.imageIndex.has_value()) {
               auto& img = asset_.images[tex.imageIndex.value()];
-              const auto base_id =
-                "img::" + std::to_string(tex.imageIndex.value());
+              auto base_id =
+                logging::genid(id_, "images", tex.imageIndex.value());
 
               roughness_texture = load_texture(
                 img,
-                base_id + "::roughness",
+                logging::genid(base_id, "roughness"),
                 asset_.buffers,
                 asset_.bufferViews,
                 1
               );
               metallic_texture = load_texture(
                 img,
-                base_id + "::metallic",
+                logging::genid(base_id, "metallic"),
                 asset_.buffers,
                 asset_.bufferViews,
                 2
@@ -258,7 +268,8 @@ namespace lisa::scene::gltf {
               asset_.textures[material.normalTexture.value().textureIndex];
             if (tex.imageIndex.has_value()) {
               auto& img = asset_.images[tex.imageIndex.value()];
-              auto img_id = "img::" + std::to_string(tex.imageIndex.value());
+              auto img_id =
+                logging::genid(id_, "images", tex.imageIndex.value());
               normal_texture =
                 load_texture(img, img_id, asset_.buffers, asset_.bufferViews);
             }
@@ -279,10 +290,10 @@ namespace lisa::scene::gltf {
     }
   }
 
-  void load(const path& filepath, mat4 transform) {
+  void load(const path& filepath, mat4 transform, const str& parent_id) {
     base_path_ = filepath.parent_path();
 
-    load_asset(filepath);
+    load_asset(filepath, parent_id);
 
     const auto scene_id = select_scene(asset_);
 

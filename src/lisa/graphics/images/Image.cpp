@@ -7,6 +7,7 @@
 #include "ImageFormat.h"
 #include "graphics/buffer/Buffer.h"
 #include "graphics/context.h"
+#include "utils/logging.h"
 
 namespace lisa::graphics {
   Image::Image(
@@ -78,7 +79,7 @@ namespace lisa::graphics {
     uint32 mip_levels
   ) {
     auto transfer_buffer = Buffer(
-      id + "::transfer",
+      logging::genid(id, "transfer"),
       size,
       vk::BufferUsageFlagBits::eTransferSrc,
       {.flags = vma::AllocationCreateFlagBits::eMapped |

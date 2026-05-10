@@ -60,6 +60,33 @@ namespace lisa::logging {
     spdlog::critical(fmt, std::forward<Args>(args)...);
     throw std::runtime_error("Program aborted because of a critical error");
   }
+
+  namespace detail {
+    inline str format_part(const str& s) { return s; }
+
+    inline str format_part(const char* s) { return str(s); }
+
+    inline str format_part(const int i) { return std::to_string(i); }
+
+    inline str format_part(const std::filesystem::path& p) {
+      return "[" + p.filename().generic_string() + "]";
+    }
+  }
+
+  template<typename... Args> str genid(Args&&... args) {
+    str result;
+    bool is_first = true;
+
+    auto append = [&](const auto& arg) {
+      if (!is_first) result += "::";
+      result += detail::format_part(arg);
+      is_first = false;
+    };
+
+    (append(std::forward<Args>(args)), ...);
+
+    return result;
+  }
 }
 
 #endif

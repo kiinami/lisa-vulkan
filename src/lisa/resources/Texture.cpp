@@ -122,7 +122,7 @@ namespace lisa::resources {
     }
 
     auto transfer_buffer = graphics::Buffer(
-      id + "::transfer[ktx]",
+      logging::genid(id, "transfer[ktx]"),
       texture->dataSize,
       vk::BufferUsageFlagBits::eTransferSrc,
       {.flags = vma::AllocationCreateFlagBits::eMapped |
@@ -136,7 +136,7 @@ namespace lisa::resources {
     const auto format = graphics::ImageFormat(ktxTexture2_GetVkFormat(texture));
 
     auto image = graphics::Image(
-      id + "::image[ktx]",
+      logging::genid(id, "[ktx]"),
       format,
       vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled,
       {texture->baseWidth, texture->baseHeight, 1},
@@ -256,7 +256,7 @@ namespace lisa::resources {
       const size buffer_size = width * height * 4;
 
       image = graphics::Image::from_data(
-        id + "::image[jpg]",
+        logging::genid(id, "[jpg]"),
         pixels,
         buffer_size,
         {static_cast<float>(width), static_cast<float>(height), 1.0f},
@@ -272,7 +272,7 @@ namespace lisa::resources {
         single_channel[i] = pixels[i * 4 + channel];
 
       image = graphics::Image::from_data(
-        id + "::image[jpg,single_channel]",
+        logging::genid(id, "[jpg,channel=" + std::to_string(channel) + "]"),
         single_channel.data(),
         single_channel.size(),
         {static_cast<float>(width), static_cast<float>(height), 1.0f},
@@ -346,7 +346,7 @@ namespace lisa::resources {
                                sizeof(float);
 
       image = graphics::Image::from_data(
-        id + "::image[exr]",
+        logging::genid(id, "[exr,channel=" + std::to_string(channel) + "]"),
         out_rgba,
         buffer_size,
         {static_cast<float>(width), static_cast<float>(height), 1.0f},
