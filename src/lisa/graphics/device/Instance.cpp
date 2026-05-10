@@ -44,7 +44,7 @@ namespace lisa::graphics {
     utils::chk(vpCreateInstance(
       constants::capabilities(), &vp_instance_ci, nullptr, &instance
     ));
-    object_ = vk::raii::Instance(ctx, instance);
+    set(vk::raii::Instance(ctx, instance));
 
     if (logging::debug_enabled()) add_debug_messenger();
 
@@ -52,12 +52,12 @@ namespace lisa::graphics {
   }
 
   PhysicalDevice Instance::pick_physical_device() const {
-    const auto devices = physical_devices();
+    auto devices = physical_devices();
     if (devices.empty())
       logging::abort("Failed to find GPUs with Vulkan support");
 
-    std::multimap<int, PhysicalDevice> candidates;
-    for (const auto& pd : devices) {
+    std::multimap<unsigned int, PhysicalDevice*> candidates;
+    for (auto& pd : devices) {
       uint32 score = 0;
 
       if (!pd.supports_profile()) continue;
@@ -65,18 +65,19 @@ namespace lisa::graphics {
       if (pd.is_discrete()) score += 1000;
       score += pd.max_image_dimensions();
 
-      candidates.insert(std::make_pair(score, pd));
+      candidates.emplace(score, &pd);
     }
 
     if (!candidates.empty() && candidates.rbegin()->first > 0) {
-      auto selected = candidates.rbegin()->second;
-      logging::info("Selected GPU device: '{}'", selected.name());
-      return selected;
+      auto* best_device = candidates.rbegin()->second;
+      logging::info("Selected GPU device: '{}'", best_device->name());
+
+      return std::move(*best_device);
     }
 
     logging::abort("Failed to find a suitable GPU");
   }
-
+  
   bool Instance::supports_profile() {
     auto supported = vk::False;
 
@@ -133,8 +134,7 @@ namespace lisa::graphics {
       .pfnUserCallback = logging::vulkanDebugCallback
     };
 
-    debug_messenger_ =
-      object_.createDebugUtilsMessengerEXT(debug_messenger_ci);
+    debug_messenger_ = object_.createDebugUtilsMessengerEXT(debug_messenger_ci);
   }
 
   vector<PhysicalDevice> Instance::physical_devices() const {

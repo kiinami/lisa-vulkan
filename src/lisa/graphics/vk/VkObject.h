@@ -22,6 +22,8 @@ namespace lisa::graphics {
     VkObject(VkObject&&) noexcept = default;
     VkObject& operator=(VkObject&&) noexcept = default;
 
+    explicit VkObject(const T& object) : object_(object) {}
+
     explicit VkObject(T&& object) : object_(std::move(object)) {}
 
     operator const T&() const { return object_; }
