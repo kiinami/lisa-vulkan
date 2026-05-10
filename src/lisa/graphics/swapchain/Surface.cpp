@@ -17,7 +17,7 @@ namespace lisa::graphics {
     const PhysicalDevice& physical_device
   ) {
     VkSurfaceKHR c_surface;
-    SDL::Vulkan_CreateSurface(window, instance, nullptr, &c_surface);
+    SDL::Vulkan_CreateSurface(window, instance.handle(), nullptr, &c_surface);
     surface_ = vk::raii::SurfaceKHR(instance, c_surface);
     capabilities_ = physical_device.surface_capabilities(surface_);
 

@@ -12,6 +12,71 @@
 #include <SDL3pp/SDL3pp_vulkan.h>
 
 namespace lisa::graphics {
+
+  Instance::Instance(const vk::raii::Context& ctx) {
+    if (!supports_profile())
+      logging::abort("Profile not supported at instance level");
+
+    vk::ApplicationInfo app_info{
+      .pApplicationName = constants::APPLICATION_NAME,
+      .pEngineName = constants::APPLICATION_NAME,
+      .apiVersion = constants::API_VERSION
+    };
+
+    auto extensions = get_instance_extensions();
+    auto layers = get_validation_layers();
+
+    const vk::InstanceCreateInfo instance_ci{
+      .pApplicationInfo = &app_info,
+      .enabledLayerCount = static_cast<uint32>(layers.size()),
+      .ppEnabledLayerNames = layers.data(),
+      .enabledExtensionCount = static_cast<uint32>(extensions.size()),
+      .ppEnabledExtensionNames = extensions.data(),
+    };
+
+    const VpInstanceCreateInfo vp_instance_ci{
+      .pCreateInfo = instance_ci,
+      .enabledFullProfileCount = 1,
+      .pEnabledFullProfiles = &constants::PROFILE
+    };
+
+    VkInstance instance = VK_NULL_HANDLE;
+    utils::chk(vpCreateInstance(
+      constants::capabilities(), &vp_instance_ci, nullptr, &instance
+    ));
+    object_ = vk::raii::Instance(ctx, instance);
+
+    if (logging::debug_enabled()) add_debug_messenger();
+
+    logging::debug("Vulkan instance initiated");
+  }
+
+  PhysicalDevice Instance::pick_physical_device() const {
+    const auto devices = physical_devices();
+    if (devices.empty())
+      logging::abort("Failed to find GPUs with Vulkan support");
+
+    std::multimap<int, PhysicalDevice> candidates;
+    for (const auto& pd : devices) {
+      uint32 score = 0;
+
+      if (!pd.supports_profile()) continue;
+
+      if (pd.is_discrete()) score += 1000;
+      score += pd.max_image_dimensions();
+
+      candidates.insert(std::make_pair(score, pd));
+    }
+
+    if (!candidates.empty() && candidates.rbegin()->first > 0) {
+      auto selected = candidates.rbegin()->second;
+      logging::info("Selected GPU device: '{}'", selected.name());
+      return selected;
+    }
+
+    logging::abort("Failed to find a suitable GPU");
+  }
+
   bool Instance::supports_profile() {
     auto supported = vk::False;
 
@@ -69,51 +134,11 @@ namespace lisa::graphics {
     };
 
     debug_messenger_ =
-      instance_.createDebugUtilsMessengerEXT(debug_messenger_ci);
+      object_.createDebugUtilsMessengerEXT(debug_messenger_ci);
   }
-
-  Instance::Instance(const vk::raii::Context& ctx) {
-    if (!supports_profile())
-      logging::abort("Profile not supported at instance level");
-
-    vk::ApplicationInfo app_info{
-      .pApplicationName = constants::APPLICATION_NAME,
-      .pEngineName = constants::APPLICATION_NAME,
-      .apiVersion = constants::API_VERSION
-    };
-
-    auto extensions = get_instance_extensions();
-    auto layers = get_validation_layers();
-
-    const vk::InstanceCreateInfo instance_ci{
-      .pApplicationInfo = &app_info,
-      .enabledLayerCount = static_cast<uint32>(layers.size()),
-      .ppEnabledLayerNames = layers.data(),
-      .enabledExtensionCount = static_cast<uint32>(extensions.size()),
-      .ppEnabledExtensionNames = extensions.data(),
-    };
-
-    const VpInstanceCreateInfo vp_instance_ci{
-      .pCreateInfo = instance_ci,
-      .enabledFullProfileCount = 1,
-      .pEnabledFullProfiles = &constants::PROFILE
-    };
-
-    VkInstance instance = VK_NULL_HANDLE;
-    utils::chk(vpCreateInstance(
-      constants::capabilities(), &vp_instance_ci, nullptr, &instance
-    ));
-    instance_ = vk::raii::Instance(ctx, instance);
-
-    if (logging::debug_enabled()) add_debug_messenger();
-
-    logging::debug("Vulkan instance initiated");
-  }
-
-  Instance::~Instance() {}
 
   vector<PhysicalDevice> Instance::physical_devices() const {
-    auto devices = instance_.enumeratePhysicalDevices();
+    auto devices = object_.enumeratePhysicalDevices();
 
     vector<PhysicalDevice> wrapped;
     wrapped.reserve(devices.size());
@@ -127,31 +152,5 @@ namespace lisa::graphics {
     );
 
     return wrapped;
-  }
-
-  PhysicalDevice Instance::pick_physical_device() const {
-    const auto devices = physical_devices();
-    if (devices.empty())
-      logging::abort("Failed to find GPUs with Vulkan support");
-
-    std::multimap<int, PhysicalDevice> candidates;
-    for (const auto& pd : devices) {
-      uint32 score = 0;
-
-      if (!pd.supports_profile()) continue;
-
-      if (pd.is_discrete()) score += 1000;
-      score += pd.max_image_dimensions();
-
-      candidates.insert(std::make_pair(score, pd));
-    }
-
-    if (!candidates.empty() && candidates.rbegin()->first > 0) {
-      auto selected = candidates.rbegin()->second;
-      logging::info("Selected GPU device: '{}'", selected.name());
-      return selected;
-    }
-
-    logging::abort("Failed to find a suitable GPU");
   }
 }
