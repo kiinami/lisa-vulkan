@@ -63,36 +63,36 @@ namespace lisa::graphics {
     utils::chk(vpCreateDevice(
       constants::capabilities(), *physical_device, &device_ci, nullptr, &dev
     ));
-    device_ = vk::raii::Device{physical_device, vk::Device{dev}};
+    set(vk::raii::Device{physical_device, vk::Device{dev}});
 
     logging::debug("Logical device created");
 
-    queue_ = device_.getQueue(queue_index, 0);
+    queue_ = object_.getQueue(queue_index, 0);
 
     const vk::CommandPoolCreateInfo pool_ci{
       .flags = vk::CommandPoolCreateFlagBits::eResetCommandBuffer,
       .queueFamilyIndex = queue_index
     };
-    command_pool_ = device_.createCommandPool(pool_ci);
+    command_pool_ = object_.createCommandPool(pool_ci);
 
     const vk::CommandBufferAllocateInfo command_buffers_ai{
       .commandPool = command_pool_,
       .commandBufferCount = constants::MAX_FRAMES_IN_FLIGHT
     };
-    command_buffers_ = device_.allocateCommandBuffers(command_buffers_ai);
+    command_buffers_ = object_.allocateCommandBuffers(command_buffers_ai);
   }
 
-  LogicalDevice::~LogicalDevice() { device_.waitIdle(); }
+  LogicalDevice::~LogicalDevice() { object_.waitIdle(); }
 
   vk::raii::ImageView LogicalDevice::create_image_view(
     const vk::ImageViewCreateInfo& view_ci
   ) const {
-    return device_.createImageView(view_ci);
+    return object_.createImageView(view_ci);
   }
 
   CommandBuffer LogicalDevice::cmd_buffer() const {
     return CommandBuffer(
-      std::move(device_.allocateCommandBuffers(
+      std::move(object_.allocateCommandBuffers(
         {.commandPool = command_pool_, .commandBufferCount = 1}
       )[0])
     );
@@ -101,11 +101,11 @@ namespace lisa::graphics {
   void LogicalDevice::submit_cmd_buffer_with_fence(
     const CommandBuffer& cmd_buffer
   ) const {
-    auto fence = device_.createFence({});
+    auto fence = object_.createFence({});
     const vk::SubmitInfo submit_info{
       .commandBufferCount = 1, .pCommandBuffers = &cmd_buffer.handle()
     };
     queue_.submit(submit_info, fence);
-    utils::chk(device_.waitForFences({fence}, vk::True, UINT64_MAX));
+    utils::chk(object_.waitForFences({fence}, vk::True, UINT64_MAX));
   }
 }
