@@ -325,8 +325,11 @@ namespace lisa::scene::xml {
 
   }
 
-  void load(const path& filepath, const mat4& transform) {
+  void load(const path& filepath, const mat4& transform, const str& parent_id) {
     const auto result = rfl::xml::read<Scene>(read_file(filepath));
+    const auto id = parent_id == ""
+                      ? logging::genid(filepath)
+                      : logging::genid(parent_id, filepath.string());
     if (!result)
       logging::abort("Failed to parse XML scene: {}", result.error().what());
 
@@ -391,9 +394,9 @@ namespace lisa::scene::xml {
 
       const auto ext = file.extension().string();
       if (ext == ".xml") {
-        load(scene_parent / file, external_transform);
+        load(scene_parent / file, external_transform, id);
       } else if (ext == ".gltf" || ext == ".glb") {
-        gltf::load(scene_parent / file, external_transform);
+        gltf::load(scene_parent / file, external_transform, id);
       } else {
         logging::error(
           "Unsupported external scene format: '{}', skipping", ext
