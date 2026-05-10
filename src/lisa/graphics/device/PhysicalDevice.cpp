@@ -24,7 +24,7 @@ namespace lisa::graphics {
     vk::Bool32 supported;
     utils::chk(vpGetPhysicalDeviceProfileSupport(
       constants::capabilities(),
-      context::instance(),
+      context::instance().handle(),
       *device_,
       &constants::PROFILE,
       &supported
