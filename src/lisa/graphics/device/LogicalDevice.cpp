@@ -24,7 +24,7 @@ namespace lisa::graphics {
       }
     }
 
-    if (queue_index == ~0)
+    if (queue_index == ~0u)
       logging::abort("Could not find a suitable queue for the device");
 
     float queue_priority = 0.5f;
