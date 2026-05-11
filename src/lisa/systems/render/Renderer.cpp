@@ -82,7 +82,7 @@ namespace lisa::systems::render {
       .signalSemaphoreCount = 1,
       .pSignalSemaphores = &signal_semaphore
     };
-    graphics::context::device().queue().submit(submit_info, *fence_);
+    graphics::context::device().queue().submit(submit_info, fence_.handle());
   }
 
   void Renderer::render() {
