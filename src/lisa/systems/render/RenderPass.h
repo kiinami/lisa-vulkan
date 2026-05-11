@@ -7,6 +7,7 @@
 
 #include "ShaderData.h"
 #include "graphics/commands/CommandBuffer.h"
+#include "utils/logging.h"
 
 namespace lisa::systems::render {
   class Rendergraph;
@@ -22,7 +23,7 @@ namespace lisa::systems::render {
     explicit RenderPass(const str& id) : id_(id) {}
 
     explicit RenderPass(const pugi::xml_node& node) :
-      id_(node.attribute("id").value()) {}
+      id_(logging::genid("graph", "passes", node.attribute("id").value())) {}
 
     virtual ~RenderPass();
 
