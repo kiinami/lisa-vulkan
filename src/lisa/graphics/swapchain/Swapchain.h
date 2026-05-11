@@ -32,21 +32,20 @@ namespace lisa::graphics {
       usage(usage) {}
   };
 
-  class Swapchain {
+  class Swapchain : public VkObject<vk::raii::SwapchainKHR> {
   public:
     explicit Swapchain(const Surface& surface, const LogicalDevice& device);
-    ~Swapchain() = default;
-
-    operator const vk::raii::SwapchainKHR&() { return swapchain_; }
 
     const vector<SwapchainImage>& images() const { return images_; }
 
     uint32 acquire_next_image(const vk::raii::Semaphore& semaphore) const;
+
     uint32 copy(
       const Image& image,
       const CommandBuffer& cmd_buffer,
       const vk::raii::Semaphore& semaphore
     ) const;
+
     void present(uint32 image, const vk::raii::Semaphore& semaphore) const;
 
     vk::Extent2D extent() const {
@@ -55,7 +54,6 @@ namespace lisa::graphics {
     }
 
   private:
-    vk::raii::SwapchainKHR swapchain_ = nullptr;
     ImageFormat color_format_{vk::Format::eUndefined};
     vk::ColorSpaceKHR color_space_;
 

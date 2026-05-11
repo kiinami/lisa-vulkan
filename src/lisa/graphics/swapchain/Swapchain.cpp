@@ -51,14 +51,14 @@ namespace lisa::graphics {
       .presentMode = vk::PresentModeKHR::eFifo
     };
 
-    swapchain_ = vk::raii::SwapchainKHR(device, swapchain_ci);
-    logging::debug("Swapchain created");
+    set({device, swapchain_ci});
+    if constexpr (build::debug) logging::debug("Swapchain created");
 
     vec3 size_vec{
       static_cast<float>(extent.width), static_cast<float>(extent.height), 1.0f
     };
 
-    for (const auto img : swapchain_.getImages())
+    for (const auto img : object_.getImages())
       images_.emplace_back(
         img,
         color_format_,
@@ -66,13 +66,14 @@ namespace lisa::graphics {
         vk::ImageUsageFlagBits::eColorAttachment |
           vk::ImageUsageFlagBits::eTransferDst
       );
-    logging::debug("Got {} images from the swapchain", images_.size());
+    if constexpr (build::debug)
+      logging::debug("Got {} images from the swapchain", images_.size());
   }
 
   uint32
     Swapchain::acquire_next_image(const vk::raii::Semaphore& semaphore) const {
     const vk::AcquireNextImageInfoKHR info{
-      .swapchain = swapchain_,
+      .swapchain = handle(),
       .timeout = UINT64_MAX,
       .semaphore = semaphore,
       .deviceMask = 1
@@ -190,7 +191,7 @@ namespace lisa::graphics {
       .waitSemaphoreCount = 1,
       .pWaitSemaphores = &*semaphore,
       .swapchainCount = 1,
-      .pSwapchains = &(*swapchain_),
+      .pSwapchains = &handle(),
       .pImageIndices = &image
     };
 
