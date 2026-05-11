@@ -138,6 +138,8 @@ src = files(
 
     'src/lisa/graphics/pipeline/ShaderModule.h',
     'src/lisa/graphics/pipeline/ShaderModule.cpp',
+    'src/lisa/graphics/pipeline/PipelineLayout.h',
+    'src/lisa/graphics/pipeline/PipelineLayout.cpp',
     'src/lisa/graphics/pipeline/Pipeline.h',
     'src/lisa/graphics/pipeline/Pipeline.cpp',
 
