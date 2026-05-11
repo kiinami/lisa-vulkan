@@ -327,9 +327,8 @@ namespace lisa::scene::xml {
 
   void load(const path& filepath, const mat4& transform, const str& parent_id) {
     const auto result = rfl::xml::read<Scene>(read_file(filepath));
-    const auto id = parent_id == ""
-                      ? logging::genid(filepath)
-                      : logging::genid(parent_id, filepath.string());
+    const auto id =
+      parent_id == "" ? "scene" : logging::genid(parent_id, filepath.string());
     if (!result)
       logging::abort("Failed to parse XML scene: {}", result.error().what());
 
