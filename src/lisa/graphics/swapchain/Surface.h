@@ -13,18 +13,13 @@
 
 namespace lisa::graphics {
 
-  class Surface {
+  class Surface : public VkObject<vk::raii::SurfaceKHR> {
   public:
     Surface(
       const window::Window& window,
       const Instance& instance,
       const PhysicalDevice& physical_device
     );
-    ~Surface() = default;
-
-    operator const vk::raii::SurfaceKHR&() const { return surface_; }
-
-    operator const vk::SurfaceKHR&() const { return *surface_; }
 
     const vk::SurfaceCapabilitiesKHR& capabilities() const {
       return capabilities_;
@@ -34,7 +29,6 @@ namespace lisa::graphics {
       image_format(const vk::raii::PhysicalDevice& device) const;
 
   private:
-    vk::raii::SurfaceKHR surface_{nullptr};
     vk::SurfaceCapabilitiesKHR capabilities_;
   };
 
