@@ -16,8 +16,8 @@ namespace lisa::graphics {
     const Instance& instance,
     const PhysicalDevice& physical_device,
     const LogicalDevice& device
-  ) :
-    allocator_(
+  ) {
+    set(
       vma::raii::Allocator{
         instance,
         device,
@@ -25,7 +25,7 @@ namespace lisa::graphics {
           {vma::AllocatorCreateFlagBits::eBufferDeviceAddress}, physical_device
         }
       }
-    ) {
+    );
     if constexpr (build::debug) logging::debug("Memory allocator created");
   }
 
@@ -33,13 +33,13 @@ namespace lisa::graphics {
     const vk::ImageCreateInfo& image_ci,
     const vma::AllocationCreateInfo& allocation_ci
   ) const {
-    return allocator_.createImage(image_ci, allocation_ci);
+    return object_.createImage(image_ci, allocation_ci);
   }
 
   vma::raii::Buffer MemoryAllocator::create_buffer(
     const vk::BufferCreateInfo& buffer_ci,
     const vma::AllocationCreateInfo& allocation_ci
   ) const {
-    return allocator_.createBuffer(buffer_ci, allocation_ci);
+    return object_.createBuffer(buffer_ci, allocation_ci);
   }
 }
