@@ -63,10 +63,12 @@ namespace lisa::resources {
   }
 
   void Texture::setup() {
-    sampler_ = graphics::Sampler(static_cast<float>(image_.mipmaps()));
+    sampler_ = graphics::Sampler(
+      logging::genid(id, "sampler"), static_cast<float>(image_.mipmaps())
+    );
 
     const vk::DescriptorImageInfo image_info{
-      .sampler = *sampler_,
+      .sampler = sampler_.handle(),
       .imageView = image_.view(
         {.type = vk::ImageViewType::e2D,
          .format = image_.format(),

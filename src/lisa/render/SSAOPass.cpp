@@ -51,10 +51,13 @@ namespace lisa::render {
     pipeline_ = std::make_unique<graphics::Pipeline>(params);
 
     noise_sampler_ = std::make_unique<graphics::Sampler>(
-      1.0f, vk::Filter::eNearest, vk::Filter::eNearest
+      logging::genid(id(), "noise"),
+      1.0f,
+      vk::Filter::eNearest,
+      vk::Filter::eNearest
     );
     const vk::DescriptorImageInfo image_info{
-      **noise_sampler_,
+      noise_sampler_->handle(),
       *noise_image_.view(
         {.type = vk::ImageViewType::e2D,
          .format = noise_image_.format(),
