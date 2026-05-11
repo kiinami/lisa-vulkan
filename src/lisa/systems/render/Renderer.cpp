@@ -30,31 +30,31 @@ namespace lisa::systems::render {
     };
     for (size i = 0; i < graphics::constants::MAX_FRAMES_IN_FLIGHT; i++) {
       global_data_buffers_[i] = graphics::Buffer(
-        logging::genid("graph", "frames[" + std::to_string(i) + "]", "global_data"),
+        logging::genid("graph", "frames", i, "global_data"),
         sizeof(GlobalData),
         usage,
         allocation_ci
       );
       object_data_buffers_[i] = graphics::Buffer(
-        logging::genid("graph", "frames[" + std::to_string(i) + "]", "object_data"),
+        logging::genid("graph", "frames", i, "object_data"),
         sizeof(ObjectData) * graphics::constants::MAX_OBJECTS,
         usage,
         allocation_ci
       );
       point_lights_buffers_[i] = graphics::Buffer(
-        logging::genid("graph", "frames[" + std::to_string(i) + "]", "point_lights"),
+        logging::genid("graph", "frames", i, "point_lights"),
         sizeof(PointLightData) * graphics::constants::MAX_POINT_LIGHTS,
         usage,
         allocation_ci
       );
       dir_lights_buffers_[i] = graphics::Buffer(
-        logging::genid("graph", "frames[" + std::to_string(i) + "]", "dir_lights"),
+        logging::genid("graph", "frames", i, "dir_lights"),
         sizeof(DirLightData) * graphics::constants::MAX_DIR_LIGHTS,
         usage,
         allocation_ci
       );
       ambient_lights_buffers_[i] = graphics::Buffer(
-        logging::genid("graph", "frames[" + std::to_string(i) + "]", "ambient_lights"),
+        logging::genid("graph", "frames", i, "ambient_lights"),
         sizeof(AmbientLightData) * graphics::constants::MAX_AMBIENT_LIGHTS,
         usage,
         allocation_ci
