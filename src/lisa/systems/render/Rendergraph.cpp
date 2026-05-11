@@ -50,7 +50,9 @@ namespace lisa::systems::render {
       );
 
       resource_id_map_[id] = static_cast<GraphResourceHandle>(images_.size());
-      auto image = ImageGraphResource(metadata, size);
+      auto image = ImageGraphResource(
+        logging::genid("graph", "resources", id), metadata, size
+      );
       images_.push_back(std::move(image));
     }
   }
