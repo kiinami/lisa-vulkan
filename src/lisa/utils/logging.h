@@ -62,29 +62,42 @@ namespace lisa::logging {
   }
 
   namespace detail {
-    inline str format_part(const str& s) { return s; }
+    struct Part {
+      str value;
+      bool is_bracket;
+    };
 
-    inline str format_part(const char* s) { return str(s); }
+    inline Part format_part(const str& s) { return {s, false}; }
 
-    inline str format_part(const int i) { return std::to_string(i); }
+    inline Part format_part(const char* s) { return {str(s), false}; }
 
-    inline str format_part(const std::filesystem::path& p) {
-      return "[" + p.filename().generic_string() + "]";
+    inline Part format_part(const int i) {
+      return {"[" + std::to_string(i) + "]", true};
+    }
+
+    inline Part format_part(const size_t i) {
+      return {"[" + std::to_string(i) + "]", true};
+    }
+
+    inline Part format_part(const std::filesystem::path& p) {
+      return {"[" + p.filename().generic_string() + "]", true};
     }
   }
 
   template<typename... Args> str genid(Args&&... args) {
     str result;
+    bool last_was_bracket = false;
     bool is_first = true;
 
     auto append = [&](const auto& arg) {
-      if (!is_first) result += "::";
-      result += detail::format_part(arg);
+      auto part = detail::format_part(arg);
+      if (!is_first && !part.is_bracket) result += "::";
+      result += part.value;
+      last_was_bracket = part.is_bracket;
       is_first = false;
     };
 
     (append(std::forward<Args>(args)), ...);
-
     return result;
   }
 }
