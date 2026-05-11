@@ -68,7 +68,7 @@ namespace lisa::graphics {
     for (const auto& [stage, entry_point] : params.shader.stages()) {
       shader_stages.push_back(
         vk::PipelineShaderStageCreateInfo{
-          .stage = stage, .module = params.shader.module(), .pName = entry_point
+          .stage = stage, .module = params.shader.handle(), .pName = entry_point
         }
       );
     }

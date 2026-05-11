@@ -44,7 +44,7 @@ namespace lisa::render {
           .offset = 0,
           .size = sizeof(ConvolutionalPushConstants)
         },
-      .shader = *shader(),
+      .shader = shader()->module(),
       .vertex_input = false,
       .color_attachment_formats = vector<vk::Format>{output_format},
       .depth_test_write = false,

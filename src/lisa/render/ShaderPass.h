@@ -25,7 +25,7 @@ namespace lisa::render {
       auto p = resources::Shader::SHADERS_PATH / shader_path;
       shader_id_ = resources::context::manager()
                      .add<resources::Shader, resources::ShaderSpec>(
-                       shader_path.string(), p
+                       logging::genid(id(), shader_path), p
                      );
       resources::context::manager().load<resources::Shader>(shader_id_);
     }

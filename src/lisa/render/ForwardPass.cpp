@@ -38,7 +38,7 @@ namespace lisa::render {
           .offset = 0,
           .size = sizeof(systems::render::PushConstants)
         },
-      .shader = *shader(),
+      .shader = shader()->module(),
       .color_attachment_formats = vector<vk::Format>{color_format},
       .depth_test_write = true,
       .depth_attachment_format = depth_format
