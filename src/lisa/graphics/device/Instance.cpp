@@ -4,6 +4,7 @@
 
 #include "Instance.h"
 
+#include "build.h"
 #include "graphics/constants.h"
 #include "utils/chk.h"
 #include "utils/logging.h"
@@ -46,9 +47,8 @@ namespace lisa::graphics {
     ));
     set(vk::raii::Instance(ctx, instance));
 
-    if (logging::debug_enabled()) add_debug_messenger();
-
-    logging::debug("Vulkan instance initiated");
+    if constexpr (build::debug) add_debug_messenger();
+    if constexpr (build::debug) logging::debug("Vulkan instance initiated");
   }
 
   PhysicalDevice Instance::pick_physical_device() const {
@@ -77,7 +77,7 @@ namespace lisa::graphics {
 
     logging::abort("Failed to find a suitable GPU");
   }
-  
+
   bool Instance::supports_profile() {
     auto supported = vk::False;
 
@@ -93,7 +93,7 @@ namespace lisa::graphics {
     vector<const char*> extensions(
       sdl_extensions.begin(), sdl_extensions.end()
     );
-    if (logging::debug_enabled())
+    if constexpr (build::debug)
       extensions.push_back(vk::EXTDebugUtilsExtensionName);
     return extensions;
   }

@@ -61,7 +61,7 @@ namespace lisa::graphics {
   }
 
   vk::DeviceAddress Buffer::address() const {
-    const vk::BufferDeviceAddressInfo buffer_device_ai{.buffer = object_};
+    const vk::BufferDeviceAddressInfo buffer_device_ai{.buffer = handle()};
     return context::device()->getBufferAddress(buffer_device_ai);
   }
 
