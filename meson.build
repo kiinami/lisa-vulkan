@@ -101,8 +101,12 @@ src = files(
     'src/lisa/build.h',
     'src/lisa/implementations.cpp',
 
-    'src/lisa/graphics/context.h',
-    'src/lisa/graphics/context.cpp',
+    'src/lisa/graphics/vk/VkObject.h',
+    'src/lisa/graphics/vk/VkObject.cpp',
+    'src/lisa/graphics/vk/NamedVkObject.h',
+    'src/lisa/graphics/vk/NamedVkObject.cpp',
+    'src/lisa/graphics/vk/VkEnum.h',
+    'src/lisa/graphics/vk/VkEnum.cpp',
 
     'src/lisa/graphics/buffer/Buffer.h',
     'src/lisa/graphics/buffer/Buffer.cpp',
@@ -145,10 +149,8 @@ src = files(
     'src/lisa/graphics/sync/Semaphore.h',
     'src/lisa/graphics/sync/Semaphore.cpp',
 
-    'src/lisa/graphics/vk/VkObject.h',
-    'src/lisa/graphics/vk/VkObject.cpp',
-    'src/lisa/graphics/vk/NamedVkObject.h',
-    'src/lisa/graphics/vk/NamedVkObject.cpp',
+    'src/lisa/graphics/context.h',
+    'src/lisa/graphics/context.cpp',
 
     'src/lisa/resources/context.h',
     'src/lisa/resources/context.cpp',

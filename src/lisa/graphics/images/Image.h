@@ -35,7 +35,7 @@ namespace lisa::graphics {
       };
 
       hashCombine(static_cast<uint32>(d.type));
-      hashCombine(static_cast<uint32>(d.format));
+      hashCombine(d.format.raw());
 
       hashCombine(static_cast<uint32>(d.range.aspectMask));
       hashCombine(d.range.baseMipLevel);
