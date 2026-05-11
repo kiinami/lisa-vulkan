@@ -102,6 +102,7 @@ namespace lisa::graphics {
 
   protected:
     mutable umap<ImageViewDesc, vk::raii::ImageView, ImageViewDescHash> views_;
+    mutable umap<ImageViewDesc, str, ImageViewDescHash> view_debug_names_;
 
     vec3 size_;
     uint32 mips_ = 1;
