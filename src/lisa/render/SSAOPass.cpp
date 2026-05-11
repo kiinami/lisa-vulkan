@@ -48,7 +48,7 @@ namespace lisa::render {
       .color_attachment_formats = vector<vk::Format>{ssao_fmt},
       .depth_test_write = false,
     };
-    pipeline_ = std::make_unique<graphics::Pipeline>(params);
+    pipeline_ = std::make_unique<graphics::Pipeline>(id(), params);
 
     noise_sampler_ = std::make_unique<graphics::Sampler>(
       logging::genid(id(), "noise"),
@@ -69,7 +69,7 @@ namespace lisa::render {
   }
 
   void SSAOPass::execute(const systems::render::RenderContext& ctx) {
-    ctx.cmdb->bindPipeline(vk::PipelineBindPoint::eGraphics, **pipeline_);
+    ctx.cmdb->bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline_->handle());
 
     ctx.cmdb->bindDescriptorSets(
       vk::PipelineBindPoint::eGraphics,

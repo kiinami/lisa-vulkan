@@ -39,11 +39,11 @@ namespace lisa::render {
       .depth_test_write = true,
       .depth_attachment_format = depth_fmt
     };
-    pipeline_ = std::make_unique<graphics::Pipeline>(params);
+    pipeline_ = std::make_unique<graphics::Pipeline>(id(), params);
   }
 
   void DepthPass::execute(const systems::render::RenderContext& ctx) {
-    ctx.cmdb->bindPipeline(vk::PipelineBindPoint::eGraphics, **pipeline_);
+    ctx.cmdb->bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline_->handle());
     ctx.cmdb->bindDescriptorSets(
       vk::PipelineBindPoint::eGraphics,
       pipeline_->layout(),

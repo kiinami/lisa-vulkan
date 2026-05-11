@@ -14,7 +14,7 @@
 
 namespace lisa::graphics {
 
-  class Pipeline {
+  class Pipeline : public NamedVkObject<vk::raii::Pipeline> {
   public:
     struct CreateParameters {
       vk::DescriptorSetLayout descriptor_set_layout =
@@ -30,20 +30,12 @@ namespace lisa::graphics {
       vk::CompareOp depth_compare_op = vk::CompareOp::eLessOrEqual;
     };
 
-    explicit Pipeline(CreateParameters params);
-    ~Pipeline() = default;
-
-    operator const vk::raii::Pipeline&() { return pipeline_; }
-
-    operator vk::Pipeline() const { return *pipeline_; }
-
-    vk::Pipeline operator*() const { return *pipeline_; }
+    explicit Pipeline(const str& id, CreateParameters params);
 
     const vk::raii::PipelineLayout& layout() const { return layout_; }
 
   private:
     vk::raii::PipelineLayout layout_ = nullptr;
-    vk::raii::Pipeline pipeline_ = nullptr;
 
     static vk::raii::PipelineLayout create_layout(
       vk::DescriptorSetLayout descriptor_set_layout,
