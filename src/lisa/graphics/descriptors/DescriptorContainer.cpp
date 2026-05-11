@@ -53,6 +53,7 @@ namespace lisa::graphics {
 
   Sampler DescriptorContainer::create_dummy_sampler() {
     return Sampler(
+      "descriptor_dummy_sampler", // TODO: add ID
       0.0f,
       vk::Filter::eNearest,
       vk::Filter::eNearest,
@@ -104,7 +105,7 @@ namespace lisa::graphics {
       }
     };
     const vk::DescriptorImageInfo null_info{
-      .sampler = *dummy_sampler_,
+      .sampler = dummy_sampler_.handle(),
       .imageView = *dummy_image_.view(dummy_view_desc),
       .imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal,
     };

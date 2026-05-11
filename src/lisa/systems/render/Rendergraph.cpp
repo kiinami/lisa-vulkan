@@ -17,7 +17,10 @@
 namespace lisa::systems::render {
   Rendergraph::Rendergraph(const path& filepath) {
     shared_sampler_ = std::make_unique<graphics::Sampler>(
-      1.0f, vk::Filter::eNearest, vk::Filter::eNearest
+      logging::genid("rendergraph_shared_sampler"), // TODO: add ID
+      1.0f,
+      vk::Filter::eNearest,
+      vk::Filter::eNearest
     );
 
     const auto doc = utils::xml::read(filepath, "rendergraph");
@@ -130,7 +133,7 @@ namespace lisa::systems::render {
           exec_node.depth_attachment = attachment;
         } else if (usage == SampledFragment) {
           const vk::DescriptorImageInfo img_info{
-            **shared_sampler_,
+            shared_sampler_->handle(),
             *img.image.view(
               {vk::ImageViewType::e2D, img.format(), {img.aspect(), 0, 1, 0, 1}}
             ),
