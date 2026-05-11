@@ -168,7 +168,7 @@ namespace lisa::resources {
     cmdb->pipelineBarrier2(dependency_i);
 
     vector<vk::BufferImageCopy> copy_regions;
-    for (auto i = 0; i < texture->numLevels; i++) {
+    for (uint32 i = 0; i < texture->numLevels; i++) {
       ktx_size_t offset = 0;
       ktxTexture2_GetImageOffset(texture, i, 0, 0, &offset);
 
@@ -176,7 +176,7 @@ namespace lisa::resources {
         .bufferOffset = offset,
         .imageSubresource =
           {.aspectMask = vk::ImageAspectFlagBits::eColor,
-           .mipLevel = static_cast<uint32>(i),
+           .mipLevel = i,
            .layerCount = 1},
         .imageExtent = {
           .width = std::max(1u, texture->baseWidth >> i),

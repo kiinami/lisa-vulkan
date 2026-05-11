@@ -200,7 +200,7 @@ namespace lisa::scene::gltf {
       const auto mesh_id =
         logging::genid(id_, "meshes", node.meshIndex.value());
 
-      for (auto i = 0; i < mesh.primitives.size(); i++) {
+      for (size i = 0; i < mesh.primitives.size(); i++) {
         const auto& p = mesh.primitives[i];
         const auto p_id = logging::genid(mesh_id, "primitives", i);
 
