@@ -5,8 +5,9 @@
 #ifndef LISA_VULKAN_PIPELINE_H
 #define LISA_VULKAN_PIPELINE_H
 
-#include "graphics/descriptors/DescriptorContainer.h"
+#include "PipelineLayout.h"
 #include "graphics/context.h"
+#include "graphics/descriptors/DescriptorContainer.h"
 #include "resources/Shader.h"
 #include "utils/common.h"
 
@@ -35,7 +36,7 @@ namespace lisa::graphics {
     const vk::raii::PipelineLayout& layout() const { return layout_; }
 
   private:
-    vk::raii::PipelineLayout layout_ = nullptr;
+    PipelineLayout layout_;
 
     static vk::raii::PipelineLayout create_layout(
       vk::DescriptorSetLayout descriptor_set_layout,

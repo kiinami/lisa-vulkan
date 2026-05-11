@@ -6,26 +6,16 @@
 
 #include "graphics/context.h"
 #include "resources/Vertex.h"
+#include "utils/logging.h"
 
 namespace lisa::graphics {
-  vk::raii::PipelineLayout Pipeline::create_layout(
-    vk::DescriptorSetLayout descriptor_set_layout,
-    vk::PushConstantRange push_constant_range
-  ) {
-    const vk::PipelineLayoutCreateInfo layout_ci{
-      .setLayoutCount = 1,
-      .pSetLayouts = &descriptor_set_layout,
-      .pushConstantRangeCount = 1,
-      .pPushConstantRanges = &push_constant_range
-    };
-    return context::device()->createPipelineLayout(layout_ci);
-  }
-
   Pipeline::Pipeline(const str& id, CreateParameters params) :
-    NamedVkObject(id) {
-    layout_ =
-      create_layout(params.descriptor_set_layout, params.push_constant_range);
-
+    NamedVkObject(id),
+    layout_(
+      logging::genid(id, "layout"),
+      params.descriptor_set_layout,
+      params.push_constant_range
+    ) {
     vk::PipelineVertexInputStateCreateInfo vertex_input_state{
       .vertexBindingDescriptionCount = 0u,
       .pVertexBindingDescriptions = nullptr,
