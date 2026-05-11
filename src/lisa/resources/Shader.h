@@ -4,12 +4,12 @@
 
 #ifndef LISA_VULKAN_SHADER_H
 #define LISA_VULKAN_SHADER_H
+#include "graphics/pipeline/ShaderModule.h"
 #include "systems/resources/Resource.h"
 #include "utils/common.h"
 
 #include <slang/slang-com-helper.h>
 #include <slang/slang-com-ptr.h>
-#include <vulkan/vulkan_raii.hpp>
 
 namespace lisa::resources {
 
@@ -17,22 +17,18 @@ namespace lisa::resources {
   public:
     inline static const path SHADERS_PATH = "src/lisa/shaders";
 
-    struct ShaderStage {
-      vk::ShaderStageFlagBits stage;
-      const char* entry_point;
-    };
-
     explicit Shader(const str& id, const path& filepath);
 
-    const vk::raii::ShaderModule& module() const { return module_; }
+    const graphics::ShaderModule& module() const { return module_; }
 
-    const vector<ShaderStage>& stages() const { return stages_; }
+    const vector<graphics::ShaderStage>& stages() const {
+      return module_.stages();
+    }
 
     void unload() override {}
 
   private:
-    vk::raii::ShaderModule module_ = nullptr;
-    vector<ShaderStage> stages_;
+    graphics::ShaderModule module_;
 
     static const Slang::ComPtr<slang::IGlobalSession>& get_global_session();
     static Slang::ComPtr<slang::ISession> create_session();

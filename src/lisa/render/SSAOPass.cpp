@@ -43,7 +43,7 @@ namespace lisa::render {
           .offset = 0,
           .size = sizeof(SSAOPushConstants)
         },
-      .shader = *shader(),
+      .shader = shader()->module(),
       .vertex_input = false,
       .color_attachment_formats = vector<vk::Format>{ssao_fmt},
       .depth_test_write = false,
@@ -51,7 +51,7 @@ namespace lisa::render {
     pipeline_ = std::make_unique<graphics::Pipeline>(id(), params);
 
     noise_sampler_ = std::make_unique<graphics::Sampler>(
-      logging::genid(id(), "noise"),
+      logging::genid(id(), "noise", "sampler"),
       1.0f,
       vk::Filter::eNearest,
       vk::Filter::eNearest

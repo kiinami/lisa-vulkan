@@ -60,7 +60,7 @@ namespace lisa::render {
           .offset = 0,
           .size = sizeof(systems::render::PushConstants)
         },
-      .shader = *shader(),
+      .shader = shader()->module(),
       .color_attachment_formats =
         vector<vk::Format>{albedo_fmt, normal_fmt, position_fmt, material_fmt},
       .depth_attachment_format = depth_fmt,

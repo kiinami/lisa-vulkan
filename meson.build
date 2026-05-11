@@ -136,6 +136,8 @@ src = files(
     'src/lisa/graphics/memory/MemoryAllocator.h',
     'src/lisa/graphics/memory/MemoryAllocator.cpp',
 
+    'src/lisa/graphics/pipeline/ShaderModule.h',
+    'src/lisa/graphics/pipeline/ShaderModule.cpp',
     'src/lisa/graphics/pipeline/Pipeline.h',
     'src/lisa/graphics/pipeline/Pipeline.cpp',
 

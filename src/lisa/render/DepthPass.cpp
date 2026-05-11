@@ -34,7 +34,7 @@ namespace lisa::render {
           .offset = 0,
           .size = sizeof(systems::render::PushConstants)
         },
-      .shader = *shader(),
+      .shader = shader()->module(),
       .position_only = true,
       .depth_test_write = true,
       .depth_attachment_format = depth_fmt

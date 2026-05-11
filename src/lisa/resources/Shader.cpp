@@ -87,16 +87,11 @@ namespace lisa::resources {
     Slang::ComPtr<ISlangBlob> diagnostics;
     program->getTargetCode(0, spirv.writeRef(), diagnostics.writeRef());
 
-    const vk::ShaderModuleCreateInfo module_ci{
-      .codeSize = spirv->getBufferSize(),
-      .pCode = (uint32*) spirv->getBufferPointer()
-    };
-    module_ = graphics::context::device()->createShaderModule(module_ci);
-
     slang::ShaderReflection* reflection = program->getLayout();
     const uint32 entry_point_count = reflection->getEntryPointCount();
 
-    stages_.reserve(entry_point_count);
+    vector<graphics::ShaderStage> stages;
+    stages.reserve(entry_point_count);
 
     for (uint32 i = 0; i < entry_point_count; i++) {
       slang::EntryPointReflection* entry_point =
@@ -127,7 +122,11 @@ namespace lisa::resources {
           );
       }
 
-      stages_.push_back({.stage = vk_stage, .entry_point = entry_name});
+      stages.push_back({.stage = vk_stage, .entry_point = entry_name});
     }
+
+    module_ = graphics::ShaderModule(
+      id, spirv->getBufferSize(), (uint32*) spirv->getBufferPointer(), stages
+    );
   }
 }

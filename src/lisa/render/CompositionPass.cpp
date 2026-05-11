@@ -31,7 +31,7 @@ namespace lisa::render {
           .offset = 0,
           .size = sizeof(CompositionPushConstants)
         },
-      .shader = *shader(),
+      .shader = shader()->module(),
       .vertex_input = false,
       .color_attachment_formats = vector<vk::Format>{final_fmt},
       .depth_test_read = false,

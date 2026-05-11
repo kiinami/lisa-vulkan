@@ -20,7 +20,7 @@ namespace lisa::graphics {
       vk::DescriptorSetLayout descriptor_set_layout =
         context::descriptor_container().layout();
       vk::PushConstantRange push_constant_range;
-      const resources::Shader& shader;
+      const ShaderModule& shader;
       bool vertex_input = true;
       bool position_only = false;
       const vector<vk::Format>& color_attachment_formats = {};
