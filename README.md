@@ -15,6 +15,7 @@ Hobby rendering engine in Vulkan
 - Multiple light types
 - Strong assets pipeline
 - FPS-style camera movement and rotation with keyboard and mouse
+- Robust debugging framework, with logging, validation layers, debug markers and names, and more
 
 ## Building
 
