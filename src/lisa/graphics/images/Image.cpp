@@ -65,6 +65,24 @@ namespace lisa::graphics {
     auto newView = context::device().create_image_view(view_ci);
     auto [it, inserted] = views_.emplace(desc, std::move(newView));
 
+    if constexpr (build::debug) {
+      const auto& view = it->second;
+
+      const auto handle = static_cast<vk::raii::ImageView::CType>(*view);
+      uint64_t vk_handle;
+      std::memcpy(&vk_handle, &handle, sizeof(handle));
+
+      view_debug_names_[desc] = logging::genid(id(), "view");
+
+      const vk::DebugUtilsObjectNameInfoEXT name_info{
+        .objectType = view.objectType,
+        .objectHandle = vk_handle,
+        .pObjectName = view_debug_names_[desc].c_str()
+      };
+
+      context::device()->setDebugUtilsObjectNameEXT(name_info);
+    }
+
     return it->second;
   }
 
