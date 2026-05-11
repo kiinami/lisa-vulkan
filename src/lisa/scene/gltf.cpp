@@ -47,8 +47,7 @@ namespace lisa::scene::gltf {
         );
 
       asset_ = *std::move(asset);
-      id_ = parent_id == "" ? logging::genid(filepath)
-                            : logging::genid(parent_id, filepath);
+      id_ = parent_id == "" ? "scene" : logging::genid(parent_id, filepath);
     }
 
     size select_scene(const fastgltf::Asset& asset) {
