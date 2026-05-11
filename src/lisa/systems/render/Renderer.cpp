@@ -30,28 +30,31 @@ namespace lisa::systems::render {
     };
     for (size i = 0; i < graphics::constants::MAX_FRAMES_IN_FLIGHT; i++) {
       global_data_buffers_[i] = graphics::Buffer(
-        "global_data", sizeof(GlobalData), usage, allocation_ci
+        logging::genid("graph", "buffers", "global_data", i),
+        sizeof(GlobalData),
+        usage,
+        allocation_ci
       );
       object_data_buffers_[i] = graphics::Buffer(
-        "object_data",
+        logging::genid("graph", "buffers", "object_data", i),
         sizeof(ObjectData) * graphics::constants::MAX_OBJECTS,
         usage,
         allocation_ci
       );
       point_lights_buffers_[i] = graphics::Buffer(
-        "point_lights",
+        logging::genid("graph", "buffers", "point_lights", i),
         sizeof(PointLightData) * graphics::constants::MAX_POINT_LIGHTS,
         usage,
         allocation_ci
       );
       dir_lights_buffers_[i] = graphics::Buffer(
-        "dir_lights",
+        logging::genid("graph", "buffers", "dir_lights", i),
         sizeof(DirLightData) * graphics::constants::MAX_DIR_LIGHTS,
         usage,
         allocation_ci
       );
       ambient_lights_buffers_[i] = graphics::Buffer(
-        "ambient_lights",
+        logging::genid("graph", "buffers", "ambient_lights", i),
         sizeof(AmbientLightData) * graphics::constants::MAX_AMBIENT_LIGHTS,
         usage,
         allocation_ci
@@ -203,19 +206,25 @@ namespace lisa::systems::render {
             std::numeric_limits<uint32>::max();
           object_data[i].normal_texture_index =
             std::numeric_limits<uint32>::max();
-          if (const auto res = material_component->albedo_texture();
-              res != nullptr)
+          if (
+            const auto res = material_component->albedo_texture();
+            res != nullptr
+          )
             object_data[i].diffuse_texture_index = res->descriptor_index();
-          if (const auto res = material_component->roughness_texture();
-              res != nullptr
+          if (
+            const auto res = material_component->roughness_texture();
+            res != nullptr
           )
             object_data[i].roughness_texture_index = res->descriptor_index();
-          if (const auto res = material_component->metallic_texture();
-              res != nullptr
+          if (
+            const auto res = material_component->metallic_texture();
+            res != nullptr
           )
             object_data[i].metallic_texture_index = res->descriptor_index();
-          if (const auto res = material_component->normal_texture();
-              res != nullptr)
+          if (
+            const auto res = material_component->normal_texture();
+            res != nullptr
+          )
             object_data[i].normal_texture_index = res->descriptor_index();
         } else {
           object_data[i].color = vec4(1.0f);

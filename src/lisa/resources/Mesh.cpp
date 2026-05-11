@@ -25,7 +25,7 @@ namespace lisa::resources {
     index_count_ = static_cast<uint32>(indices.size());
 
     vertex_buffer_ = graphics::Buffer::from_data(
-      "vertex_buffer",
+      logging::genid(id, "vertices"),
       cmdb,
       vertices.data(),
       sizeof(Vertex) * vertices.size(),
@@ -35,7 +35,7 @@ namespace lisa::resources {
     );
 
     index_buffer_ = graphics::Buffer::from_data(
-      "index_buffer",
+      logging::genid(id, "indices"),
       cmdb,
       indices.data(),
       sizeof(uint32) * indices.size(),

@@ -17,7 +17,7 @@
 namespace lisa::systems::render {
   Rendergraph::Rendergraph(const path& filepath) {
     shared_sampler_ = std::make_unique<graphics::Sampler>(
-      logging::genid("rendergraph_shared_sampler"), // TODO: add ID
+      logging::genid("graph", "sampler"),
       1.0f,
       vk::Filter::eNearest,
       vk::Filter::eNearest

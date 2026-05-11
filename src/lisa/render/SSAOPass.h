@@ -41,8 +41,8 @@ namespace lisa::render {
     uptr<graphics::Sampler> noise_sampler_;
     DescriptorIndex noise_idx_ = 0;
 
-    static graphics::Buffer generate_kernel(uint32 size);
-    static graphics::Image generate_noise(uint32 size);
+    graphics::Buffer generate_kernel(uint32 size);
+    graphics::Image generate_noise(uint32 size);
   };
 
 }
