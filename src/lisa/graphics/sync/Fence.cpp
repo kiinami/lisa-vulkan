@@ -9,15 +9,17 @@
 
 namespace lisa::graphics {
   Fence::Fence() {
-    vk::FenceCreateInfo create_info{
+    const vk::FenceCreateInfo create_info{
       .flags = vk::FenceCreateFlagBits::eSignaled
     };
-    fence_ = context::device()->createFence(create_info);
+    set(context::device()->createFence(create_info));
   }
 
   void Fence::wait() const {
-    utils::chk(context::device()->waitForFences(*fence_, vk::True, UINT64_MAX));
+    utils::chk(
+      context::device()->waitForFences(handle(), vk::True, UINT64_MAX)
+    );
   }
 
-  void Fence::reset() const { context::device()->resetFences(*fence_); }
+  void Fence::reset() const { context::device()->resetFences(handle()); }
 }
