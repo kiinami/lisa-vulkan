@@ -17,7 +17,7 @@ namespace lisa::render {
   void ConvolutionalPass::setup(
     systems::render::Rendergraph& graph, const pugi::xml_node& node
   ) {
-    auto [buffer, size] = kernel_buffer(
+    auto [buffer, size] = generate_kernel_buffer(
       utils::xml::parse<vector<float>>(
         node.find_child_by_attribute("parameter", "id", "kernel")
           .text()
@@ -83,7 +83,7 @@ namespace lisa::render {
   }
 
   pair<graphics::Buffer, uint32>
-    ConvolutionalPass::kernel_buffer(const vector<float>& kernel) {
+    ConvolutionalPass::generate_kernel_buffer(const vector<float>& kernel) {
     const auto sqrt_size = std::sqrt(static_cast<float>(kernel.size()));
     const auto N = static_cast<int>(std::round(sqrt_size));
 
@@ -104,7 +104,7 @@ namespace lisa::render {
 
     return {
       graphics::Buffer::from_data(
-        "convolutional_kernel_buffer",
+        logging::genid(id(), "kernel"),
         normalized_kernel.data(),
         normalized_kernel.size() * sizeof(float),
         vk::BufferUsageFlagBits::eTransferDst |

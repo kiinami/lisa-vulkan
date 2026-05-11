@@ -37,8 +37,8 @@ namespace lisa::render {
     graphics::Buffer kernel_buffer_;
     uint32 kernel_size_;
 
-    static pair<graphics::Buffer, uint32>
-      kernel_buffer(const vector<float>& kernel);
+    pair<graphics::Buffer, uint32>
+      generate_kernel_buffer(const vector<float>& kernel);
   };
 
 }
