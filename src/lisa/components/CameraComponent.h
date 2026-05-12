@@ -16,6 +16,12 @@ namespace lisa::components {
     float near_plane = 0.1f;
     float far_plane = 100.0f;
 
+    void set_aspect_ratio(const float value) {
+      if (aspect_ratio == value) return;
+      aspect_ratio = value;
+      dirty_ = true;
+    }
+
     mat4 projection_matrix() const {
       if (dirty_) {
         matrix_ = glm::perspective(fov, aspect_ratio, near_plane, far_plane);

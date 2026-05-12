@@ -97,8 +97,9 @@ namespace lisa::systems::render {
 
       for (auto [e, transform_c, camera_c] : cameras_view.each()) {
         const auto [width, height] = swapchain_.extent();
-        camera_c.aspect_ratio =
-          static_cast<float>(width) / static_cast<float>(height);
+        camera_c.set_aspect_ratio(
+          static_cast<float>(width) / static_cast<float>(height)
+        );
         global_data->update_camera(transform_c, camera_c);
         break;
       }
