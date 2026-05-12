@@ -3,7 +3,8 @@
 
     <xs:simpleType name="floatList">
         <xs:restriction base="xs:string">
-            <xs:pattern value="[-+]?\d*\.?\d+([eE][-+]?\d+)?([ ,]+[-+]?\d*\.?\d+([eE][-+]?\d+)?)*"/>
+            <xs:pattern
+                    value="\s*[-+]?\d*\.?\d+([eE][-+]?\d+)?(\s+[-+]?\d*\.?\d+([eE][-+]?\d+)?)*\s*|\s*[-+]?\d*\.?\d+([eE][-+]?\d+)?(\s*,\s*[-+]?\d*\.?\d+([eE][-+]?\d+)?)*\s*"/>
         </xs:restriction>
     </xs:simpleType>
 

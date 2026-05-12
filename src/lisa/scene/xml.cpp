@@ -23,14 +23,26 @@
 
 namespace {
   std::vector<float> parse_floats(const std::string& str) {
-    std::stringstream ss(str);
-    std::string token;
     std::vector<float> vals;
-    while (std::getline(ss, token, ',')) {
-      try {
-        vals.push_back(std::stof(token));
-      } catch (...) { return {}; }
+
+    if (str.find(',') != std::string::npos) {
+      std::stringstream ss(str);
+      std::string token;
+      while (std::getline(ss, token, ',')) {
+        try {
+          vals.push_back(std::stof(token));
+        } catch (...) { return {}; }
+      }
+    } else {
+      std::stringstream ss(str);
+      std::string token;
+      while (ss >> token) {
+        try {
+          vals.push_back(std::stof(token));
+        } catch (...) { return {}; }
+      }
     }
+
     return vals;
   }
 }
