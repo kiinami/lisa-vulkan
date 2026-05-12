@@ -91,7 +91,8 @@ namespace lisa::graphics {
       return (raw() & mask) == 0;
     }
 
-    std::string_view to_string() const noexcept {
+    [[nodiscard]]
+    str to_string() const noexcept {
       return vk::to_string(value_);
     }
 

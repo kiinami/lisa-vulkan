@@ -75,11 +75,11 @@ namespace lisa::logging {
       return {"[" + std::to_string(i) + "]", true};
     }
 
-    inline Part format_part(const size_t i) {
+    inline Part format_part(const size i) {
       return {"[" + std::to_string(i) + "]", true};
     }
 
-    inline Part format_part(const std::filesystem::path& p) {
+    inline Part format_part(const path& p) {
       return {"[" + p.filename().generic_string() + "]", true};
     }
   }

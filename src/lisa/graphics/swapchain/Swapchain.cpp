@@ -187,11 +187,12 @@ namespace lisa::graphics {
   void Swapchain::present(
     uint32 image, const vk::raii::Semaphore& semaphore
   ) const {
+    auto h = handle();
     const vk::PresentInfoKHR present_info{
       .waitSemaphoreCount = 1,
       .pWaitSemaphores = &*semaphore,
       .swapchainCount = 1,
-      .pSwapchains = &handle(),
+      .pSwapchains = &h,
       .pImageIndices = &image
     };
 
