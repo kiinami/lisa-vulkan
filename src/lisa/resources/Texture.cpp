@@ -209,6 +209,11 @@ namespace lisa::resources {
   ) {
     int w, h, channels;
 
+    // Keep legacy convention: OBJ/XML UVs expect vertically flipped images.
+    // (Pre-glTF commit did stbi_set_flip_vertically_on_load(true) for all
+    // JPG/PNG.)
+    stbi_set_flip_vertically_on_load(true);
+
     stbi_uc* pixels = stbi_load_from_memory(
       reinterpret_cast<const stbi_uc*>(data.data()),
       data.size(),
