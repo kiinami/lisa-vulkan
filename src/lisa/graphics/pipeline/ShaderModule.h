@@ -10,7 +10,7 @@ namespace lisa::graphics {
 
   struct ShaderStage {
     vk::ShaderStageFlagBits stage;
-    const char* entry_point;
+    str entry_point;
   };
 
   class ShaderModule : public NamedVkObject<vk::raii::ShaderModule> {

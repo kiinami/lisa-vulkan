@@ -74,14 +74,17 @@ namespace lisa::systems::render {
   void Renderer::submit_to_queue(const uint32 swapchain_image_index) const {
     vk::PipelineStageFlags wait_stage =
       vk::PipelineStageFlagBits::eColorAttachmentOutput;
+    auto wait_s_handle = available_s_[current_frame_].handle();
+    auto finished_s_handle = finished_s_[swapchain_image_index].handle();
+    auto cmdbuffer_handle = cmd_buffer_.handle();
     const vk::SubmitInfo submit_info{
       .waitSemaphoreCount = 1,
-      .pWaitSemaphores = &available_s_[current_frame_].handle(),
+      .pWaitSemaphores = &wait_s_handle,
       .pWaitDstStageMask = &wait_stage,
       .commandBufferCount = 1,
-      .pCommandBuffers = &cmd_buffer_.handle(),
+      .pCommandBuffers = &cmdbuffer_handle,
       .signalSemaphoreCount = 1,
-      .pSignalSemaphores = &finished_s_[swapchain_image_index].handle()
+      .pSignalSemaphores = &finished_s_handle
     };
     graphics::context::device().queue().submit(submit_info, fence_.handle());
   }

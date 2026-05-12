@@ -98,7 +98,7 @@ namespace lisa::resources {
         reflection->getEntryPointByIndex(i);
 
       const SlangStage slang_stage = entry_point->getStage();
-      const char* entry_name = entry_point->getNameOverride();
+      str entry_name = entry_point->getNameOverride();
       vk::ShaderStageFlagBits vk_stage;
       switch (slang_stage) {
         case SLANG_STAGE_VERTEX:

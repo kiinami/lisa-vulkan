@@ -102,8 +102,9 @@ namespace lisa::graphics {
     const CommandBuffer& cmd_buffer
   ) const {
     auto fence = object_.createFence({});
+    auto handle = cmd_buffer.handle();
     const vk::SubmitInfo submit_info{
-      .commandBufferCount = 1, .pCommandBuffers = &cmd_buffer.handle()
+      .commandBufferCount = 1, .pCommandBuffers = &handle
     };
     queue_.submit(submit_info, fence);
     utils::chk(object_.waitForFences({fence}, vk::True, UINT64_MAX));
