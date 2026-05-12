@@ -5,6 +5,7 @@
 #ifndef LISA_VULKAN_COMMANDBUFFER_H
 #define LISA_VULKAN_COMMANDBUFFER_H
 
+#include "graphics/vk/VkObject.h"
 #include "utils/common.h"
 
 #include <any>
@@ -12,26 +13,10 @@
 
 namespace lisa::graphics {
 
-  class CommandBuffer {
+  class CommandBuffer : public VkObject<vk::raii::CommandBuffer> {
   public:
-    CommandBuffer(vk::raii::CommandBuffer cmd_buffer) :
-      buffer_(std::move(cmd_buffer)) {}
-
-    ~CommandBuffer() = default;
-
-    vk::raii::CommandBuffer* operator->() { return &buffer_; }
-
-    const vk::raii::CommandBuffer* operator->() const { return &buffer_; }
-
-    operator const vk::raii::CommandBuffer&() const { return buffer_; }
-
-    operator vk::raii::CommandBuffer&() { return buffer_; }
-
-    operator const vk::CommandBuffer&() const { return *buffer_; }
-
-    operator vk::CommandBuffer() { return buffer_; }
-
-    operator const vk::CommandBuffer*() const { return &*buffer_; }
+    explicit CommandBuffer(vk::raii::CommandBuffer&& buf) :
+      VkObject(std::move(buf)) {}
 
     template<typename T> void keep_alive(T&& object) const {
       dependencies_.emplace_back(
@@ -48,7 +33,6 @@ namespace lisa::graphics {
     void end_region() const;
 
   private:
-    vk::raii::CommandBuffer buffer_ = nullptr;
     mutable vector<std::shared_ptr<void>> dependencies_;
   };
 

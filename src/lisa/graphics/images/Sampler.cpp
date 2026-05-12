@@ -8,6 +8,7 @@
 
 namespace lisa::graphics {
   Sampler::Sampler(
+    const str& id,
     const float max_lod,
     const vk::Filter mag_filter,
     const vk::Filter min_filter,
@@ -15,7 +16,8 @@ namespace lisa::graphics {
     const bool anisotropic,
     const float max_anisotropy
   ) :
-    sampler_(
+    NamedVkObject(id) {
+    set(
       context::device()->createSampler(
         {.magFilter = mag_filter,
          .minFilter = min_filter,
@@ -24,5 +26,6 @@ namespace lisa::graphics {
          .maxAnisotropy = max_anisotropy,
          .maxLod = max_lod}
       )
-    ) {}
+    );
+  }
 }

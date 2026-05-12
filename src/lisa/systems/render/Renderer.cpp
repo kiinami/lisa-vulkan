@@ -29,24 +29,32 @@ namespace lisa::systems::render {
       .usage = vma::MemoryUsage::eAuto
     };
     for (size i = 0; i < graphics::constants::MAX_FRAMES_IN_FLIGHT; i++) {
-      global_data_buffers_[i] =
-        graphics::Buffer(sizeof(GlobalData), usage, allocation_ci);
+      global_data_buffers_[i] = graphics::Buffer(
+        logging::genid("graph", "frames", i, "global_data"),
+        sizeof(GlobalData),
+        usage,
+        allocation_ci
+      );
       object_data_buffers_[i] = graphics::Buffer(
+        logging::genid("graph", "frames", i, "object_data"),
         sizeof(ObjectData) * graphics::constants::MAX_OBJECTS,
         usage,
         allocation_ci
       );
       point_lights_buffers_[i] = graphics::Buffer(
+        logging::genid("graph", "frames", i, "point_lights"),
         sizeof(PointLightData) * graphics::constants::MAX_POINT_LIGHTS,
         usage,
         allocation_ci
       );
       dir_lights_buffers_[i] = graphics::Buffer(
+        logging::genid("graph", "frames", i, "dir_lights"),
         sizeof(DirLightData) * graphics::constants::MAX_DIR_LIGHTS,
         usage,
         allocation_ci
       );
       ambient_lights_buffers_[i] = graphics::Buffer(
+        logging::genid("graph", "frames", i, "ambient_lights"),
         sizeof(AmbientLightData) * graphics::constants::MAX_AMBIENT_LIGHTS,
         usage,
         allocation_ci
@@ -66,18 +74,19 @@ namespace lisa::systems::render {
   void Renderer::submit_to_queue(const uint32 swapchain_image_index) const {
     vk::PipelineStageFlags wait_stage =
       vk::PipelineStageFlagBits::eColorAttachmentOutput;
-    const vk::Semaphore wait_semaphore = *available_s_[current_frame_];
-    const vk::Semaphore signal_semaphore = *finished_s_[swapchain_image_index];
+    auto wait_s_handle = available_s_[current_frame_].handle();
+    auto finished_s_handle = finished_s_[swapchain_image_index].handle();
+    auto cmdbuffer_handle = cmd_buffer_.handle();
     const vk::SubmitInfo submit_info{
       .waitSemaphoreCount = 1,
-      .pWaitSemaphores = &wait_semaphore,
+      .pWaitSemaphores = &wait_s_handle,
       .pWaitDstStageMask = &wait_stage,
       .commandBufferCount = 1,
-      .pCommandBuffers = &*cmd_buffer_,
+      .pCommandBuffers = &cmdbuffer_handle,
       .signalSemaphoreCount = 1,
-      .pSignalSemaphores = &signal_semaphore
+      .pSignalSemaphores = &finished_s_handle
     };
-    graphics::context::device().queue().submit(submit_info, *fence_);
+    graphics::context::device().queue().submit(submit_info, fence_.handle());
   }
 
   void Renderer::render() {
@@ -200,19 +209,25 @@ namespace lisa::systems::render {
             std::numeric_limits<uint32>::max();
           object_data[i].normal_texture_index =
             std::numeric_limits<uint32>::max();
-          if (const auto res = material_component->albedo_texture();
-              res != nullptr)
+          if (
+            const auto res = material_component->albedo_texture();
+            res != nullptr
+          )
             object_data[i].diffuse_texture_index = res->descriptor_index();
-          if (const auto res = material_component->roughness_texture();
-              res != nullptr
+          if (
+            const auto res = material_component->roughness_texture();
+            res != nullptr
           )
             object_data[i].roughness_texture_index = res->descriptor_index();
-          if (const auto res = material_component->metallic_texture();
-              res != nullptr
+          if (
+            const auto res = material_component->metallic_texture();
+            res != nullptr
           )
             object_data[i].metallic_texture_index = res->descriptor_index();
-          if (const auto res = material_component->normal_texture();
-              res != nullptr)
+          if (
+            const auto res = material_component->normal_texture();
+            res != nullptr
+          )
             object_data[i].normal_texture_index = res->descriptor_index();
         } else {
           object_data[i].color = vec4(1.0f);

@@ -7,9 +7,11 @@
 #include "ImageFormat.h"
 #include "graphics/buffer/Buffer.h"
 #include "graphics/context.h"
+#include "utils/logging.h"
 
 namespace lisa::graphics {
   Image::Image(
+    const str& id,
     ImageFormat format,
     vk::ImageUsageFlags usage,
     const vec3& size,
@@ -18,6 +20,7 @@ namespace lisa::graphics {
     vk::ImageLayout initial_layout,
     const vma::AllocationCreateInfo& allocation_ci
   ) :
+    NamedVkObject(id),
     size_(size),
     mips_(mips),
     format_(format),
@@ -45,7 +48,7 @@ namespace lisa::graphics {
       .sharingMode = vk::SharingMode::eExclusive,
       .initialLayout = initial_layout_
     };
-    image_ = context::allocator().create_image(image_ci, allocation_ci);
+    set(context::allocator().create_image(image_ci, allocation_ci));
   }
 
   const vk::raii::ImageView& Image::view(const ImageViewDesc& desc) const {
@@ -62,10 +65,29 @@ namespace lisa::graphics {
     auto newView = context::device().create_image_view(view_ci);
     auto [it, inserted] = views_.emplace(desc, std::move(newView));
 
+    if constexpr (build::debug) {
+      const auto& view = it->second;
+
+      const auto handle = static_cast<vk::raii::ImageView::CType>(*view);
+      uint64_t vk_handle;
+      std::memcpy(&vk_handle, &handle, sizeof(handle));
+
+      view_debug_names_[desc] = logging::genid(id(), "view");
+
+      const vk::DebugUtilsObjectNameInfoEXT name_info{
+        .objectType = view.objectType,
+        .objectHandle = vk_handle,
+        .pObjectName = view_debug_names_[desc].c_str()
+      };
+
+      context::device()->setDebugUtilsObjectNameEXT(name_info);
+    }
+
     return it->second;
   }
 
   Image Image::from_data(
+    const str& id,
     const void* data,
     size_t size,
     const vec3& extent,
@@ -75,6 +97,7 @@ namespace lisa::graphics {
     uint32 mip_levels
   ) {
     auto transfer_buffer = Buffer(
+      logging::genid(id, "transfer"),
       size,
       vk::BufferUsageFlagBits::eTransferSrc,
       {.flags = vma::AllocationCreateFlagBits::eMapped |
@@ -84,6 +107,7 @@ namespace lisa::graphics {
     std::memcpy(transfer_buffer.mapped_data(), data, size);
 
     auto image = Image(
+      id,
       format,
       usage |
         vk::ImageUsageFlagBits::eTransferDst |
@@ -222,6 +246,7 @@ namespace lisa::graphics {
   }
 
   Image Image::from_data(
+    const str& id,
     const void* data,
     const size_t size,
     const vec3& extent,
@@ -232,7 +257,8 @@ namespace lisa::graphics {
     const auto cmdb = context::device().cmd_buffer();
     cmdb.begin_onetime();
 
-    auto image = from_data(data, size, extent, format, usage, cmdb, mip_levels);
+    auto image =
+      from_data(id, data, size, extent, format, usage, cmdb, mip_levels);
 
     cmdb->end();
     context::device().submit_cmd_buffer_with_fence(cmdb);

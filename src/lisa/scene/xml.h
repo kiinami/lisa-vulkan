@@ -8,8 +8,12 @@
 
 namespace lisa::scene::xml {
 
-  void load(const path& filepath, const mat4& transform = mat4(1.0f));
+  void load(
+    const path& filepath,
+    const mat4& transform = mat4(1.0f),
+    const str& parent_id = ""
+  );
 
 }
 
-#endif // LISA_VULKAN_XML_H
+#endif // LISA_VULKAN_SCENE_XML_H

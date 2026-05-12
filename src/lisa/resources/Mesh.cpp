@@ -15,14 +15,17 @@
 
 namespace lisa::resources {
   Mesh::Mesh(
+    const str& id,
     const vector<Vertex>& vertices,
     const vector<uint32>& indices,
     const graphics::CommandBuffer& cmdb
-  ) {
+  ) :
+    Resource(id) {
     vertex_count_ = static_cast<uint32>(vertices.size());
     index_count_ = static_cast<uint32>(indices.size());
 
     vertex_buffer_ = graphics::Buffer::from_data(
+      logging::genid(id, "vertices"),
       cmdb,
       vertices.data(),
       sizeof(Vertex) * vertices.size(),
@@ -32,6 +35,7 @@ namespace lisa::resources {
     );
 
     index_buffer_ = graphics::Buffer::from_data(
+      logging::genid(id, "indices"),
       cmdb,
       indices.data(),
       sizeof(uint32) * indices.size(),
@@ -41,7 +45,7 @@ namespace lisa::resources {
     );
   }
 
-  MeshSpec::MeshSpec(const path& filepath) {
+  MeshSpec::MeshSpec(const str& id, const path& filepath) : ResourceSpec(id) {
     const auto ext = filepath.extension().string();
 
     if (ext == ".obj") {
@@ -94,8 +98,9 @@ namespace lisa::resources {
   }
 
   MeshSpec::MeshSpec(
-    const fastgltf::Primitive& p, const fastgltf::Asset& asset
-  ) {
+    const str& id, const fastgltf::Primitive& p, const fastgltf::Asset& asset
+  ) :
+    ResourceSpec(id) {
     auto* pos_attr = p.findAttribute("POSITION");
     auto* norm_attr = p.findAttribute("NORMAL");
     auto* uv_attr = p.findAttribute("TEXCOORD_0");
@@ -177,6 +182,6 @@ namespace lisa::resources {
   }
 
   Mesh MeshSpec::load_resource(const graphics::CommandBuffer& cmdb) {
-    return Mesh(vertices, indices, cmdb);
+    return Mesh(id, vertices, indices, cmdb);
   }
 }

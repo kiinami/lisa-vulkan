@@ -5,36 +5,28 @@
 #ifndef LISA_VULKAN_IMAGEFORMAT_H
 #define LISA_VULKAN_IMAGEFORMAT_H
 
+#include "graphics/vk/VkEnum.h"
 #include "utils/common.h"
 
 #include <vulkan/vulkan_raii.hpp>
 
 namespace lisa::graphics {
 
-  class ImageFormat {
+  class ImageFormat : public VkEnum<vk::Format> {
   public:
-    ImageFormat(const vk::Format format = vk::Format::eUndefined) :
-      format_(format) {}
+    using VkEnum::VkEnum;
 
-    ImageFormat(const VkFormat format = VK_FORMAT_UNDEFINED) :
-      format_(static_cast<vk::Format>(format)) {}
+    explicit ImageFormat(VkFormat format) :
+      VkEnum(static_cast<vk::Format>(format)) {}
 
-    ImageFormat(const ImageFormat&) = default;
-    ImageFormat& operator=(const ImageFormat&) = default;
-    bool operator==(const ImageFormat&) const = default;
+    ImageFormat(vk::Format format = vk::Format::eUndefined) : VkEnum(format) {}
 
-    operator const vk::Format&() const { return format_; }
+    bool is_depth() const noexcept;
+    bool is_stencil() const noexcept;
 
-    const vk::Format* operator*() const { return &format_; }
+    bool is_color() const noexcept { return !is_depth() && !is_stencil(); }
 
-    operator uint32() const { return static_cast<uint32>(format_); }
-
-    bool is_depth() const;
-    bool is_stencil() const;
-    vk::ImageAspectFlags aspect_mask() const;
-
-  private:
-    vk::Format format_;
+    vk::ImageAspectFlags aspect_mask() const noexcept;
   };
 
 }

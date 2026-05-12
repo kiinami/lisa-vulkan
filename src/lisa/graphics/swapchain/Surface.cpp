@@ -4,6 +4,7 @@
 
 #include "Surface.h"
 
+#include "build.h"
 #include "graphics/context.h"
 #include "utils/chk.h"
 #include "window/Window.h"
@@ -17,17 +18,16 @@ namespace lisa::graphics {
     const PhysicalDevice& physical_device
   ) {
     VkSurfaceKHR c_surface;
-    SDL::Vulkan_CreateSurface(window, instance, nullptr, &c_surface);
-    surface_ = vk::raii::SurfaceKHR(instance, c_surface);
-    capabilities_ = physical_device.surface_capabilities(surface_);
+    SDL::Vulkan_CreateSurface(window, instance.handle(), nullptr, &c_surface);
+    set({instance, c_surface});
+    capabilities_ = physical_device.surface_capabilities(object_);
 
-    logging::debug("Surface created");
+    if constexpr (build::debug) logging::debug("Surface created");
   }
 
   pair<ImageFormat, vk::ColorSpaceKHR>
     Surface::image_format(const vk::raii::PhysicalDevice& device) const {
-    for (const auto [format, colorSpace] :
-         device.getSurfaceFormatsKHR(surface_))
+    for (const auto [format, colorSpace] : device.getSurfaceFormatsKHR(object_))
       if (format == vk::Format::eB8G8R8A8Srgb)
         return {ImageFormat(format), colorSpace};
 

@@ -6,6 +6,7 @@
 
 #include "graphics/buffer/Buffer.h"
 #include "graphics/context.h"
+#include "graphics/descriptors/DescriptorContainer.h"
 #include "utils/logging.h"
 #include "utils/path.h"
 
@@ -16,18 +17,22 @@
 
 namespace lisa::resources {
   Texture::Texture(
-    const path& filepath, const graphics::CommandBuffer& cmdb, const int channel
-  ) {
+    const str& id,
+    const path& filepath,
+    const graphics::CommandBuffer& cmdb,
+    const int channel
+  ) :
+    Resource(id) {
     const auto ext = filepath.extension().string();
     if (ext == ".exr") {
-      image_ = load_exr(filepath, cmdb, channel);
+      image_ = load_exr(id, filepath, cmdb, channel);
     } else {
       const auto bytes = utils::read_file(filepath);
 
       if (ext == ".jpg" || ext == ".jpeg" || ext == ".png")
-        image_ = load_jpg(bytes, cmdb, channel);
+        image_ = load_jpg(id, bytes, cmdb, channel);
       else if (ext == ".ktx" || ext == ".ktx2")
-        image_ = load_ktx(bytes, cmdb, channel);
+        image_ = load_ktx(id, bytes, cmdb, channel);
       else {
         logging::error("Unsupported texture format: {}", ext);
         return;
@@ -38,17 +43,19 @@ namespace lisa::resources {
   }
 
   Texture::Texture(
+    const str& id,
     const vector<std::byte>& data,
     const fastgltf::MimeType mime,
     const graphics::CommandBuffer& cmdb,
     const int channel
-  ) {
+  ) :
+    Resource(id) {
     if (mime == fastgltf::MimeType::KTX2)
-      image_ = load_ktx(data, cmdb, channel);
+      image_ = load_ktx(id, data, cmdb, channel);
     else if (
       mime == fastgltf::MimeType::JPEG || mime == fastgltf::MimeType::PNG
     )
-      image_ = load_jpg(data, cmdb, channel);
+      image_ = load_jpg(id, data, cmdb, channel);
     else
       throw std::runtime_error("Unsupported texture format");
 
@@ -56,10 +63,12 @@ namespace lisa::resources {
   }
 
   void Texture::setup() {
-    sampler_ = graphics::Sampler(static_cast<float>(image_.mipmaps()));
+    sampler_ = graphics::Sampler(
+      logging::genid(id, "sampler"), static_cast<float>(image_.mipmaps())
+    );
 
     const vk::DescriptorImageInfo image_info{
-      .sampler = *sampler_,
+      .sampler = sampler_.handle(),
       .imageView = image_.view(
         {.type = vk::ImageViewType::e2D,
          .format = image_.format(),
@@ -77,6 +86,7 @@ namespace lisa::resources {
   }
 
   graphics::Image Texture::load_ktx(
+    const str& id,
     const vector<std::byte>& data,
     const graphics::CommandBuffer& cmdb,
     int channel
@@ -114,6 +124,7 @@ namespace lisa::resources {
     }
 
     auto transfer_buffer = graphics::Buffer(
+      logging::genid(id, "transfer[ktx]"),
       texture->dataSize,
       vk::BufferUsageFlagBits::eTransferSrc,
       {.flags = vma::AllocationCreateFlagBits::eMapped |
@@ -127,6 +138,7 @@ namespace lisa::resources {
     const auto format = graphics::ImageFormat(ktxTexture2_GetVkFormat(texture));
 
     auto image = graphics::Image(
+      logging::genid(id, "[ktx]"),
       format,
       vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled,
       {texture->baseWidth, texture->baseHeight, 1},
@@ -156,7 +168,7 @@ namespace lisa::resources {
     cmdb->pipelineBarrier2(dependency_i);
 
     vector<vk::BufferImageCopy> copy_regions;
-    for (auto i = 0; i < texture->numLevels; i++) {
+    for (uint32 i = 0; i < texture->numLevels; i++) {
       ktx_size_t offset = 0;
       ktxTexture2_GetImageOffset(texture, i, 0, 0, &offset);
 
@@ -164,7 +176,7 @@ namespace lisa::resources {
         .bufferOffset = offset,
         .imageSubresource =
           {.aspectMask = vk::ImageAspectFlagBits::eColor,
-           .mipLevel = static_cast<uint32>(i),
+           .mipLevel = i,
            .layerCount = 1},
         .imageExtent = {
           .width = std::max(1u, texture->baseWidth >> i),
@@ -203,6 +215,7 @@ namespace lisa::resources {
   }
 
   graphics::Image Texture::load_jpg(
+    const str& id,
     const vector<std::byte>& data,
     const graphics::CommandBuffer& cmdb,
     const int channel
@@ -245,6 +258,7 @@ namespace lisa::resources {
       const size buffer_size = width * height * 4;
 
       image = graphics::Image::from_data(
+        logging::genid(id, "[jpg]"),
         pixels,
         buffer_size,
         {static_cast<float>(width), static_cast<float>(height), 1.0f},
@@ -260,6 +274,7 @@ namespace lisa::resources {
         single_channel[i] = pixels[i * 4 + channel];
 
       image = graphics::Image::from_data(
+        logging::genid(id, "[jpg,channel=" + std::to_string(channel) + "]"),
         single_channel.data(),
         single_channel.size(),
         {static_cast<float>(width), static_cast<float>(height), 1.0f},
@@ -276,7 +291,10 @@ namespace lisa::resources {
   }
 
   graphics::Image Texture::load_exr(
-    const path& filepath, const graphics::CommandBuffer& cmdb, const int channel
+    const str& id,
+    const path& filepath,
+    const graphics::CommandBuffer& cmdb,
+    const int channel
   ) {
     float* out_rgba = nullptr;
     int w, h;
@@ -330,6 +348,7 @@ namespace lisa::resources {
                                sizeof(float);
 
       image = graphics::Image::from_data(
+        logging::genid(id, "[exr,channel=" + std::to_string(channel) + "]"),
         out_rgba,
         buffer_size,
         {static_cast<float>(width), static_cast<float>(height), 1.0f},
@@ -349,6 +368,7 @@ namespace lisa::resources {
       }
 
       image = graphics::Image::from_data(
+        id + "::image[exr,single_channel]",
         single_channel.data(),
         single_channel.size() * sizeof(float),
         {static_cast<float>(width), static_cast<float>(height), 1.0f},

@@ -5,6 +5,7 @@
 #include "Swapchain.h"
 
 #include "graphics/context.h"
+#include "graphics/images/Image.h"
 #include "utils/chk.h"
 #include "utils/logging.h"
 #include "window/Window.h"
@@ -13,14 +14,6 @@
 #include <algorithm>
 
 namespace lisa::graphics {
-  SwapchainImage::SwapchainImage(
-    const vk::Image image,
-    const ImageFormat& format,
-    const vec3& size,
-    const vk::ImageUsageFlags usage
-  ) :
-    Image(image, format, size, usage) {}
-
   Swapchain::Swapchain(const Surface& surface, const LogicalDevice& device) {
     const auto [color_format, color_space] =
       surface.image_format(context::physical_device());
@@ -29,14 +22,14 @@ namespace lisa::graphics {
 
     vk::Extent2D extent;
     if (surface.capabilities().currentExtent.width == 0xFFFFFFFF) {
-      auto size = window::context::window().size();
+      auto [x, y] = window::context::window().size();
       extent.width = std::clamp(
-        static_cast<uint32>(size.x),
+        static_cast<uint32>(x),
         surface.capabilities().minImageExtent.width,
         surface.capabilities().maxImageExtent.width
       );
       extent.height = std::clamp(
-        static_cast<uint32>(size.y),
+        static_cast<uint32>(y),
         surface.capabilities().minImageExtent.height,
         surface.capabilities().maxImageExtent.height
       );
@@ -58,14 +51,14 @@ namespace lisa::graphics {
       .presentMode = vk::PresentModeKHR::eFifo
     };
 
-    swapchain_ = vk::raii::SwapchainKHR(device, swapchain_ci);
-    logging::debug("Swapchain created");
+    set({device, swapchain_ci});
+    if constexpr (build::debug) logging::debug("Swapchain created");
 
     vec3 size_vec{
       static_cast<float>(extent.width), static_cast<float>(extent.height), 1.0f
     };
 
-    for (const auto img : swapchain_.getImages())
+    for (const auto img : object_.getImages())
       images_.emplace_back(
         img,
         color_format_,
@@ -73,13 +66,14 @@ namespace lisa::graphics {
         vk::ImageUsageFlagBits::eColorAttachment |
           vk::ImageUsageFlagBits::eTransferDst
       );
-    logging::debug("Got {} images from the swapchain", images_.size());
+    if constexpr (build::debug)
+      logging::debug("Got {} images from the swapchain", images_.size());
   }
 
   uint32
     Swapchain::acquire_next_image(const vk::raii::Semaphore& semaphore) const {
     const vk::AcquireNextImageInfoKHR info{
-      .swapchain = swapchain_,
+      .swapchain = handle(),
       .timeout = UINT64_MAX,
       .semaphore = semaphore,
       .deviceMask = 1
@@ -93,14 +87,15 @@ namespace lisa::graphics {
     const vk::raii::Semaphore& semaphore
   ) const {
     const auto image_index = acquire_next_image(semaphore);
-    auto& swapchain_image = images_[image_index];
+    auto& swapchain_image = images_[image_index].image;
+    auto swapchain_image_size = images_[image_index].size;
 
     const vk::ImageMemoryBarrier barrier_color_target{
       .srcAccessMask = vk::AccessFlagBits::eColorAttachmentWrite,
       .dstAccessMask = vk::AccessFlagBits::eTransferRead,
       .oldLayout = vk::ImageLayout::eColorAttachmentOptimal,
       .newLayout = vk::ImageLayout::eTransferSrcOptimal,
-      .image = image,
+      .image = image.handle(),
       .subresourceRange = {
         .aspectMask = vk::ImageAspectFlagBits::eColor,
         .levelCount = 1,
@@ -131,8 +126,8 @@ namespace lisa::graphics {
     const std::array offsets = {
       vk::Offset3D{0, 0, 0},
       vk::Offset3D{
-        static_cast<int32>(swapchain_image.size().x),
-        static_cast<int32>(swapchain_image.size().y),
+        static_cast<int32>(swapchain_image_size.x),
+        static_cast<int32>(swapchain_image_size.y),
         1
       }
     };
@@ -192,11 +187,12 @@ namespace lisa::graphics {
   void Swapchain::present(
     uint32 image, const vk::raii::Semaphore& semaphore
   ) const {
+    auto h = handle();
     const vk::PresentInfoKHR present_info{
       .waitSemaphoreCount = 1,
       .pWaitSemaphores = &*semaphore,
       .swapchainCount = 1,
-      .pSwapchains = &(*swapchain_),
+      .pSwapchains = &h,
       .pImageIndices = &image
     };
 

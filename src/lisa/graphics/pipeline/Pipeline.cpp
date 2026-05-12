@@ -6,25 +6,16 @@
 
 #include "graphics/context.h"
 #include "resources/Vertex.h"
+#include "utils/logging.h"
 
 namespace lisa::graphics {
-  vk::raii::PipelineLayout Pipeline::create_layout(
-    vk::DescriptorSetLayout descriptor_set_layout,
-    vk::PushConstantRange push_constant_range
-  ) {
-    const vk::PipelineLayoutCreateInfo layout_ci{
-      .setLayoutCount = 1,
-      .pSetLayouts = &descriptor_set_layout,
-      .pushConstantRangeCount = 1,
-      .pPushConstantRanges = &push_constant_range
-    };
-    return context::device()->createPipelineLayout(layout_ci);
-  }
-
-  Pipeline::Pipeline(CreateParameters params) {
-    layout_ =
-      create_layout(params.descriptor_set_layout, params.push_constant_range);
-
+  Pipeline::Pipeline(const str& id, CreateParameters params) :
+    NamedVkObject(id),
+    layout_(
+      logging::genid(id, "layout"),
+      params.descriptor_set_layout,
+      params.push_constant_range
+    ) {
     vk::PipelineVertexInputStateCreateInfo vertex_input_state{
       .vertexBindingDescriptionCount = 0u,
       .pVertexBindingDescriptions = nullptr,
@@ -45,7 +36,7 @@ namespace lisa::graphics {
         resources::Vertex::attribute_descriptions(vertex_binding.binding);
 
       if (params.position_only && !vertex_attributes.empty())
-        vertex_attributes.resize(1); // Keep only the position attribute
+        vertex_attributes.resize(1);
 
       vertex_input_state.vertexBindingDescriptionCount = 1u;
       vertex_input_state.pVertexBindingDescriptions = &vertex_binding;
@@ -67,7 +58,9 @@ namespace lisa::graphics {
     for (const auto& [stage, entry_point] : params.shader.stages()) {
       shader_stages.push_back(
         vk::PipelineShaderStageCreateInfo{
-          .stage = stage, .module = params.shader.module(), .pName = entry_point
+          .stage = stage,
+          .module = params.shader.handle(),
+          .pName = entry_point.c_str()
         }
       );
     }
@@ -133,6 +126,6 @@ namespace lisa::graphics {
       .pDynamicState = &dynamic_state,
       .layout = layout_
     };
-    pipeline_ = context::device()->createGraphicsPipeline(nullptr, pipeline_ci);
+    set(context::device()->createGraphicsPipeline(nullptr, pipeline_ci));
   }
 }

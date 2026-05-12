@@ -5,10 +5,11 @@
 #include "RenderPass.h"
 
 #include "graphics/context.h"
+#include "graphics/descriptors/DescriptorContainer.h"
 
 namespace lisa::systems::render {
   RenderPass::~RenderPass() {
-    for (const auto& [id, index] : input_indices_)
+    for (const auto& index : input_indices_ | std::views::values)
       graphics::context::descriptor_container().free(index);
   }
 }

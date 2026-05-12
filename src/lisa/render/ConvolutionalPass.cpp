@@ -17,7 +17,7 @@ namespace lisa::render {
   void ConvolutionalPass::setup(
     systems::render::Rendergraph& graph, const pugi::xml_node& node
   ) {
-    auto [buffer, size] = kernel_buffer(
+    auto [buffer, size] = generate_kernel_buffer(
       utils::xml::parse<vector<float>>(
         node.find_child_by_attribute("parameter", "id", "kernel")
           .text()
@@ -34,15 +34,7 @@ namespace lisa::render {
                         .value())
         .format();
 
-    static path shader_path =
-      resources::Shader::SHADERS_PATH / "postprocess/convolutional.slang";
-    resources::context::manager().add<resources::Shader, resources::ShaderSpec>(
-      shader_path.string(), shader_path
-    );
-    resources::context::manager().load<resources::Shader>(shader_path.string());
-    shader_ = resources::context::manager().get<resources::Shader>(
-      shader_path.string()
-    );
+    set_shader("postprocess/convolutional.slang");
 
     graphics::Pipeline::CreateParameters params{
       .push_constant_range =
@@ -52,16 +44,18 @@ namespace lisa::render {
           .offset = 0,
           .size = sizeof(ConvolutionalPushConstants)
         },
-      .shader = *shader_,
+      .shader = shader()->module(),
       .vertex_input = false,
       .color_attachment_formats = vector<vk::Format>{output_format},
       .depth_test_write = false,
     };
-    pipeline_ = std::make_unique<graphics::Pipeline>(params);
+    pipeline_ = std::make_unique<graphics::Pipeline>(id(), params);
   }
 
   void ConvolutionalPass::execute(const systems::render::RenderContext& ctx) {
-    ctx.cmdb->bindPipeline(vk::PipelineBindPoint::eGraphics, **pipeline_);
+    ctx.cmdb->bindPipeline(
+      vk::PipelineBindPoint::eGraphics, pipeline_->handle()
+    );
 
     ctx.cmdb->bindDescriptorSets(
       vk::PipelineBindPoint::eGraphics,
@@ -89,7 +83,7 @@ namespace lisa::render {
   }
 
   pair<graphics::Buffer, uint32>
-    ConvolutionalPass::kernel_buffer(const vector<float>& kernel) {
+    ConvolutionalPass::generate_kernel_buffer(const vector<float>& kernel) {
     const auto sqrt_size = std::sqrt(static_cast<float>(kernel.size()));
     const auto N = static_cast<int>(std::round(sqrt_size));
 
@@ -110,6 +104,7 @@ namespace lisa::render {
 
     return {
       graphics::Buffer::from_data(
+        logging::genid(id(), "kernel"),
         normalized_kernel.data(),
         normalized_kernel.size() * sizeof(float),
         vk::BufferUsageFlagBits::eTransferDst |

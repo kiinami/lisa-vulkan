@@ -5,6 +5,7 @@
 #include "DescriptorContainer.h"
 
 #include "graphics/context.h"
+#include "utils/logging.h"
 
 namespace lisa::graphics {
   DescriptorContainer::DescriptorContainer(
@@ -41,6 +42,7 @@ namespace lisa::graphics {
 
   Image DescriptorContainer::create_dummy_image() {
     return Image(
+      logging::genid("graph", "descriptors", "dummy"),
       ImageFormat(vk::Format::eR8G8B8A8Unorm),
       vk::ImageUsageFlagBits::eSampled,
       vec3(1, 1, 1),
@@ -52,6 +54,7 @@ namespace lisa::graphics {
 
   Sampler DescriptorContainer::create_dummy_sampler() {
     return Sampler(
+      logging::genid("graph", "descriptors", "dummy"),
       0.0f,
       vk::Filter::eNearest,
       vk::Filter::eNearest,
@@ -103,7 +106,7 @@ namespace lisa::graphics {
       }
     };
     const vk::DescriptorImageInfo null_info{
-      .sampler = *dummy_sampler_,
+      .sampler = dummy_sampler_.handle(),
       .imageView = *dummy_image_.view(dummy_view_desc),
       .imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal,
     };

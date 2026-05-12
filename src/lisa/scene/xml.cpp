@@ -23,14 +23,26 @@
 
 namespace {
   std::vector<float> parse_floats(const std::string& str) {
-    std::stringstream ss(str);
-    std::string token;
     std::vector<float> vals;
-    while (std::getline(ss, token, ',')) {
-      try {
-        vals.push_back(std::stof(token));
-      } catch (...) { return {}; }
+
+    if (str.find(',') != std::string::npos) {
+      std::stringstream ss(str);
+      std::string token;
+      while (std::getline(ss, token, ',')) {
+        try {
+          vals.push_back(std::stof(token));
+        } catch (...) { return {}; }
+      }
+    } else {
+      std::stringstream ss(str);
+      std::string token;
+      while (ss >> token) {
+        try {
+          vals.push_back(std::stof(token));
+        } catch (...) { return {}; }
+      }
     }
+
     return vals;
   }
 }
@@ -325,8 +337,10 @@ namespace lisa::scene::xml {
 
   }
 
-  void load(const path& filepath, const mat4& transform) {
+  void load(const path& filepath, const mat4& transform, const str& parent_id) {
     const auto result = rfl::xml::read<Scene>(read_file(filepath));
+    const auto id =
+      parent_id == "" ? "scene" : logging::genid(parent_id, filepath.string());
     if (!result)
       logging::abort("Failed to parse XML scene: {}", result.error().what());
 
@@ -391,9 +405,9 @@ namespace lisa::scene::xml {
 
       const auto ext = file.extension().string();
       if (ext == ".xml") {
-        load(scene_parent / file, external_transform);
+        load(scene_parent / file, external_transform, id);
       } else if (ext == ".gltf" || ext == ".glb") {
-        gltf::load(scene_parent / file, external_transform);
+        gltf::load(scene_parent / file, external_transform, id);
       } else {
         logging::error(
           "Unsupported external scene format: '{}', skipping", ext

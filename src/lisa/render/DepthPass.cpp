@@ -25,15 +25,7 @@ namespace lisa::render {
                         .value())
         .format();
 
-    static path shader_path =
-      resources::Shader::SHADERS_PATH / "preprocess/depth.slang";
-    resources::context::manager().add<resources::Shader, resources::ShaderSpec>(
-      shader_path.string(), shader_path
-    );
-    resources::context::manager().load<resources::Shader>(shader_path.string());
-    shader_ = resources::context::manager().get<resources::Shader>(
-      shader_path.string()
-    );
+    set_shader("preprocess/depth.slang");
 
     graphics::Pipeline::CreateParameters params{
       .push_constant_range =
@@ -42,16 +34,16 @@ namespace lisa::render {
           .offset = 0,
           .size = sizeof(systems::render::PushConstants)
         },
-      .shader = *shader_,
+      .shader = shader()->module(),
       .position_only = true,
       .depth_test_write = true,
       .depth_attachment_format = depth_fmt
     };
-    pipeline_ = std::make_unique<graphics::Pipeline>(params);
+    pipeline_ = std::make_unique<graphics::Pipeline>(id(), params);
   }
 
   void DepthPass::execute(const systems::render::RenderContext& ctx) {
-    ctx.cmdb->bindPipeline(vk::PipelineBindPoint::eGraphics, **pipeline_);
+    ctx.cmdb->bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline_->handle());
     ctx.cmdb->bindDescriptorSets(
       vk::PipelineBindPoint::eGraphics,
       pipeline_->layout(),

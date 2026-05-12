@@ -7,6 +7,7 @@
 #include "GraphResources.h"
 #include "RenderPassRegistry.h"
 #include "graphics/context.h"
+#include "graphics/descriptors/DescriptorContainer.h"
 #include "utils/logging.h"
 #include "utils/xml.h"
 #include "window/context.h"
@@ -16,7 +17,10 @@
 namespace lisa::systems::render {
   Rendergraph::Rendergraph(const path& filepath) {
     shared_sampler_ = std::make_unique<graphics::Sampler>(
-      1.0f, vk::Filter::eNearest, vk::Filter::eNearest
+      logging::genid("graph", "sampler"),
+      1.0f,
+      vk::Filter::eNearest,
+      vk::Filter::eNearest
     );
 
     const auto doc = utils::xml::read(filepath, "rendergraph");
@@ -46,7 +50,9 @@ namespace lisa::systems::render {
       );
 
       resource_id_map_[id] = static_cast<GraphResourceHandle>(images_.size());
-      auto image = ImageGraphResource(metadata, size);
+      auto image = ImageGraphResource(
+        logging::genid("graph", "resources", id), metadata, size
+      );
       images_.push_back(std::move(image));
     }
   }
@@ -129,7 +135,7 @@ namespace lisa::systems::render {
           exec_node.depth_attachment = attachment;
         } else if (usage == SampledFragment) {
           const vk::DescriptorImageInfo img_info{
-            **shared_sampler_,
+            shared_sampler_->handle(),
             *img.image.view(
               {vk::ImageViewType::e2D, img.format(), {img.aspect(), 0, 1, 0, 1}}
             ),

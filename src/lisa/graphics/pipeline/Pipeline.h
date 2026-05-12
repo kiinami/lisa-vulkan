@@ -5,7 +5,9 @@
 #ifndef LISA_VULKAN_PIPELINE_H
 #define LISA_VULKAN_PIPELINE_H
 
+#include "PipelineLayout.h"
 #include "graphics/context.h"
+#include "graphics/descriptors/DescriptorContainer.h"
 #include "resources/Shader.h"
 #include "utils/common.h"
 
@@ -13,13 +15,13 @@
 
 namespace lisa::graphics {
 
-  class Pipeline {
+  class Pipeline : public NamedVkObject<vk::raii::Pipeline> {
   public:
     struct CreateParameters {
       vk::DescriptorSetLayout descriptor_set_layout =
         context::descriptor_container().layout();
       vk::PushConstantRange push_constant_range;
-      const resources::Shader& shader;
+      const ShaderModule& shader;
       bool vertex_input = true;
       bool position_only = false;
       const vector<vk::Format>& color_attachment_formats = {};
@@ -29,20 +31,12 @@ namespace lisa::graphics {
       vk::CompareOp depth_compare_op = vk::CompareOp::eLessOrEqual;
     };
 
-    explicit Pipeline(CreateParameters params);
-    ~Pipeline() = default;
-
-    operator const vk::raii::Pipeline&() { return pipeline_; }
-
-    operator vk::Pipeline() const { return *pipeline_; }
-
-    vk::Pipeline operator*() const { return *pipeline_; }
+    explicit Pipeline(const str& id, CreateParameters params);
 
     const vk::raii::PipelineLayout& layout() const { return layout_; }
 
   private:
-    vk::raii::PipelineLayout layout_ = nullptr;
-    vk::raii::Pipeline pipeline_ = nullptr;
+    PipelineLayout layout_;
 
     static vk::raii::PipelineLayout create_layout(
       vk::DescriptorSetLayout descriptor_set_layout,

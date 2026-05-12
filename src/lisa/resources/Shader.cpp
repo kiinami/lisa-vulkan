@@ -48,13 +48,21 @@ namespace lisa::resources {
     return session;
   }
 
-  Shader::Shader(const path& filepath) {
+  Shader::Shader(const str& id, const path& filepath) : Resource(id) {
+    if (!exists(filepath)) {
+      logging::abort("Shader file '{}' does not exist", filepath.string());
+      return;
+    }
+
     const auto session = create_session();
     Slang::ComPtr<ISlangBlob> load_diagnostics;
-    const auto module =
-      session->loadModule(utils::pstr(filepath).c_str(), load_diagnostics.writeRef());
+    const auto module = session->loadModule(
+      utils::pstr(filepath).c_str(), load_diagnostics.writeRef()
+    );
     if (!module) {
-      logging::abort("Failed to load shader module at {}", utils::pstr(filepath).c_str());
+      logging::abort(
+        "Failed to load shader module at {}", utils::pstr(filepath).c_str()
+      );
       return;
     }
 
@@ -79,23 +87,18 @@ namespace lisa::resources {
     Slang::ComPtr<ISlangBlob> diagnostics;
     program->getTargetCode(0, spirv.writeRef(), diagnostics.writeRef());
 
-    const vk::ShaderModuleCreateInfo module_ci{
-      .codeSize = spirv->getBufferSize(),
-      .pCode = (uint32*) spirv->getBufferPointer()
-    };
-    module_ = graphics::context::device()->createShaderModule(module_ci);
-
     slang::ShaderReflection* reflection = program->getLayout();
     const uint32 entry_point_count = reflection->getEntryPointCount();
 
-    stages_.reserve(entry_point_count);
+    vector<graphics::ShaderStage> stages;
+    stages.reserve(entry_point_count);
 
     for (uint32 i = 0; i < entry_point_count; i++) {
       slang::EntryPointReflection* entry_point =
         reflection->getEntryPointByIndex(i);
 
       const SlangStage slang_stage = entry_point->getStage();
-      const char* entry_name = entry_point->getNameOverride();
+      str entry_name = entry_point->getNameOverride();
       vk::ShaderStageFlagBits vk_stage;
       switch (slang_stage) {
         case SLANG_STAGE_VERTEX:
@@ -119,7 +122,11 @@ namespace lisa::resources {
           );
       }
 
-      stages_.push_back({.stage = vk_stage, .entry_point = entry_name});
+      stages.push_back({.stage = vk_stage, .entry_point = entry_name});
     }
+
+    module_ = graphics::ShaderModule(
+      id, spirv->getBufferSize(), (uint32*) spirv->getBufferPointer(), stages
+    );
   }
 }

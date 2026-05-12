@@ -81,9 +81,9 @@ namespace lisa::systems::render {
     vk::ImageAspectFlags aspect() const { return image.format().aspect_mask(); }
 
     ImageGraphResource(
-      const ImageGraphResourceMetadata metadata, const vec3& size
+      const str& id, const ImageGraphResourceMetadata metadata, const vec3& size
     ) :
-      image(metadata.format, metadata.usage, size) {}
+      image(id, metadata.format, metadata.usage, size) {}
 
     vk::ImageMemoryBarrier2 transition(
       GraphResourceState& src_state, GraphResourceUsage dst_usage

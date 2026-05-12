@@ -11,9 +11,8 @@
 
 namespace lisa::graphics {
   PhysicalDevice::PhysicalDevice(const vk::raii::PhysicalDevice& device) :
-    device_(device) {
-    props_ = device_.getProperties2().properties;
-    logging::debug("Physical device with name '{}' created", name());
+    VkObject(device) {
+    props_ = object_.getProperties2().properties;
   }
 
   uint8 PhysicalDevice::vulkan_version() const { return props_.apiVersion; }
@@ -24,8 +23,8 @@ namespace lisa::graphics {
     vk::Bool32 supported;
     utils::chk(vpGetPhysicalDeviceProfileSupport(
       constants::capabilities(),
-      context::instance(),
-      *device_,
+      context::instance().handle(),
+      handle(),
       &constants::PROFILE,
       &supported
     ));
@@ -41,7 +40,7 @@ namespace lisa::graphics {
   }
 
   uint32 PhysicalDevice::queue_family_index() const {
-    auto queue_families = device_.getQueueFamilyProperties();
+    auto queue_families = object_.getQueueFamilyProperties();
     const auto graphics_queue =
       std::ranges::find_if(queue_families, [](const auto& qf) {
         return (qf.queueFlags & vk::QueueFlagBits::eGraphics) !=
@@ -55,6 +54,6 @@ namespace lisa::graphics {
   vk::SurfaceCapabilitiesKHR PhysicalDevice::surface_capabilities(
     const vk::raii::SurfaceKHR& surface
   ) const {
-    return device_.getSurfaceCapabilitiesKHR(surface);
+    return object_.getSurfaceCapabilitiesKHR(surface);
   }
 }

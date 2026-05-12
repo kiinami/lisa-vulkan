@@ -9,8 +9,10 @@
 
 namespace lisa::scene::gltf {
 
-  void load(const path& filepath, mat4 transform = mat4(1.0f));
+  void load(
+    const path& filepath, mat4 transform = mat4(1.0f), const str& parent_id = ""
+  );
 
 }
 
-#endif //LISA_VULKAN_GLTF_H
+#endif // LISA_VULKAN_GLTF_H

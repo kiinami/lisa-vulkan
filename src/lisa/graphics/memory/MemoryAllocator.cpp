@@ -4,6 +4,7 @@
 
 #include "MemoryAllocator.h"
 
+#include "build.h"
 #include "graphics/device/Instance.h"
 #include "graphics/device/LogicalDevice.h"
 #include "utils/logging.h"
@@ -15,8 +16,8 @@ namespace lisa::graphics {
     const Instance& instance,
     const PhysicalDevice& physical_device,
     const LogicalDevice& device
-  ) :
-    allocator_(
+  ) {
+    set(
       vma::raii::Allocator{
         instance,
         device,
@@ -24,21 +25,21 @@ namespace lisa::graphics {
           {vma::AllocatorCreateFlagBits::eBufferDeviceAddress}, physical_device
         }
       }
-    ) {
-    logging::debug("Memory allocator created");
+    );
+    if constexpr (build::debug) logging::debug("Memory allocator created");
   }
 
   vma::raii::Image MemoryAllocator::create_image(
     const vk::ImageCreateInfo& image_ci,
     const vma::AllocationCreateInfo& allocation_ci
   ) const {
-    return allocator_.createImage(image_ci, allocation_ci);
+    return object_.createImage(image_ci, allocation_ci);
   }
 
   vma::raii::Buffer MemoryAllocator::create_buffer(
     const vk::BufferCreateInfo& buffer_ci,
     const vma::AllocationCreateInfo& allocation_ci
   ) const {
-    return allocator_.createBuffer(buffer_ci, allocation_ci);
+    return object_.createBuffer(buffer_ci, allocation_ci);
   }
 }

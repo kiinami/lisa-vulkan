@@ -6,6 +6,7 @@
 
 #include "utils/logging.h"
 #include "window/context.h"
+#include "descriptors/DescriptorContainer.h"
 
 #include <memory>
 

@@ -33,15 +33,7 @@ namespace lisa::render {
                         .value())
         .format();
 
-    static path shader_path =
-      resources::Shader::SHADERS_PATH / "preprocess/ssao.slang";
-    resources::context::manager().add<resources::Shader, resources::ShaderSpec>(
-      shader_path.string(), shader_path
-    );
-    resources::context::manager().load<resources::Shader>(shader_path.string());
-    shader_ = resources::context::manager().get<resources::Shader>(
-      shader_path.string()
-    );
+    set_shader("preprocess/ssao.slang");
 
     graphics::Pipeline::CreateParameters params{
       .push_constant_range =
@@ -51,18 +43,21 @@ namespace lisa::render {
           .offset = 0,
           .size = sizeof(SSAOPushConstants)
         },
-      .shader = *shader_,
+      .shader = shader()->module(),
       .vertex_input = false,
       .color_attachment_formats = vector<vk::Format>{ssao_fmt},
       .depth_test_write = false,
     };
-    pipeline_ = std::make_unique<graphics::Pipeline>(params);
+    pipeline_ = std::make_unique<graphics::Pipeline>(id(), params);
 
     noise_sampler_ = std::make_unique<graphics::Sampler>(
-      1.0f, vk::Filter::eNearest, vk::Filter::eNearest
+      logging::genid(id(), "noise", "sampler"),
+      1.0f,
+      vk::Filter::eNearest,
+      vk::Filter::eNearest
     );
     const vk::DescriptorImageInfo image_info{
-      **noise_sampler_,
+      noise_sampler_->handle(),
       *noise_image_.view(
         {.type = vk::ImageViewType::e2D,
          .format = noise_image_.format(),
@@ -74,7 +69,7 @@ namespace lisa::render {
   }
 
   void SSAOPass::execute(const systems::render::RenderContext& ctx) {
-    ctx.cmdb->bindPipeline(vk::PipelineBindPoint::eGraphics, **pipeline_);
+    ctx.cmdb->bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline_->handle());
 
     ctx.cmdb->bindDescriptorSets(
       vk::PipelineBindPoint::eGraphics,
@@ -127,6 +122,7 @@ namespace lisa::render {
     }
 
     return graphics::Buffer::from_data(
+      logging::genid(id(), "kernel"),
       kernel.data(),
       kernel.size() * sizeof(vec4),
       vk::BufferUsageFlagBits::eTransferDst |
@@ -152,6 +148,7 @@ namespace lisa::render {
     }
 
     return graphics::Image::from_data(
+      logging::genid(id(), "noise"),
       noise.data(),
       noise.size() * sizeof(vec4),
       vec3{4, 4, 1},

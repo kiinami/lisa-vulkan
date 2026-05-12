@@ -14,9 +14,8 @@ namespace lisa::resources {
 
   class Mesh : public systems::resources::Resource {
   public:
-    Mesh() = default;
-
     Mesh(
+      const str& id,
       const vector<Vertex>& vertices,
       const vector<uint32>& indices,
       const graphics::CommandBuffer& cmdb
@@ -43,8 +42,11 @@ namespace lisa::resources {
     uint32 vertex_count = 0;
     uint32 index_count = 0;
 
-    explicit MeshSpec(const path& filepath);
-    MeshSpec(const fastgltf::Primitive& p, const fastgltf::Asset& asset);
+    explicit MeshSpec(const str& id, const path& filepath);
+
+    MeshSpec(
+      const str& id, const fastgltf::Primitive& p, const fastgltf::Asset& asset
+    );
 
     Mesh load_resource(const graphics::CommandBuffer& cmdb) override;
 

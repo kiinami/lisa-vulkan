@@ -11,7 +11,7 @@
 #include <vk_mem_alloc_raii.hpp>
 
 namespace lisa::graphics {
-  class MemoryAllocator {
+  class MemoryAllocator : public VkObject<vma::raii::Allocator> {
   public:
     MemoryAllocator(
       const Instance& instance,
@@ -19,9 +19,7 @@ namespace lisa::graphics {
       const LogicalDevice& device
     );
 
-    ~MemoryAllocator() { allocator_.clear(); }
-
-    operator const vma::raii::Allocator&() const { return allocator_; }
+    ~MemoryAllocator() { object_.clear(); }
 
     vma::raii::Image create_image(
       const vk::ImageCreateInfo& image_ci,
@@ -41,9 +39,6 @@ namespace lisa::graphics {
         .usage = vma::MemoryUsage::eAuto,
       }
     ) const;
-
-  private:
-    vma::raii::Allocator allocator_;
   };
 }
 

@@ -7,54 +7,53 @@
 
 #include "Surface.h"
 #include "graphics/device/LogicalDevice.h"
-#include "graphics/images/Image.h"
 #include "graphics/images/ImageFormat.h"
-#include "graphics/sync/Semaphore.h"
 
 #include <vulkan/vulkan_raii.hpp>
 
 namespace lisa::graphics {
+  class Image;
 
-  class SwapchainImage : public Image {
-  public:
+  struct SwapchainImage {
+    vk::Image image;
+    ImageFormat format;
+    vec3 size;
+    vk::ImageUsageFlags usage;
+
     explicit SwapchainImage(
-      vk::Image image,
+      const vk::Image image,
       const ImageFormat& format,
       const vec3& size,
-      vk::ImageUsageFlags usage
-    );
-
-    SwapchainImage(SwapchainImage&&) noexcept = default;
-    SwapchainImage& operator=(SwapchainImage&&) noexcept = default;
-
-  private:
-    friend class Swapchain;
+      const vk::ImageUsageFlags usage
+    ) :
+      image(image),
+      format(format),
+      size(size),
+      usage(usage) {}
   };
 
-  class Swapchain {
+  class Swapchain : public VkObject<vk::raii::SwapchainKHR> {
   public:
     explicit Swapchain(const Surface& surface, const LogicalDevice& device);
-    ~Swapchain() = default;
-
-    operator const vk::raii::SwapchainKHR&() { return swapchain_; }
 
     const vector<SwapchainImage>& images() const { return images_; }
 
     uint32 acquire_next_image(const vk::raii::Semaphore& semaphore) const;
+
     uint32 copy(
       const Image& image,
       const CommandBuffer& cmd_buffer,
       const vk::raii::Semaphore& semaphore
     ) const;
+
     void present(uint32 image, const vk::raii::Semaphore& semaphore) const;
 
     vk::Extent2D extent() const {
-      const auto& size = images_.front().size();
+      const auto& size = images_.front().size;
       return {static_cast<uint32>(size.x), static_cast<uint32>(size.y)};
     }
 
   private:
-    vk::raii::SwapchainKHR swapchain_ = nullptr;
     ImageFormat color_format_{vk::Format::eUndefined};
     vk::ColorSpaceKHR color_space_;
 

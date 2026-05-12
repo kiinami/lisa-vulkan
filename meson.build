@@ -76,6 +76,7 @@ else
     ktx_inc = []
 endif
 
+boost_multi_index = dependency('boost', required : true, modules : ['multi_index'])
 cli11 = dependency('CLI11', required: true)
 entt = dependency('entt', required : true)
 fastgltf = dependency('fastgltf', required : true)
@@ -97,11 +98,15 @@ vma_hpp = dependency('VulkanMemoryAllocator-Hpp', required: true)
 # Sources
 ###############################################################################
 src = files(
-    'src/lisa/utils/common.h',
+    'src/lisa/build.h',
     'src/lisa/implementations.cpp',
 
-    'src/lisa/graphics/context.h',
-    'src/lisa/graphics/context.cpp',
+    'src/lisa/graphics/vk/VkObject.h',
+    'src/lisa/graphics/vk/VkObject.cpp',
+    'src/lisa/graphics/vk/NamedVkObject.h',
+    'src/lisa/graphics/vk/NamedVkObject.cpp',
+    'src/lisa/graphics/vk/VkEnum.h',
+    'src/lisa/graphics/vk/VkEnum.cpp',
 
     'src/lisa/graphics/buffer/Buffer.h',
     'src/lisa/graphics/buffer/Buffer.cpp',
@@ -131,6 +136,10 @@ src = files(
     'src/lisa/graphics/memory/MemoryAllocator.h',
     'src/lisa/graphics/memory/MemoryAllocator.cpp',
 
+    'src/lisa/graphics/pipeline/ShaderModule.h',
+    'src/lisa/graphics/pipeline/ShaderModule.cpp',
+    'src/lisa/graphics/pipeline/PipelineLayout.h',
+    'src/lisa/graphics/pipeline/PipelineLayout.cpp',
     'src/lisa/graphics/pipeline/Pipeline.h',
     'src/lisa/graphics/pipeline/Pipeline.cpp',
 
@@ -144,6 +153,9 @@ src = files(
     'src/lisa/graphics/sync/Semaphore.h',
     'src/lisa/graphics/sync/Semaphore.cpp',
 
+    'src/lisa/graphics/context.h',
+    'src/lisa/graphics/context.cpp',
+
     'src/lisa/resources/context.h',
     'src/lisa/resources/context.cpp',
     'src/lisa/resources/Mesh.h',
@@ -154,6 +166,8 @@ src = files(
     'src/lisa/resources/Texture.cpp',
     'src/lisa/resources/Vertex.h',
 
+    'src/lisa/render/ShaderPass.h',
+    'src/lisa/render/ShaderPass.cpp',
     'src/lisa/render/ForwardPass.h',
     'src/lisa/render/ForwardPass.cpp',
     'src/lisa/render/GeometryPass.h',
@@ -207,6 +221,7 @@ src = files(
     'src/lisa/update/CameraMovement.h',
     'src/lisa/update/CameraMovement.cpp',
 
+    'src/lisa/utils/common.h',
     'src/lisa/utils/chk.h',
     'src/lisa/utils/defer.h',
     'src/lisa/utils/logging.h',
@@ -237,14 +252,14 @@ lisa_library = static_library(
     'lisa',
     sources: src,
     include_directories: [inc, sdk_inc, ktx_inc],
-    dependencies : [entt, fastgltf, glm, ktx, magic_enum, miniz, pugixml, reflectcpp, sdl3, sdl3pp, shader_dep, slang, spdlog, stb, tinyexr, tinyobjloader, vulkan, vma, vma_hpp],
+    dependencies : [boost_multi_index, entt, fastgltf, glm, ktx, magic_enum, miniz, pugixml, reflectcpp, sdl3, sdl3pp, shader_dep, slang, spdlog, stb, tinyexr, tinyobjloader, vulkan, vma, vma_hpp],
     cpp_pch: 'src/lisa/pch/pch.h'
 )
 
 lisa_dep = declare_dependency(
     include_directories: [include_directories('src/lisa'), sdk_inc, ktx_inc],
     link_whole: lisa_library,
-    dependencies : [entt, fastgltf, glm, ktx, magic_enum, miniz, pugixml, reflectcpp, sdl3, sdl3pp, slang, spdlog, stb, tinyexr, tinyobjloader, vulkan, vma, vma_hpp]
+    dependencies : [boost_multi_index, entt, fastgltf, glm, ktx, magic_enum, miniz, pugixml, reflectcpp, sdl3, sdl3pp, slang, spdlog, stb, tinyexr, tinyobjloader, vulkan, vma, vma_hpp]
 )
 
 ###############################################################################

@@ -60,6 +60,46 @@ namespace lisa::logging {
     spdlog::critical(fmt, std::forward<Args>(args)...);
     throw std::runtime_error("Program aborted because of a critical error");
   }
+
+  namespace detail {
+    struct Part {
+      str value;
+      bool is_bracket;
+    };
+
+    inline Part format_part(const str& s) { return {s, false}; }
+
+    inline Part format_part(const char* s) { return {str(s), false}; }
+
+    inline Part format_part(const int i) {
+      return {"[" + std::to_string(i) + "]", true};
+    }
+
+    inline Part format_part(const size i) {
+      return {"[" + std::to_string(i) + "]", true};
+    }
+
+    inline Part format_part(const path& p) {
+      return {"[" + p.filename().generic_string() + "]", true};
+    }
+  }
+
+  template<typename... Args> str genid(Args&&... args) {
+    str result;
+    bool last_was_bracket = false;
+    bool is_first = true;
+
+    auto append = [&](const auto& arg) {
+      auto part = detail::format_part(arg);
+      if (!is_first && !part.is_bracket) result += "::";
+      result += part.value;
+      last_was_bracket = part.is_bracket;
+      is_first = false;
+    };
+
+    (append(std::forward<Args>(args)), ...);
+    return result;
+  }
 }
 
 #endif
