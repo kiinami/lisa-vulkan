@@ -1,0 +1,72 @@
+<scene xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="../scene.xsd">
+    <entity name="cat">
+        <transform>
+            <translate value="-1, 0, 0"/>
+            <scale value="10.0"/>
+        </transform>
+        <mesh path="models/cat.obj"/>
+        <material albedo_texture="textures/concrete_cat_statue_diff_1k.jpg"
+                  roughness_texture="textures/concrete_cat_statue_rough_1k.exr"
+                  metallic_texture="textures/concrete_cat_statue_metal_1k.exr"
+                  normal_texture="textures/concrete_cat_statue_nor_gl_1k.exr"
+        />
+    </entity>
+
+    <entity name="sphere1">
+        <transform>
+            <translate value="1, 0.5, 1"/>
+            <scale value="0.5"/>
+        </transform>
+        <mesh path="models/sphere.obj"/>
+        <material albedo="1.0 0.0 1.0" roughness="0.05" metallic="0.0"/>
+    </entity>
+    <entity name="sphere2">
+        <transform>
+            <translate value="0, 0.5, 2"/>
+            <scale value="0.5"/>
+        </transform>
+        <mesh path="models/sphere.obj"/>
+        <material albedo="0.0 1.0 0.0" roughness="1.0" metallic="0.0"/>
+    </entity>
+    <entity name="sphere3">
+        <transform>
+            <translate value="-2, 0.5, 2"/>
+            <scale value="0.5"/>
+        </transform>
+        <mesh path="models/sphere.obj"/>
+        <material albedo="0.0 0.0 1.0" roughness="0.2" metallic="0.9"/>
+    </entity>
+    <entity name="sphere4">
+        <transform>
+            <translate value="-3, 0.5, 1"/>
+            <scale value="0.5"/>
+        </transform>
+        <mesh path="models/sphere.obj"/>
+        <material albedo="1.0 0.0 0.0" roughness="1" metallic="1"/>
+    </entity>
+
+    <entity name="walls">
+        <transform>
+            <translate value="0, 0, 0"/>
+            <scale value="4"/>
+        </transform>
+        <mesh path="models/walls2.obj"/>
+        <material albedo="1.0 0.1 0.1" roughness="0.05" metallic="0.0"/>
+    </entity>
+
+    <entity name="main_camera">
+        <transform>
+            <lookat origin="0, 3, 15" target="0, 3, 0" up="0, 1, 0"/>
+        </transform>
+        <camera/>
+    </entity>
+
+    <entity name="light">
+        <transform>
+            <translate value="-1, 7, 0"/>
+        </transform>
+        <point_light color="1.0, 0.8, 0.7" intensity="20" attenuation="0.1" radius="40"/>
+        <ambient_light color="1.0, 0.8, 0.7" intensity="0.05"/>
+    </entity>
+</scene>
