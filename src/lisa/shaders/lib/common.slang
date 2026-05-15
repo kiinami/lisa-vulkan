@@ -11,6 +11,12 @@ public struct Input {
   public float3 tangent;
 }
 
+public struct Shadow {
+  public float4x4 view_projection;
+  public uint32_t index;
+  float3 padding;
+}
+
 public struct PointLight {
   public float3 position;
   public float intensity;
@@ -38,10 +44,12 @@ public struct GlobalData {
   public PointLight* point_lights;
   public DirLight* dir_lights;
   public AmbientLight* ambient_lights;
+  public Shadow* shadows;
 
   public uint32_t point_lights_count;
   public uint32_t dir_lights_count;
   public uint32_t ambient_lights_count;
+  public uint32_t shadows_count;
 
   public float3 camera_position;
   public float2 texel_size;

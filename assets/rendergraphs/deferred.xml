@@ -2,6 +2,7 @@
              xsi:noNamespaceSchemaLocation="rendergraph.xsd"
              output="final">
     <resource id="depth" type="depth"/>
+    <resource id="shadow" type="shadow_depth" width="2048" height="2048"/>
     <resource id="albedo" type="color"/>
     <resource id="normal" type="normal"/>
     <resource id="position" type="position"/>
@@ -12,6 +13,10 @@
 
     <pass id="depth_pass" type="preprocess::depth">
         <output id="depth" ref="depth" usage="DepthStencilAttachmentWrite"/>
+    </pass>
+
+    <pass id="shadow_pass" type="preprocess::shadow">
+        <output id="shadow" ref="shadow" usage="DepthStencilAttachmentWrite"/>
     </pass>
 
     <pass id="geometry_pass" type="deferred::geometry">

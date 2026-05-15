@@ -64,9 +64,9 @@
 
     <entity name="light">
         <transform>
-            <translate value="-1, 7, 0"/>
+            <lookat origin="0, 7, 3" target="0, 3, 0" up="0, 1, 0"/>
         </transform>
-        <point_light color="1.0, 0.8, 0.7" intensity="20" attenuation="0.1" radius="40"/>
+        <directional_light color="1.0, 0.8, 0.7" intensity="2"/>
         <ambient_light color="1.0, 0.8, 0.7" intensity="0.05"/>
     </entity>
 </scene>

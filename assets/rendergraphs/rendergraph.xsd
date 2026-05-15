@@ -10,6 +10,7 @@
             <xs:enumeration value="position"/>
             <xs:enumeration value="material"/>
             <xs:enumeration value="ssao"/>
+            <xs:enumeration value="shadow_depth"/>
         </xs:restriction>
     </xs:simpleType>
 
@@ -44,6 +45,37 @@
                     <xs:complexType>
                         <xs:attribute name="id" type="xs:ID" use="required"/>
                         <xs:attribute name="type" type="ResourceType" use="required"/>
+
+                        <xs:attribute name="width" type="xs:positiveInteger"/>
+                        <xs:attribute name="height" type="xs:positiveInteger"/>
+
+                        <xs:attribute name="scale">
+                            <xs:simpleType>
+                                <xs:restriction base="xs:decimal">
+                                    <xs:minInclusive value="0.0"/>
+                                    <xs:maxInclusive value="1.0"/>
+                                </xs:restriction>
+                            </xs:simpleType>
+                        </xs:attribute>
+
+                        <xs:assert test="
+                            (
+                                exists(@scale)
+                                and not(exists(@width) or exists(@height))
+                            )
+                            or
+                            (
+                                exists(@width)
+                                and exists(@height)
+                                and not(exists(@scale))
+                            )
+                            or
+                            (
+                                not(exists(@scale))
+                                and not(exists(@width))
+                                and not(exists(@height))
+                            )
+                        "/>
                     </xs:complexType>
                 </xs:element>
 

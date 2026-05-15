@@ -59,6 +59,13 @@ namespace lisa::systems::render {
         usage,
         allocation_ci
       );
+      shadow_data_buffers_[i] = graphics::Buffer(
+        logging::genid("graph", "frames", i, "shadow_data"),
+        sizeof(ShadowData) * (graphics::constants::MAX_POINT_LIGHTS +
+                              graphics::constants::MAX_DIR_LIGHTS),
+        usage,
+        allocation_ci
+      );
       available_s_[i] = graphics::Semaphore();
     }
     for (size i = 0; i < swapchain_.images().size(); i++)
@@ -114,6 +121,10 @@ namespace lisa::systems::render {
       }
     }
 
+    auto* shadow_data = static_cast<ShadowData*>(
+      shadow_data_buffers_[current_frame_].mapped_data()
+    );
+
     auto* point_light_data = static_cast<PointLightData*>(
       point_lights_buffers_[current_frame_].mapped_data()
     );
@@ -150,6 +161,11 @@ namespace lisa::systems::render {
       uint32 i = 0;
       for (auto [e, transform_c, dir_light_c] : dir_lights_view.each()) {
         dir_light_data[i] = DirLightData(transform_c, dir_light_c);
+        shadow_data[i] = ShadowData{
+          .view_projection =
+            dir_light_c.shadow_view_projection(transform_c.direction()),
+          .layer = global_data->point_lights_count * 6 + i
+        };
         i++;
       }
 
@@ -177,6 +193,11 @@ namespace lisa::systems::render {
         ambient_lights_buffers_[current_frame_].address(), i
       );
     }
+
+    global_data->update_shadow_data(
+      shadow_data_buffers_[current_frame_].address(),
+      global_data->point_lights_count * 6 + global_data->dir_lights_count
+    );
 
     global_data->texel_size = window::context::texel_size();
 

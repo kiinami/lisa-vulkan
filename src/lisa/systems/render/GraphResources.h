@@ -61,6 +61,10 @@ namespace lisa::systems::render {
          {vk::Format::eR8Unorm,
           vk::ImageUsageFlagBits::eColorAttachment |
             vk::ImageUsageFlagBits::eSampled}},
+        {"shadow_depth",
+         {vk::Format::eD32Sfloat,
+          vk::ImageUsageFlagBits::eDepthStencilAttachment |
+            vk::ImageUsageFlagBits::eSampled}},
       };
 
       if (const auto it = aliases.find(type); it != aliases.end())
@@ -84,9 +88,21 @@ namespace lisa::systems::render {
     uint32 layers() const { return image.layers(); }
 
     ImageGraphResource(
-      const str& id, const ImageGraphResourceMetadata metadata, const vec3& size
+      const str& id,
+      const ImageGraphResourceMetadata metadata,
+      const vec3& size,
+      const uint32 layers = 1
     ) :
-      image(id, metadata.format, metadata.usage, size) {}
+      image(
+        id,
+        metadata.format,
+        metadata.usage,
+        size,
+        vk::ImageType::e2D,
+        1,
+        vk::ImageLayout::eUndefined,
+        layers
+      ) {}
 
     vk::ImageMemoryBarrier2 transition(
       GraphResourceState& src_state, GraphResourceUsage dst_usage

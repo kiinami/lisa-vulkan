@@ -6,12 +6,14 @@
 
 #include "GraphResources.h"
 #include "RenderPassRegistry.h"
+#include "components/context.h"
 #include "graphics/context.h"
 #include "graphics/descriptors/DescriptorContainer.h"
 #include "utils/logging.h"
 #include "utils/xml.h"
 #include "window/context.h"
 
+#include <algorithm>
 #include <functional>
 
 namespace lisa::systems::render {
@@ -35,13 +37,43 @@ namespace lisa::systems::render {
   }
 
   void Rendergraph::allocate_resources(const pugi::xml_node& doc_element) {
-    auto [width, height] = graphics::context::swapchain().extent();
+    auto [default_width, default_height] =
+      graphics::context::swapchain().extent();
 
     for (const auto& node : doc_element.children("resource")) {
       const auto id = node.attribute("id").value();
       const auto metadata =
         ImageGraphResourceMetadata::from_type(node.attribute("type").value());
+
+      const auto width = node.attribute("width").as_uint(default_width);
+      const auto height = node.attribute("height").as_uint(default_height);
       const auto scale = node.attribute("scale").as_float(1.0f);
+
+      uint32 layers = 1;
+      if (std::string_view(node.attribute("type").as_string()) ==
+          "shadow_depth") {
+        layers = 0;
+
+        const auto point_lights_view =
+          components::context::registry()
+            ->view<
+              const components::TransformComponent,
+              const components::PointLightComponent>();
+
+        for ([[maybe_unused]] auto [e, transform_c, point_light_c] :
+             point_lights_view.each())
+          layers += 6;
+
+        const auto dir_lights_view =
+          components::context::registry()
+            ->view<
+              const components::TransformComponent,
+              const components::DirectionalLightComponent>();
+
+        for ([[maybe_unused]] auto [e, transform_c, dir_light_c] :
+             dir_lights_view.each())
+          layers += 1;
+      }
 
       vec3 size(
         static_cast<float>(width) * scale,
@@ -51,7 +83,7 @@ namespace lisa::systems::render {
 
       resource_id_map_[id] = static_cast<GraphResourceHandle>(images_.size());
       auto image = ImageGraphResource(
-        logging::genid("graph", "resources", id), metadata, size
+        logging::genid("graph", "resources", id), metadata, size, layers
       );
       images_.push_back(std::move(image));
     }
