@@ -72,6 +72,18 @@ namespace lisa::graphics {
 
     const vec3& size() const { return size_; }
 
+    vk::Extent2D extent2d() const {
+      return {static_cast<uint32>(size_.x), static_cast<uint32>(size_.y)};
+    }
+
+    vk::Extent3D extent3d() const {
+      return {
+        static_cast<uint32>(size_.x),
+        static_cast<uint32>(size_.y),
+        static_cast<uint32>(size_.z)
+      };
+    }
+
     uint32 mipmaps() const { return mips_; }
 
     uint32 layers() const { return layers_; }

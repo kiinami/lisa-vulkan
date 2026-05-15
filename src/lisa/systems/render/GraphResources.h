@@ -67,7 +67,6 @@ namespace lisa::systems::render {
         return it->second;
 
       logging::abort("Unknown render resource type alias: {}", type);
-      return {};
     }
   };
 
@@ -79,6 +78,10 @@ namespace lisa::systems::render {
     vk::ImageUsageFlags usage() const { return image.usage(); }
 
     vk::ImageAspectFlags aspect() const { return image.format().aspect_mask(); }
+
+    vk::Extent2D extent() const { return image.extent2d(); }
+
+    uint32 layers() const { return image.layers(); }
 
     ImageGraphResource(
       const str& id, const ImageGraphResourceMetadata metadata, const vec3& size
@@ -132,7 +135,7 @@ namespace lisa::systems::render {
         .oldLayout = src_state.layout,
         .newLayout = dst_state.layout,
         .image = image,
-        .subresourceRange = {aspect(), 0, 1, 0, 1}
+        .subresourceRange = {aspect(), 0, 1, 0, layers()}
       };
 
       src_state = dst_state;
@@ -144,10 +147,12 @@ namespace lisa::systems::render {
       const bool is_load, const bool is_read_only = false
     ) const {
       const bool is_depth = image.format().is_depth();
+      const bool is_layered = layers() > 1;
       const graphics::ImageViewDesc view_desc{
-        .type = vk::ImageViewType::e2D,
+        .type =
+          is_layered ? vk::ImageViewType::e2DArray : vk::ImageViewType::e2D,
         .format = format(),
-        .range = {aspect(), 0, 1, 0, 1}
+        .range = {aspect(), 0, 1, 0, is_layered ? layers() : 1}
       };
 
       auto layout = is_depth ? vk::ImageLayout::eDepthAttachmentOptimal

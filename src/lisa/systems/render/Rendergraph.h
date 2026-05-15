@@ -42,6 +42,8 @@ namespace lisa::systems::render {
   private:
     struct ExecutionNode {
       RenderPass* pass;
+      vk::Extent2D extent = {};
+      uint32 layer_count = 1;
       vector<vk::ImageMemoryBarrier2> barriers;
       vector<vk::RenderingAttachmentInfo> color_attachments;
       optional<vk::RenderingAttachmentInfo> depth_attachment;

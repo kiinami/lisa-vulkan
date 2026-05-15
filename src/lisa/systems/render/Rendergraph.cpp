@@ -114,6 +114,32 @@ namespace lisa::systems::render {
       ExecutionNode exec_node;
       exec_node.pass = passes_[pass_idx].get();
 
+      bool render_extent_set = false;
+      auto set_render_extent =
+        [&](const str& ref, const ImageGraphResource& img) {
+          if (!render_extent_set) {
+            exec_node.extent = img.extent();
+            exec_node.layer_count = img.layers();
+            render_extent_set = true;
+            return;
+          }
+
+          if (exec_node.extent != img.extent())
+            logging::abort(
+              "Resource {} has a different extent than previous render targets "
+              "for pass {}",
+              ref,
+              pass_node.attribute("id").value()
+            );
+          if (exec_node.layer_count != img.layers())
+            logging::abort(
+              "Resource {} has a different layer count than previous render "
+              "targets for pass {}",
+              ref,
+              pass_node.attribute("id").value()
+            );
+        };
+
       exec_node.pass->setup(*this, pass_node);
 
       for (const auto& input : pass_node.children("input")) {
@@ -130,6 +156,7 @@ namespace lisa::systems::render {
         exec_node.barriers.push_back(barrier);
 
         if (usage == DepthStencilAttachmentRead) {
+          set_render_extent(ref, img);
           vk::RenderingAttachmentInfo attachment =
             img.attachment_info(true, true);
           exec_node.depth_attachment = attachment;
@@ -137,7 +164,10 @@ namespace lisa::systems::render {
           const vk::DescriptorImageInfo img_info{
             shared_sampler_->handle(),
             *img.image.view(
-              {vk::ImageViewType::e2D, img.format(), {img.aspect(), 0, 1, 0, 1}}
+              {img.layers() == 1 ? vk::ImageViewType::e2D
+                                 : vk::ImageViewType::e2DArray,
+               img.format(),
+               {img.aspect(), 0, 1, 0, img.layers()}}
             ),
             vk::ImageLayout::eShaderReadOnlyOptimal
           };
@@ -151,6 +181,9 @@ namespace lisa::systems::render {
         str ref = output.attribute("ref").value();
         auto handle = resource_id_map_.at(ref);
         auto& img = images_[handle];
+
+        set_render_extent(ref, img);
+
         auto usage = utils::xml::parse_enum<GraphResourceUsage>(
           output.attribute("usage").value()
         );
@@ -169,6 +202,7 @@ namespace lisa::systems::render {
 
         has_been_written[handle] = true;
       }
+
       nodes_.push_back(std::move(exec_node));
     }
   }
@@ -178,7 +212,10 @@ namespace lisa::systems::render {
     const vk::DeviceAddress global_bda,
     const vk::DeviceAddress object_bda
   ) {
-    for (const auto& [pass, barriers, color_attachments, depth_attachment] :
+    const auto swap_extent = graphics::context::swapchain().extent();
+    if (swap_extent.width == 0 || swap_extent.height == 0) return;
+
+    for (const auto& [pass, extent, layers, barriers, color_attachments, depth_attachment] :
          nodes_) {
       cmdb.begin_region(pass->id());
 
@@ -194,9 +231,13 @@ namespace lisa::systems::render {
         !color_attachments.empty() || depth_attachment.has_value();
 
       if (has_attachments) {
+        if (extent.width == 0 || extent.height == 0 || layers == 0) {
+          cmdb.end_region();
+          continue;
+        }
         vk::RenderingInfo render_info{
-          .renderArea = {.extent = graphics::context::swapchain().extent()},
-          .layerCount = 1,
+          .renderArea = {.extent = extent},
+          .layerCount = layers,
           .colorAttachmentCount =
             static_cast<uint32_t>(color_attachments.size()),
           .pColorAttachments = color_attachments.data(),
@@ -205,7 +246,6 @@ namespace lisa::systems::render {
         };
         cmdb->beginRendering(render_info);
 
-        const auto extent = graphics::context::swapchain().extent();
         cmdb->setViewport(
           0,
           {{.width = static_cast<float>(extent.width),
