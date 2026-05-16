@@ -28,8 +28,7 @@ namespace lisa::render {
     graphics::Pipeline::CreateParameters params{
       .push_constant_range =
         vk::PushConstantRange{
-          .stageFlags = vk::ShaderStageFlagBits::eVertex |
-                        vk::ShaderStageFlagBits::eGeometry,
+          .stageFlags = vk::ShaderStageFlagBits::eVertex,
           .offset = 0,
           .size = sizeof(systems::render::PushConstants)
         },
@@ -76,13 +75,12 @@ namespace lisa::render {
       };
 
       ctx.cmdb->pushConstants<systems::render::PushConstants>(
-        pipeline_->layout(),
-        vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eGeometry,
-        0,
-        push_constants
+        pipeline_->layout(), vk::ShaderStageFlagBits::eVertex, 0, push_constants
       );
 
-      ctx.cmdb->drawIndexed(mesh->index_count(), 1, 0, 0, 0);
+      ctx.cmdb->drawIndexed(
+        mesh->index_count(), ctx.global_data.shadow_count, 0, 0, 0
+      );
       i++;
     }
   }

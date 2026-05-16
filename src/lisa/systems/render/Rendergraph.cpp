@@ -288,6 +288,8 @@ namespace lisa::systems::render {
 
   void Rendergraph::render(
     const graphics::CommandBuffer& cmdb,
+    const GlobalData& global_data,
+    const ObjectData& object_data,
     const vk::DeviceAddress global_bda,
     const vk::DeviceAddress object_bda
   ) {
@@ -336,7 +338,7 @@ namespace lisa::systems::render {
         cmdb->setScissor(0, {{.extent = extent}});
       }
 
-      RenderContext ctx{cmdb, global_bda, object_bda};
+      RenderContext ctx{cmdb, global_data, object_data, global_bda, object_bda};
       pass->execute(ctx);
 
       if (has_attachments) cmdb->endRendering();

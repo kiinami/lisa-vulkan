@@ -192,34 +192,5 @@ float4 fragment(Vertex2Fragment input) : SV_Target {
     shading += light.color * light.intensity * diffuse_color * ssao;
   }
 
-  PointLight light = push_constants.global_data->point_lights[0];
-
-float3 light_to_frag = world_position - light.position;
-float current_depth = length(light_to_frag);
-float3 dir = normalize(light_to_frag);
-float3 abs_dir = abs(dir);
-
-uint32_t face;
-float2 uv;
-if (abs_dir.x >= abs_dir.y && abs_dir.x >= abs_dir.z) {
-    if (dir.x > 0.0) { face = 0; uv = float2(-dir.z, -dir.y) / abs_dir.x; }
-    else             { face = 1; uv = float2( dir.z, -dir.y) / abs_dir.x; }
-} else if (abs_dir.y >= abs_dir.x && abs_dir.y >= abs_dir.z) {
-    if (dir.y > 0.0) { face = 2; uv = float2( dir.x,  dir.z) / abs_dir.y; }
-    else             { face = 3; uv = float2( dir.x, -dir.z) / abs_dir.y; }
-} else {
-    if (dir.z > 0.0) { face = 4; uv = float2( dir.x, -dir.y) / abs_dir.z; }
-    else             { face = 5; uv = float2(-dir.x, -dir.y) / abs_dir.z; }
-}
-uv = uv * 0.5 + 0.5;
-
-float closest_depth_ndc = array_textures[push_constants.shadow_idx].SampleLevel(float3(uv, light.shadow_base_index + face), 0).r;
-float closest_depth = linearize_depth(closest_depth_ndc, light.near, light.far);
-
-// return float4(closest_depth_ndc.rrr, 1.0);          // A: raw NDC depth from shadow map
-// return float4(current_depth / light.far, 0, 0, 1.0); // B: current depth normalized
-// return float4(closest_depth / light.far, 0, 0, 1.0); // C: linearized depth normalized  
-// return float4(float(current_depth - SHADOW_BIAS <= closest_depth).rrr, 1.0); // D: final mask
-
   return float4(shading, 1.0);
 }

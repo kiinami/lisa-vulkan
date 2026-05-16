@@ -303,6 +303,8 @@ namespace lisa::systems::render {
 
     graph_.render(
       cmd_buffer_,
+      *global_data,
+      *object_data,
       global_data_buffers_[current_frame_].address(),
       object_data_buffers_[current_frame_].address()
     );

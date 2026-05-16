@@ -7,7 +7,6 @@
 #pragma once
 
 #include "ShaderPass.h"
-#include "graphics/descriptors/DescriptorAllocator.h"
 #include "graphics/pipeline/Pipeline.h"
 #include "systems/render/RenderPass.h"
 
