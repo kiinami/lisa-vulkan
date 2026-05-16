@@ -4,6 +4,7 @@
 
 #include "LogicalDevice.h"
 
+#include "constants.h"
 #include "graphics/constants.h"
 #include "graphics/context.h"
 #include "utils/chk.h"
@@ -77,7 +78,7 @@ namespace lisa::graphics {
 
     const vk::CommandBufferAllocateInfo command_buffers_ai{
       .commandPool = command_pool_,
-      .commandBufferCount = constants::MAX_FRAMES_IN_FLIGHT
+      .commandBufferCount = lisa::constants::MAX_FRAMES_IN_FLIGHT
     };
     command_buffers_ = object_.allocateCommandBuffers(command_buffers_ai);
   }

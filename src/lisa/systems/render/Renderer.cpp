@@ -28,7 +28,7 @@ namespace lisa::systems::render {
                vma::AllocationCreateFlagBits::eHostAccessSequentialWrite,
       .usage = vma::MemoryUsage::eAuto
     };
-    for (size i = 0; i < graphics::constants::MAX_FRAMES_IN_FLIGHT; i++) {
+    for (size i = 0; i < constants::MAX_FRAMES_IN_FLIGHT; i++) {
       global_data_buffers_[i] = graphics::Buffer(
         logging::genid("graph", "frames", i, "global_data"),
         sizeof(GlobalData),
@@ -37,32 +37,32 @@ namespace lisa::systems::render {
       );
       object_data_buffers_[i] = graphics::Buffer(
         logging::genid("graph", "frames", i, "object_data"),
-        sizeof(ObjectData) * graphics::constants::MAX_OBJECTS,
+        sizeof(ObjectData) * constants::MAX_OBJECTS,
         usage,
         allocation_ci
       );
       point_lights_buffers_[i] = graphics::Buffer(
         logging::genid("graph", "frames", i, "point_lights"),
-        sizeof(PointLightData) * graphics::constants::MAX_POINT_LIGHTS,
+        sizeof(PointLightData) * constants::MAX_POINT_LIGHTS,
         usage,
         allocation_ci
       );
       dir_lights_buffers_[i] = graphics::Buffer(
         logging::genid("graph", "frames", i, "dir_lights"),
-        sizeof(DirLightData) * graphics::constants::MAX_DIR_LIGHTS,
+        sizeof(DirLightData) * constants::MAX_DIR_LIGHTS,
         usage,
         allocation_ci
       );
       ambient_lights_buffers_[i] = graphics::Buffer(
         logging::genid("graph", "frames", i, "ambient_lights"),
-        sizeof(AmbientLightData) * graphics::constants::MAX_AMBIENT_LIGHTS,
+        sizeof(AmbientLightData) * constants::MAX_AMBIENT_LIGHTS,
         usage,
         allocation_ci
       );
       shadow_data_buffers_[i] = graphics::Buffer(
         logging::genid("graph", "frames", i, "shadow_data"),
-        sizeof(ShadowData) * (graphics::constants::MAX_POINT_LIGHTS +
-                              graphics::constants::MAX_DIR_LIGHTS),
+        sizeof(ShadowData) * (constants::MAX_POINT_LIGHTS +
+                              constants::MAX_DIR_LIGHTS),
         usage,
         allocation_ci
       );
@@ -293,6 +293,6 @@ namespace lisa::systems::render {
     swapchain_.present(swapchain_image, finished_s_[swapchain_image]);
 
     current_frame_ =
-      (current_frame_ + 1) % graphics::constants::MAX_FRAMES_IN_FLIGHT;
+      (current_frame_ + 1) % constants::MAX_FRAMES_IN_FLIGHT;
   }
 }

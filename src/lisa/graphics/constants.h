@@ -2,8 +2,8 @@
 // Created by kinami on 4/2/26.
 //
 
-#ifndef LISA_VULKAN_CONSTANTS_H
-#define LISA_VULKAN_CONSTANTS_H
+#ifndef LISA_VULKAN_GRAPHICS_CONSTANTS_H
+#define LISA_VULKAN_GRAPHICS_CONSTANTS_H
 #include "utils/common.h"
 
 #include <vulkan/vulkan_profiles.hpp>
@@ -37,12 +37,6 @@ namespace lisa::graphics::constants {
     return caps;
   }
 
-  static constexpr uint32 MAX_FRAMES_IN_FLIGHT = 2;
-  static constexpr size MAX_OBJECTS = 1024;
-  static constexpr size MAX_POINT_LIGHTS = 1024;
-  static constexpr size MAX_DIR_LIGHTS = 1024;
-  static constexpr size MAX_AMBIENT_LIGHTS = 1024;
-
 }
 
-#endif // LISA_VULKAN_CONSTANTS_H
+#endif // LISA_VULKAN_GRAPHICS_CONSTANTS_H

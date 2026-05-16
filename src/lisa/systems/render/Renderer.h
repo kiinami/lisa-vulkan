@@ -6,6 +6,7 @@
 #define LISA_VULKAN_RENDERER_H
 
 #include "Rendergraph.h"
+#include "constants.h"
 #include "graphics/buffer/Buffer.h"
 #include "graphics/constants.h"
 #include "graphics/swapchain/Swapchain.h"
@@ -39,20 +40,20 @@ namespace lisa::systems::render {
     graphics::CommandBuffer cmd_buffer_;
     graphics::Swapchain& swapchain_;
 
-    array<graphics::Buffer, graphics::constants::MAX_FRAMES_IN_FLIGHT>
+    array<graphics::Buffer, constants::MAX_FRAMES_IN_FLIGHT>
       global_data_buffers_;
-    array<graphics::Buffer, graphics::constants::MAX_FRAMES_IN_FLIGHT>
+    array<graphics::Buffer, constants::MAX_FRAMES_IN_FLIGHT>
       object_data_buffers_;
-    array<graphics::Buffer, graphics::constants::MAX_FRAMES_IN_FLIGHT>
+    array<graphics::Buffer, constants::MAX_FRAMES_IN_FLIGHT>
       point_lights_buffers_;
-    array<graphics::Buffer, graphics::constants::MAX_FRAMES_IN_FLIGHT>
+    array<graphics::Buffer, constants::MAX_FRAMES_IN_FLIGHT>
       dir_lights_buffers_;
-    array<graphics::Buffer, graphics::constants::MAX_FRAMES_IN_FLIGHT>
+    array<graphics::Buffer, constants::MAX_FRAMES_IN_FLIGHT>
       ambient_lights_buffers_;
-    array<graphics::Buffer, graphics::constants::MAX_FRAMES_IN_FLIGHT>
+    array<graphics::Buffer, constants::MAX_FRAMES_IN_FLIGHT>
       shadow_data_buffers_;
 
-    array<graphics::Semaphore, graphics::constants::MAX_FRAMES_IN_FLIGHT>
+    array<graphics::Semaphore, constants::MAX_FRAMES_IN_FLIGHT>
       available_s_;
     vector<graphics::Semaphore> finished_s_;
 

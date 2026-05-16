@@ -99,6 +99,7 @@ vma_hpp = dependency('VulkanMemoryAllocator-Hpp', required: true)
 ###############################################################################
 src = files(
     'src/lisa/build.h',
+    'src/lisa/constants.h',
     'src/lisa/implementations.cpp',
 
     'src/lisa/graphics/vk/VkObject.h',
