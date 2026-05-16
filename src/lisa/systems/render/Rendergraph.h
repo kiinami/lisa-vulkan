@@ -54,7 +54,7 @@ namespace lisa::systems::render {
     vector<uptr<RenderPass>> passes_;
     vector<ExecutionNode> nodes_;
     GraphResourceHandle output_handle_;
-    uptr<graphics::Sampler> shared_sampler_;
+    umap<GraphResourceSamplerProfile, uptr<graphics::Sampler>> samplers_;
 
     void allocate_resources(const pugi::xml_node& doc_element);
     void allocate_passes(const pugi::xml_node& doc_element);

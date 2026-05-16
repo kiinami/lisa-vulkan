@@ -8,6 +8,7 @@ import lib.constants;
 
 [[vk::binding(0)]] Sampler2D textures[];
 [[vk::binding(0)]] Sampler2DArray array_textures[];
+[[vk::binding(0)]] Sampler2DArrayShadow shadow_array_textures[];
 
 struct CompositionPushConstants {
   GlobalData* global_data;
@@ -67,13 +68,19 @@ float linearize_depth(float depth, float near, float far) {
   return near * far / (far - depth * (far - near));
 }
 
+float planar_to_ndc(float linear_depth, float near, float far) {
+    return (far / (far - near)) - ((far * near) / ((far - near) * linear_depth));
+}
+
 float eval_visibility_shadow_map(float3 world_position, uint32_t shadow_layer) {
   if (shadow_layer == 0xFFFFFFFF) return 1.0;
 
   Shadow sh = push_constants.global_data->shadows[shadow_layer];
   float4 shadow_pos = mul(sh.view_projection, float4(world_position, 1.0));
   shadow_pos.xyz /= shadow_pos.w;
-  shadow_pos.xyz = shadow_pos.xyz * 0.5 + 0.5;
+  
+  shadow_pos.xy = shadow_pos.xy * 0.5 + 0.5;
+  shadow_pos.y = 1.0 - shadow_pos.y; 
 
   if (shadow_pos.x < 0.0 || shadow_pos.x > 1.0 ||
       shadow_pos.y < 0.0 || shadow_pos.y > 1.0 ||
@@ -81,8 +88,21 @@ float eval_visibility_shadow_map(float3 world_position, uint32_t shadow_layer) {
     return 1.0;
   }
 
-  float depth = array_textures[push_constants.shadow_idx].SampleLevel(float3(shadow_pos.xy, shadow_layer), 0).r;
-  return float(shadow_pos.z - SHADOW_BIAS <= depth);
+  uint width, height, elements;
+  shadow_array_textures[push_constants.shadow_idx].GetDimensions(width, height, elements);
+  float2 texel_size = 1.0 / float2(width, height);
+
+  float shadow = 0.0;
+  for (int x = -1; x <= 1; ++x) {
+    for (int y = -1; y <= 1; ++y) {
+      float2 offset = float2(x, y) * texel_size;
+      shadow += shadow_array_textures[push_constants.shadow_idx].SampleCmpLevelZero(
+          float3(shadow_pos.xy + offset, shadow_layer), 
+          shadow_pos.z - SHADOW_BIAS
+      );
+    }
+  }
+  return shadow / 9.0;
 }
 
 float eval_visibility_shadow_cubemap(float3 world_position, uint32_t shadow_base_layer, float3 light_position, float near, float far) {
@@ -108,15 +128,26 @@ float eval_visibility_shadow_cubemap(float3 world_position, uint32_t shadow_base
     if (dir.z > 0.0) { face = 4; uv = float2( dir.x, -dir.y) / abs_dir.z; }
     else             { face = 5; uv = float2(-dir.x, -dir.y) / abs_dir.z; }
   }
-  
   uv = uv * 0.5 + 0.5;
-  
   uv.y = 1.0 - uv.y;
 
-  float closest_depth_ndc = array_textures[push_constants.shadow_idx].SampleLevel(float3(uv, shadow_base_layer + face), 0).r;
-  float closest_depth = linearize_depth(closest_depth_ndc, near, far);
-  
-  return float(current_depth_planar - SHADOW_BIAS <= closest_depth);
+  float current_depth_ndc = planar_to_ndc(current_depth_planar, near, far);
+
+  uint width, height, elements;
+  shadow_array_textures[push_constants.shadow_idx].GetDimensions(width, height, elements);
+  float2 texel_size = 1.0 / float2(width, height);
+
+  float shadow = 0.0;
+  for (int x = -1; x <= 1; ++x) {
+    for (int y = -1; y <= 1; ++y) {
+      float2 offset = float2(x, y) * texel_size;
+      shadow += shadow_array_textures[push_constants.shadow_idx].SampleCmpLevelZero(
+          float3(uv + offset, shadow_base_layer + face), 
+          current_depth_ndc - SHADOW_BIAS
+      );
+    }
+  }
+  return shadow / 9.0;
 }
 
 [shader("fragment")]

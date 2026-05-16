@@ -22,7 +22,9 @@ namespace lisa::graphics {
       vk::Filter min_filter = vk::Filter::eLinear,
       vk::SamplerMipmapMode mipmap_mode = vk::SamplerMipmapMode::eLinear,
       bool anisotropic = true,
-      float max_anisotropy = 8.0f
+      float max_anisotropy = 8.0f,
+      bool compare = false,
+      vk::CompareOp compare_op = vk::CompareOp::eLessOrEqual
     );
   };
 

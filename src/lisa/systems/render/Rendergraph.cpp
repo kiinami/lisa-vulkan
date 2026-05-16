@@ -19,12 +19,32 @@
 
 namespace lisa::systems::render {
   Rendergraph::Rendergraph(const path& filepath) {
-    shared_sampler_ = std::make_unique<graphics::Sampler>(
-      logging::genid("graph", "sampler"),
-      1.0f,
-      vk::Filter::eNearest,
-      vk::Filter::eNearest
-    );
+    samplers_[GraphResourceSamplerProfile::Nearest] =
+      std::make_unique<graphics::Sampler>(
+        logging::genid("graph", "sampler_nearest"),
+        1.0f,
+        vk::Filter::eNearest,
+        vk::Filter::eNearest
+      );
+    samplers_[GraphResourceSamplerProfile::Linear] =
+      std::make_unique<graphics::Sampler>(
+        logging::genid("graph", "sampler_linear"),
+        1.0f,
+        vk::Filter::eLinear,
+        vk::Filter::eLinear
+      );
+    samplers_[GraphResourceSamplerProfile::ShadowPCF] =
+      std::make_unique<graphics::Sampler>(
+        logging::genid("graph", "sampler_shadow"),
+        1.0f,
+        vk::Filter::eLinear,
+        vk::Filter::eLinear,
+        vk::SamplerMipmapMode::eLinear,
+        true,
+        8.0f,
+        true,
+        vk::CompareOp::eLessOrEqual
+      );
 
     const auto doc = utils::xml::read(filepath, "rendergraph");
     const auto doc_element = doc.document_element();
@@ -93,8 +113,10 @@ namespace lisa::systems::render {
 
         if (point_lights_count + dir_lights_count > 0) {
           layers =
-            std::min(point_lights_count, constants::MAX_POINT_LIGHT_SHADOWS) * 6;
-          layers += std::min(dir_lights_count, constants::MAX_DIR_LIGHT_SHADOWS);
+            std::min(point_lights_count, constants::MAX_POINT_LIGHT_SHADOWS) *
+            6;
+          layers +=
+            std::min(dir_lights_count, constants::MAX_DIR_LIGHT_SHADOWS);
         }
       }
 
@@ -216,8 +238,10 @@ namespace lisa::systems::render {
             img.attachment_info(true, true);
           exec_node.depth_attachment = attachment;
         } else if (usage == SampledFragment) {
+          vk::Sampler sampler_handle = samplers_[img.sampler_profile]->handle();
+
           const vk::DescriptorImageInfo img_info{
-            shared_sampler_->handle(),
+            sampler_handle,
             *img.image.view(
               {img.layers() == 1 ? vk::ImageViewType::e2D
                                  : vk::ImageViewType::e2DArray,

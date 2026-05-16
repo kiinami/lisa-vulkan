@@ -14,7 +14,9 @@ namespace lisa::graphics {
     const vk::Filter min_filter,
     const vk::SamplerMipmapMode mipmap_mode,
     const bool anisotropic,
-    const float max_anisotropy
+    const float max_anisotropy,
+    const bool compare,
+    const vk::CompareOp compare_op
   ) :
     NamedVkObject(id) {
     set(
@@ -24,6 +26,8 @@ namespace lisa::graphics {
          .mipmapMode = mipmap_mode,
          .anisotropyEnable = anisotropic,
          .maxAnisotropy = max_anisotropy,
+         .compareEnable = compare,
+         .compareOp = compare_op,
          .maxLod = max_lod}
       )
     );
