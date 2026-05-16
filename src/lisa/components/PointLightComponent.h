@@ -34,10 +34,12 @@ namespace lisa::components {
       return cached_views_;
     }
 
+    static float near() { return 0.1f; }
+
+    float far() const { return radius * 3.0f; }
+
     mat4 projection() const {
-      auto proj = glm::perspective(
-        glm::radians(90.0f), 1.0f, 0.1f, std::max(radius, 1.1f)
-      );
+      auto proj = glm::perspective(glm::radians(90.0f), 1.0f, near(), far());
       proj[1][1] *= -1.0f;
       return proj;
     }

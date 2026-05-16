@@ -16,13 +16,17 @@ public struct PointLight {
   public float intensity;
   public float3 color;
   public float radius;
+  public float near;
+  public float far;
+  public uint32_t shadow_base_index;
+  float padding;
 }
 
 public struct DirLight {
   public float3 direction;
   public float intensity;
   public float3 color;
-  float padding;
+  public uint32_t shadow_index;
 }
 
 public struct AmbientLight {

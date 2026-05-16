@@ -140,13 +140,16 @@ namespace lisa::systems::render {
       uint32 shadowed_point_lights = 0;
       for (auto [e, transform_c, point_light_c] : point_lights_view.each()) {
         point_light_data[i] = PointLightData(transform_c, point_light_c);
-        if (point_light_c.cast_shadows &&
-            shadowed_point_lights <
-            constants::MAX_POINT_LIGHT_SHADOWS &&
-            shadow_count +
-            6 <= constants::MAX_SHADOW_LAYERS) {
+        if (
+          point_light_c.cast_shadows &&
+          shadowed_point_lights <
+          constants::MAX_POINT_LIGHT_SHADOWS &&
+          shadow_count +
+          6 <= constants::MAX_SHADOW_LAYERS
+        ) {
           const auto proj = point_light_c.projection();
           const auto& views = point_light_c.views(transform_c);
+          point_light_data[i].shadow_base_index = shadow_count;
           for (uint32 j = 0; j < 6; j++) {
             shadow_data[shadow_count] = ShadowData{
               .view_projection = proj * views[j], .layer = shadow_count
@@ -178,10 +181,13 @@ namespace lisa::systems::render {
       uint32 shadowed_dir_lights = 0;
       for (auto [e, transform_c, dir_light_c] : dir_lights_view.each()) {
         dir_light_data[i] = DirLightData(transform_c, dir_light_c);
-        if (dir_light_c.cast_shadows &&
-            shadowed_dir_lights <
-            constants::MAX_DIR_LIGHT_SHADOWS &&
-            shadow_count < constants::MAX_SHADOW_LAYERS) {
+        if (
+          dir_light_c.cast_shadows &&
+          shadowed_dir_lights <
+          constants::MAX_DIR_LIGHT_SHADOWS &&
+          shadow_count < constants::MAX_SHADOW_LAYERS
+        ) {
+          dir_light_data[i].shadow_index = shadow_count;
           shadow_data[shadow_count] = ShadowData{
             .view_projection =
               dir_light_c.shadow_view_projection(transform_c.direction()),
@@ -253,17 +259,25 @@ namespace lisa::systems::render {
             std::numeric_limits<uint32>::max();
           object_data[i].normal_texture_index =
             std::numeric_limits<uint32>::max();
-          if (const auto res = material_component->albedo_texture();
-              res != nullptr)
+          if (
+            const auto res = material_component->albedo_texture();
+            res != nullptr
+          )
             object_data[i].diffuse_texture_index = res->descriptor_index();
-          if (const auto res = material_component->roughness_texture();
-              res != nullptr)
+          if (
+            const auto res = material_component->roughness_texture();
+            res != nullptr
+          )
             object_data[i].roughness_texture_index = res->descriptor_index();
-          if (const auto res = material_component->metallic_texture();
-              res != nullptr)
+          if (
+            const auto res = material_component->metallic_texture();
+            res != nullptr
+          )
             object_data[i].metallic_texture_index = res->descriptor_index();
-          if (const auto res = material_component->normal_texture();
-              res != nullptr)
+          if (
+            const auto res = material_component->normal_texture();
+            res != nullptr
+          )
             object_data[i].normal_texture_index = res->descriptor_index();
         } else {
           object_data[i].color = vec4(1.0f);
