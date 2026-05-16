@@ -7,6 +7,7 @@
 #include "GraphResources.h"
 #include "RenderPassRegistry.h"
 #include "components/context.h"
+#include "constants.h"
 #include "graphics/context.h"
 #include "graphics/descriptors/DescriptorContainer.h"
 #include "utils/logging.h"
@@ -50,29 +51,51 @@ namespace lisa::systems::render {
       const auto scale = node.attribute("scale").as_float(1.0f);
 
       uint32 layers = 1;
-      if (std::string_view(node.attribute("type").as_string()) ==
-          "shadow_depth") {
-        layers = 0;
+      if (
+        std::string_view(node.attribute("type").as_string()) == "shadow_depth"
+      ) {
+        size point_lights_count = 0;
+        components::context::registry()
+          ->view<components::PointLightComponent>()
+          .each([&point_lights_count](
+                  const components::PointLightComponent& light
+                ) {
+            if (light.cast_shadows) point_lights_count++;
+          });
 
-        const auto point_lights_view =
-          components::context::registry()
-            ->view<
-              const components::TransformComponent,
-              const components::PointLightComponent>();
+        size dir_lights_count = 0;
+        components::context::registry()
+          ->view<components::DirectionalLightComponent>()
+          .each([&dir_lights_count](
+                  const components::DirectionalLightComponent& light
+                ) {
+            if (light.cast_shadows) dir_lights_count++;
+          });
 
-        for ([[maybe_unused]] auto [e, transform_c, point_light_c] :
-             point_lights_view.each())
-          layers += 6;
+        if (point_lights_count > constants::MAX_POINT_LIGHT_SHADOWS)
+          logging::warning(
+            "Number of shadow-casting point lights ({}) exceeds the maximum "
+            "supported by the rendergraph ({}). Only the first {} will be "
+            "rendered with shadows.",
+            point_lights_count,
+            constants::MAX_POINT_LIGHT_SHADOWS,
+            constants::MAX_POINT_LIGHT_SHADOWS
+          );
+        if (dir_lights_count > constants::MAX_DIR_LIGHT_SHADOWS)
+          logging::warning(
+            "Number of shadow-casting directional lights ({}) exceeds the "
+            "maximum supported by the rendergraph ({}). Only the first {} will "
+            "be rendered with shadows.",
+            dir_lights_count,
+            constants::MAX_DIR_LIGHT_SHADOWS,
+            constants::MAX_DIR_LIGHT_SHADOWS
+          );
 
-        const auto dir_lights_view =
-          components::context::registry()
-            ->view<
-              const components::TransformComponent,
-              const components::DirectionalLightComponent>();
-
-        for ([[maybe_unused]] auto [e, transform_c, dir_light_c] :
-             dir_lights_view.each())
-          layers += 1;
+        if (point_lights_count + dir_lights_count > 0) {
+          layers =
+            std::min(point_lights_count, constants::MAX_POINT_LIGHT_SHADOWS) * 6;
+          layers += std::min(dir_lights_count, constants::MAX_DIR_LIGHT_SHADOWS);
+        }
       }
 
       vec3 size(
@@ -247,8 +270,9 @@ namespace lisa::systems::render {
     const auto swap_extent = graphics::context::swapchain().extent();
     if (swap_extent.width == 0 || swap_extent.height == 0) return;
 
-    for (const auto& [pass, extent, layers, barriers, color_attachments, depth_attachment] :
-         nodes_) {
+    for (
+      const auto& [pass, extent, layers, barriers, color_attachments, depth_attachment] :
+      nodes_) {
       cmdb.begin_region(pass->id());
 
       if (!barriers.empty()) {

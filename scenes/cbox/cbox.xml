@@ -66,7 +66,8 @@
         <transform>
             <lookat origin="0, 7, 3" target="0, 3, 0" up="0, 1, 0"/>
         </transform>
-        <directional_light color="1.0, 0.8, 0.7" intensity="2"/>
+        <directional_light color="1.0, 0.8, 0.7" intensity="2" cast_shadows="true"/>
+        <point_light color="1.0, 0.8, 0.7" intensity="10" attenuation="1" radius="100" cast_shadows="true"/>
         <ambient_light color="1.0, 0.8, 0.7" intensity="0.05"/>
     </entity>
 </scene>

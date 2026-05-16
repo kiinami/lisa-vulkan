@@ -111,6 +111,7 @@
                                 <xs:complexType>
                                     <xs:attribute name="color" type="floatList" use="required"/>
                                     <xs:attribute name="intensity" type="xs:float" use="required"/>
+                                    <xs:attribute name="cast_shadows" type="xs:boolean" default="false"/>
                                 </xs:complexType>
                             </xs:element>
 
@@ -121,6 +122,7 @@
                                     <xs:attribute name="intensity" type="xs:float" use="required"/>
                                     <xs:attribute name="attenuation" type="xs:float" use="required"/>
                                     <xs:attribute name="radius" type="xs:float" use="required"/>
+                                    <xs:attribute name="cast_shadows" type="xs:boolean" default="false"/>
                                 </xs:complexType>
                             </xs:element>
 

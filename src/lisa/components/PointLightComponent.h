@@ -14,6 +14,7 @@ namespace lisa::components {
     float intensity;
     float attenuation;
     float radius;
+    bool cast_shadows = false;
   };
 
 }
