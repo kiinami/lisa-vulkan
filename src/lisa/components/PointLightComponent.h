@@ -4,6 +4,7 @@
 
 #ifndef LISA_VULKAN_POINTLIGHTCOMPONENT_H
 #define LISA_VULKAN_POINTLIGHTCOMPONENT_H
+#include "TransformComponent.h"
 #include "systems/ecs/Component.h"
 #include "utils/common.h"
 
@@ -15,8 +16,38 @@ namespace lisa::components {
     float attenuation;
     float radius;
     bool cast_shadows = false;
+
+    const array<mat4, 6>& views(const TransformComponent& transform) const {
+      if (views_dirty_ || transform.position() != last_position_) {
+        const vec3 pos = transform.position();
+        last_position_ = pos;
+        views_dirty_ = false;
+        cached_views_ = {
+          lookAt(pos, pos + vec3{1.0f, 0.0f, 0.0f}, vec3{0.0f, -1.0f, 0.0f}),
+          lookAt(pos, pos + vec3{-1.0f, 0.0f, 0.0f}, vec3{0.0f, -1.0f, 0.0f}),
+          lookAt(pos, pos + vec3{0.0f, 1.0f, 0.0f}, vec3{0.0f, 0.0f, 1.0f}),
+          lookAt(pos, pos + vec3{0.0f, -1.0f, 0.0f}, vec3{0.0f, 0.0f, -1.0f}),
+          lookAt(pos, pos + vec3{0.0f, 0.0f, 1.0f}, vec3{0.0f, -1.0f, 0.0f}),
+          lookAt(pos, pos + vec3{0.0f, 0.0f, -1.0f}, vec3{0.0f, -1.0f, 0.0f}),
+        };
+      }
+      return cached_views_;
+    }
+
+    mat4 projection() const {
+      auto proj = glm::perspective(
+        glm::radians(90.0f), 1.0f, 0.1f, std::max(radius, 1.1f)
+      );
+      proj[1][1] *= -1.0f;
+      return proj;
+    }
+
+  private:
+    mutable array<mat4, 6> cached_views_;
+    mutable vec3 last_position_{std::numeric_limits<float>::quiet_NaN()};
+    mutable bool views_dirty_ = true;
   };
 
 }
 
-#endif // LISA_VULKAN_POINTLIGHTCOMPONENT_H
+#endif

@@ -15,6 +15,9 @@ namespace lisa::constants {
   static constexpr size MAX_AMBIENT_LIGHTS = 1024;
   static constexpr size MAX_POINT_LIGHT_SHADOWS = 4;
   static constexpr size MAX_DIR_LIGHT_SHADOWS = 4;
+
+  static constexpr size MAX_SHADOW_LAYERS =
+    MAX_POINT_LIGHT_SHADOWS * 6 + MAX_DIR_LIGHT_SHADOWS;
 }
 
 #endif // LISA_VULKAN_CONSTANTS_H

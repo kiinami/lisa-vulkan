@@ -61,8 +61,7 @@ namespace lisa::systems::render {
       );
       shadow_data_buffers_[i] = graphics::Buffer(
         logging::genid("graph", "frames", i, "shadow_data"),
-        sizeof(ShadowData) * (constants::MAX_POINT_LIGHTS +
-                              constants::MAX_DIR_LIGHTS),
+        sizeof(ShadowData) * (constants::MAX_SHADOW_LAYERS),
         usage,
         allocation_ci
       );
@@ -124,6 +123,7 @@ namespace lisa::systems::render {
     auto* shadow_data = static_cast<ShadowData*>(
       shadow_data_buffers_[current_frame_].mapped_data()
     );
+    uint32 shadow_count = 0;
 
     auto* point_light_data = static_cast<PointLightData*>(
       point_lights_buffers_[current_frame_].mapped_data()
@@ -137,8 +137,24 @@ namespace lisa::systems::render {
             const components::PointLightComponent>();
 
       uint32 i = 0;
+      uint32 shadowed_point_lights = 0;
       for (auto [e, transform_c, point_light_c] : point_lights_view.each()) {
         point_light_data[i] = PointLightData(transform_c, point_light_c);
+        if (point_light_c.cast_shadows &&
+            shadowed_point_lights <
+            constants::MAX_POINT_LIGHT_SHADOWS &&
+            shadow_count +
+            6 <= constants::MAX_SHADOW_LAYERS) {
+          const auto proj = point_light_c.projection();
+          const auto& views = point_light_c.views(transform_c);
+          for (uint32 j = 0; j < 6; j++) {
+            shadow_data[shadow_count] = ShadowData{
+              .view_projection = proj * views[j], .layer = shadow_count
+            };
+            shadow_count++;
+          }
+          shadowed_point_lights++;
+        }
         i++;
       }
 
@@ -159,13 +175,21 @@ namespace lisa::systems::render {
             const components::DirectionalLightComponent>();
 
       uint32 i = 0;
+      uint32 shadowed_dir_lights = 0;
       for (auto [e, transform_c, dir_light_c] : dir_lights_view.each()) {
         dir_light_data[i] = DirLightData(transform_c, dir_light_c);
-        shadow_data[i] = ShadowData{
-          .view_projection =
-            dir_light_c.shadow_view_projection(transform_c.direction()),
-          .layer = global_data->point_lights_count * 6 + i
-        };
+        if (dir_light_c.cast_shadows &&
+            shadowed_dir_lights <
+            constants::MAX_DIR_LIGHT_SHADOWS &&
+            shadow_count < constants::MAX_SHADOW_LAYERS) {
+          shadow_data[shadow_count] = ShadowData{
+            .view_projection =
+              dir_light_c.shadow_view_projection(transform_c.direction()),
+            .layer = shadow_count
+          };
+          shadow_count++;
+          shadowed_dir_lights++;
+        }
         i++;
       }
 
@@ -195,8 +219,7 @@ namespace lisa::systems::render {
     }
 
     global_data->update_shadow_data(
-      shadow_data_buffers_[current_frame_].address(),
-      global_data->point_lights_count * 6 + global_data->dir_lights_count
+      shadow_data_buffers_[current_frame_].address(), shadow_count
     );
 
     global_data->texel_size = window::context::texel_size();
@@ -230,25 +253,17 @@ namespace lisa::systems::render {
             std::numeric_limits<uint32>::max();
           object_data[i].normal_texture_index =
             std::numeric_limits<uint32>::max();
-          if (
-            const auto res = material_component->albedo_texture();
-            res != nullptr
-          )
+          if (const auto res = material_component->albedo_texture();
+              res != nullptr)
             object_data[i].diffuse_texture_index = res->descriptor_index();
-          if (
-            const auto res = material_component->roughness_texture();
-            res != nullptr
-          )
+          if (const auto res = material_component->roughness_texture();
+              res != nullptr)
             object_data[i].roughness_texture_index = res->descriptor_index();
-          if (
-            const auto res = material_component->metallic_texture();
-            res != nullptr
-          )
+          if (const auto res = material_component->metallic_texture();
+              res != nullptr)
             object_data[i].metallic_texture_index = res->descriptor_index();
-          if (
-            const auto res = material_component->normal_texture();
-            res != nullptr
-          )
+          if (const auto res = material_component->normal_texture();
+              res != nullptr)
             object_data[i].normal_texture_index = res->descriptor_index();
         } else {
           object_data[i].color = vec4(1.0f);
@@ -292,7 +307,6 @@ namespace lisa::systems::render {
     submit_to_queue(swapchain_image);
     swapchain_.present(swapchain_image, finished_s_[swapchain_image]);
 
-    current_frame_ =
-      (current_frame_ + 1) % constants::MAX_FRAMES_IN_FLIGHT;
+    current_frame_ = (current_frame_ + 1) % constants::MAX_FRAMES_IN_FLIGHT;
   }
 }

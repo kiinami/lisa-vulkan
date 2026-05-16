@@ -11,12 +11,6 @@ public struct Input {
   public float3 tangent;
 }
 
-public struct Shadow {
-  public float4x4 view_projection;
-  public uint32_t index;
-  float3 padding;
-}
-
 public struct PointLight {
   public float3 position;
   public float intensity;
@@ -34,6 +28,12 @@ public struct DirLight {
 public struct AmbientLight {
   public float intensity;
   public float3 color;
+}
+
+public struct Shadow {
+  public float4x4 view_projection;
+  public uint32_t index;
+  float3 padding;
 }
 
 public struct GlobalData {
