@@ -249,4 +249,6 @@ scenes/sponza
 
 subprojects/*
 !subprojects/*.wrap
+subprojects/simdjson.wrap
+
 !subprojects/packagefiles
