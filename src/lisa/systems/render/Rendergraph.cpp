@@ -6,22 +6,45 @@
 
 #include "GraphResources.h"
 #include "RenderPassRegistry.h"
+#include "components/context.h"
+#include "constants.h"
 #include "graphics/context.h"
 #include "graphics/descriptors/DescriptorContainer.h"
 #include "utils/logging.h"
 #include "utils/xml.h"
 #include "window/context.h"
 
+#include <algorithm>
 #include <functional>
 
 namespace lisa::systems::render {
   Rendergraph::Rendergraph(const path& filepath) {
-    shared_sampler_ = std::make_unique<graphics::Sampler>(
-      logging::genid("graph", "sampler"),
-      1.0f,
-      vk::Filter::eNearest,
-      vk::Filter::eNearest
-    );
+    samplers_[GraphResourceSamplerProfile::Nearest] =
+      std::make_unique<graphics::Sampler>(
+        logging::genid("graph", "sampler_nearest"),
+        1.0f,
+        vk::Filter::eNearest,
+        vk::Filter::eNearest
+      );
+    samplers_[GraphResourceSamplerProfile::Linear] =
+      std::make_unique<graphics::Sampler>(
+        logging::genid("graph", "sampler_linear"),
+        1.0f,
+        vk::Filter::eLinear,
+        vk::Filter::eLinear
+      );
+    samplers_[GraphResourceSamplerProfile::ShadowPCF] =
+      std::make_unique<graphics::Sampler>(
+        logging::genid("graph", "sampler_shadow"),
+        1.0f,
+        vk::Filter::eLinear,
+        vk::Filter::eLinear,
+        vk::SamplerMipmapMode::eLinear,
+        true,
+        8.0f,
+        true,
+        vk::CompareOp::eLessOrEqual
+      );
 
     const auto doc = utils::xml::read(filepath, "rendergraph");
     const auto doc_element = doc.document_element();
@@ -35,13 +58,67 @@ namespace lisa::systems::render {
   }
 
   void Rendergraph::allocate_resources(const pugi::xml_node& doc_element) {
-    auto [width, height] = graphics::context::swapchain().extent();
+    auto [default_width, default_height] =
+      graphics::context::swapchain().extent();
 
     for (const auto& node : doc_element.children("resource")) {
       const auto id = node.attribute("id").value();
       const auto metadata =
         ImageGraphResourceMetadata::from_type(node.attribute("type").value());
+
+      const auto width = node.attribute("width").as_uint(default_width);
+      const auto height = node.attribute("height").as_uint(default_height);
       const auto scale = node.attribute("scale").as_float(1.0f);
+
+      uint32 layers = 1;
+      if (
+        std::string_view(node.attribute("type").as_string()) == "shadow_depth"
+      ) {
+        size point_lights_count = 0;
+        components::context::registry()
+          ->view<components::PointLightComponent>()
+          .each([&point_lights_count](
+                  const components::PointLightComponent& light
+                ) {
+            if (light.cast_shadows) point_lights_count++;
+          });
+
+        size dir_lights_count = 0;
+        components::context::registry()
+          ->view<components::DirectionalLightComponent>()
+          .each([&dir_lights_count](
+                  const components::DirectionalLightComponent& light
+                ) {
+            if (light.cast_shadows) dir_lights_count++;
+          });
+
+        if (point_lights_count > constants::MAX_POINT_LIGHT_SHADOWS)
+          logging::warning(
+            "Number of shadow-casting point lights ({}) exceeds the maximum "
+            "supported by the rendergraph ({}). Only the first {} will be "
+            "rendered with shadows.",
+            point_lights_count,
+            constants::MAX_POINT_LIGHT_SHADOWS,
+            constants::MAX_POINT_LIGHT_SHADOWS
+          );
+        if (dir_lights_count > constants::MAX_DIR_LIGHT_SHADOWS)
+          logging::warning(
+            "Number of shadow-casting directional lights ({}) exceeds the "
+            "maximum supported by the rendergraph ({}). Only the first {} will "
+            "be rendered with shadows.",
+            dir_lights_count,
+            constants::MAX_DIR_LIGHT_SHADOWS,
+            constants::MAX_DIR_LIGHT_SHADOWS
+          );
+
+        if (point_lights_count + dir_lights_count > 0) {
+          layers =
+            std::min(point_lights_count, constants::MAX_POINT_LIGHT_SHADOWS) *
+            6;
+          layers +=
+            std::min(dir_lights_count, constants::MAX_DIR_LIGHT_SHADOWS);
+        }
+      }
 
       vec3 size(
         static_cast<float>(width) * scale,
@@ -51,7 +128,7 @@ namespace lisa::systems::render {
 
       resource_id_map_[id] = static_cast<GraphResourceHandle>(images_.size());
       auto image = ImageGraphResource(
-        logging::genid("graph", "resources", id), metadata, size
+        logging::genid("graph", "resources", id), metadata, size, layers
       );
       images_.push_back(std::move(image));
     }
@@ -114,6 +191,32 @@ namespace lisa::systems::render {
       ExecutionNode exec_node;
       exec_node.pass = passes_[pass_idx].get();
 
+      bool render_extent_set = false;
+      auto set_render_extent =
+        [&](const str& ref, const ImageGraphResource& img) {
+          if (!render_extent_set) {
+            exec_node.extent = img.extent();
+            exec_node.layer_count = img.layers();
+            render_extent_set = true;
+            return;
+          }
+
+          if (exec_node.extent != img.extent())
+            logging::abort(
+              "Resource {} has a different extent than previous render targets "
+              "for pass {}",
+              ref,
+              pass_node.attribute("id").value()
+            );
+          if (exec_node.layer_count != img.layers())
+            logging::abort(
+              "Resource {} has a different layer count than previous render "
+              "targets for pass {}",
+              ref,
+              pass_node.attribute("id").value()
+            );
+        };
+
       exec_node.pass->setup(*this, pass_node);
 
       for (const auto& input : pass_node.children("input")) {
@@ -130,14 +233,20 @@ namespace lisa::systems::render {
         exec_node.barriers.push_back(barrier);
 
         if (usage == DepthStencilAttachmentRead) {
+          set_render_extent(ref, img);
           vk::RenderingAttachmentInfo attachment =
             img.attachment_info(true, true);
           exec_node.depth_attachment = attachment;
         } else if (usage == SampledFragment) {
+          vk::Sampler sampler_handle = samplers_[img.sampler_profile]->handle();
+
           const vk::DescriptorImageInfo img_info{
-            shared_sampler_->handle(),
+            sampler_handle,
             *img.image.view(
-              {vk::ImageViewType::e2D, img.format(), {img.aspect(), 0, 1, 0, 1}}
+              {img.layers() == 1 ? vk::ImageViewType::e2D
+                                 : vk::ImageViewType::e2DArray,
+               img.format(),
+               {img.aspect(), 0, 1, 0, img.layers()}}
             ),
             vk::ImageLayout::eShaderReadOnlyOptimal
           };
@@ -151,6 +260,9 @@ namespace lisa::systems::render {
         str ref = output.attribute("ref").value();
         auto handle = resource_id_map_.at(ref);
         auto& img = images_[handle];
+
+        set_render_extent(ref, img);
+
         auto usage = utils::xml::parse_enum<GraphResourceUsage>(
           output.attribute("usage").value()
         );
@@ -169,17 +281,24 @@ namespace lisa::systems::render {
 
         has_been_written[handle] = true;
       }
+
       nodes_.push_back(std::move(exec_node));
     }
   }
 
   void Rendergraph::render(
     const graphics::CommandBuffer& cmdb,
+    const GlobalData& global_data,
+    const ObjectData& object_data,
     const vk::DeviceAddress global_bda,
     const vk::DeviceAddress object_bda
   ) {
-    for (const auto& [pass, barriers, color_attachments, depth_attachment] :
-         nodes_) {
+    const auto swap_extent = graphics::context::swapchain().extent();
+    if (swap_extent.width == 0 || swap_extent.height == 0) return;
+
+    for (
+      const auto& [pass, extent, layers, barriers, color_attachments, depth_attachment] :
+      nodes_) {
       cmdb.begin_region(pass->id());
 
       if (!barriers.empty()) {
@@ -194,9 +313,13 @@ namespace lisa::systems::render {
         !color_attachments.empty() || depth_attachment.has_value();
 
       if (has_attachments) {
+        if (extent.width == 0 || extent.height == 0 || layers == 0) {
+          cmdb.end_region();
+          continue;
+        }
         vk::RenderingInfo render_info{
-          .renderArea = {.extent = graphics::context::swapchain().extent()},
-          .layerCount = 1,
+          .renderArea = {.extent = extent},
+          .layerCount = layers,
           .colorAttachmentCount =
             static_cast<uint32_t>(color_attachments.size()),
           .pColorAttachments = color_attachments.data(),
@@ -205,7 +328,6 @@ namespace lisa::systems::render {
         };
         cmdb->beginRendering(render_info);
 
-        const auto extent = graphics::context::swapchain().extent();
         cmdb->setViewport(
           0,
           {{.width = static_cast<float>(extent.width),
@@ -216,7 +338,7 @@ namespace lisa::systems::render {
         cmdb->setScissor(0, {{.extent = extent}});
       }
 
-      RenderContext ctx{cmdb, global_bda, object_bda};
+      RenderContext ctx{cmdb, global_data, object_data, global_bda, object_bda};
       pass->execute(ctx);
 
       if (has_attachments) cmdb->endRendering();

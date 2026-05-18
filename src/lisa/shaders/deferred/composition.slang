@@ -6,7 +6,9 @@ import lib.common;
 import lib.constants;
 
 
-Sampler2D textures[];
+[[vk::binding(0)]] Sampler2D textures[];
+[[vk::binding(0)]] Sampler2DArray array_textures[];
+[[vk::binding(0)]] Sampler2DArrayShadow shadow_array_textures[];
 
 struct CompositionPushConstants {
   GlobalData* global_data;
@@ -15,6 +17,7 @@ struct CompositionPushConstants {
   uint32_t position_idx;
   uint32_t material_idx;
   uint32_t ssao_idx;
+  uint32_t shadow_idx;
 };
 
 [[vk::push_constant]]
@@ -61,16 +64,104 @@ Vertex2Fragment vertex(uint32_t vertex_id: SV_VertexID) {
   return output;
 }
 
+float linearize_depth(float depth, float near, float far) {
+  return near * far / (far - depth * (far - near));
+}
+
+float planar_to_ndc(float linear_depth, float near, float far) {
+    return (far / (far - near)) - ((far * near) / ((far - near) * linear_depth));
+}
+
+float eval_visibility_shadow_map(float3 world_position, uint32_t shadow_layer) {
+  if (shadow_layer == 0xFFFFFFFF) return 1.0;
+
+  Shadow sh = push_constants.global_data->shadows[shadow_layer];
+  float4 shadow_pos = mul(sh.view_projection, float4(world_position, 1.0));
+  shadow_pos.xyz /= shadow_pos.w;
+  
+  shadow_pos.xy = shadow_pos.xy * 0.5 + 0.5;
+  shadow_pos.y = 1.0 - shadow_pos.y; 
+
+  if (shadow_pos.x < 0.0 || shadow_pos.x > 1.0 ||
+      shadow_pos.y < 0.0 || shadow_pos.y > 1.0 ||
+      shadow_pos.z < 0.0 || shadow_pos.z > 1.0) {
+    return 1.0;
+  }
+
+  uint width, height, elements;
+  shadow_array_textures[push_constants.shadow_idx].GetDimensions(width, height, elements);
+  float2 texel_size = 1.0 / float2(width, height);
+
+  float shadow = 0.0;
+  for (int x = -1; x <= 1; ++x) {
+    for (int y = -1; y <= 1; ++y) {
+      float2 offset = float2(x, y) * texel_size;
+      shadow += shadow_array_textures[push_constants.shadow_idx].SampleCmpLevelZero(
+          float3(shadow_pos.xy + offset, shadow_layer), 
+          shadow_pos.z - SHADOW_BIAS
+      );
+    }
+  }
+  return shadow / 9.0;
+}
+
+float eval_visibility_shadow_cubemap(float3 world_position, uint32_t shadow_base_layer, float3 light_position, float near, float far) {
+  if (shadow_base_layer == 0xFFFFFFFF) return 1.0;
+
+  float3 light_to_frag = world_position - light_position;
+  
+  float3 abs_dist = abs(light_to_frag);
+  float current_depth_planar = max(abs_dist.x, max(abs_dist.y, abs_dist.z));
+
+  float3 dir = normalize(light_to_frag);
+  float3 abs_dir = abs(dir);
+
+  uint32_t face;
+  float2 uv;
+  if (abs_dir.x >= abs_dir.y && abs_dir.x >= abs_dir.z) {
+    if (dir.x > 0.0) { face = 0; uv = float2(-dir.z, -dir.y) / abs_dir.x; }
+    else             { face = 1; uv = float2( dir.z, -dir.y) / abs_dir.x; }
+  } else if (abs_dir.y >= abs_dir.x && abs_dir.y >= abs_dir.z) {
+    if (dir.y > 0.0) { face = 2; uv = float2( dir.x,  dir.z) / abs_dir.y; }
+    else             { face = 3; uv = float2( dir.x, -dir.z) / abs_dir.y; }
+  } else {
+    if (dir.z > 0.0) { face = 4; uv = float2( dir.x, -dir.y) / abs_dir.z; }
+    else             { face = 5; uv = float2(-dir.x, -dir.y) / abs_dir.z; }
+  }
+  uv = uv * 0.5 + 0.5;
+  uv.y = 1.0 - uv.y;
+
+  float current_depth_ndc = planar_to_ndc(current_depth_planar, near, far);
+
+  uint width, height, elements;
+  shadow_array_textures[push_constants.shadow_idx].GetDimensions(width, height, elements);
+  float2 texel_size = 1.0 / float2(width, height);
+
+  float shadow = 0.0;
+  for (int x = -1; x <= 1; ++x) {
+    for (int y = -1; y <= 1; ++y) {
+      float2 offset = float2(x, y) * texel_size;
+      shadow += shadow_array_textures[push_constants.shadow_idx].SampleCmpLevelZero(
+          float3(uv + offset, shadow_base_layer + face), 
+          current_depth_ndc - SHADOW_BIAS
+      );
+    }
+  }
+  return shadow / 9.0;
+}
+
 [shader("fragment")]
 float4 fragment(Vertex2Fragment input) : SV_Target {
   float3 albedo = textures[push_constants.albedo_idx].Sample(input.uv).rgb;
-  // Normal buffer already stores N in [-1, 1] (R16G16B16A16Sfloat)
   float3 N = normalize(textures[push_constants.normal_idx].Sample(input.uv).xyz);
   float3 world_position = textures[push_constants.position_idx].Sample(input.uv).xyz;
   float4 material = textures[push_constants.material_idx].Sample(input.uv);
   float roughness = material.x;
   float metallic = material.y;
-  float ssao = textures[push_constants.ssao_idx].Sample(input.uv).r;
+  float ssao = 1.0;
+  if (push_constants.ssao_idx != 0xFFFFFFFF) {
+    ssao = textures[push_constants.ssao_idx].Sample(input.uv).r;
+  }
 
   float3 V = normalize(push_constants.global_data->camera_position - world_position);
 
@@ -80,7 +171,8 @@ float4 fragment(Vertex2Fragment input) : SV_Target {
     DirLight light = push_constants.global_data->dir_lights[i];
     float3 L = normalize(-light.direction);
     float NdotL = saturate(dot(N, L));
-    shading += brdf(albedo, roughness, metallic, N, L, V) * light.color * light.intensity * NdotL;
+    float shadow = eval_visibility_shadow_map(world_position, light.shadow_index);
+    shading += brdf(albedo, roughness, metallic, N, L, V) * light.color * light.intensity * NdotL * shadow;
   }
 
   for (uint32_t i = 0; i < push_constants.global_data->point_lights_count; i++) {
@@ -88,10 +180,10 @@ float4 fragment(Vertex2Fragment input) : SV_Target {
     float3 lightVec = light.position - world_position;
     float distance = length(lightVec);
     float3 L = normalize(lightVec);
-
     float falloff = pow(saturate(1.0 - pow(distance / light.radius, 4)), 2) / (distance * distance + 1.0);
     float NdotL = saturate(dot(N, L));
-    shading += brdf(albedo, roughness, metallic, N, L, V) * light.color * light.intensity * falloff * NdotL;
+    float shadow = eval_visibility_shadow_cubemap(world_position, light.shadow_base_index, light.position, light.near, light.far);
+    shading += brdf(albedo, roughness, metallic, N, L, V) * light.color * light.intensity * falloff * NdotL * shadow;
   }
 
   for (uint32_t i = 0; i < push_constants.global_data->ambient_lights_count; i++) {

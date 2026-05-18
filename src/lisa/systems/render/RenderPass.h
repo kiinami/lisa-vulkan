@@ -14,6 +14,8 @@ namespace lisa::systems::render {
 
   struct RenderContext {
     const graphics::CommandBuffer& cmdb;
+    const GlobalData& global_data;
+    const ObjectData& object_data;
     vk::DeviceAddress global_bda = 0;
     vk::DeviceAddress object_bda = 0;
   };

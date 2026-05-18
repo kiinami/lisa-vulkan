@@ -2,7 +2,7 @@ shader_out = meson.current_build_dir()
 
 shader_dirs = {
     'lib' : ['common.slang', 'constants.slang'],
-    'preprocess' : ['depth.slang', 'ssao.slang'],
+    'preprocess' : ['depth.slang', 'ssao.slang', 'shadow.slang'],
     'deferred' : ['composition.slang', 'geometry.slang'],
     'forward' : ['forward.slang'],
     'postprocess' : ['convolutional.slang'],

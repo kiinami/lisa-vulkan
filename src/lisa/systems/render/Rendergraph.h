@@ -31,6 +31,8 @@ namespace lisa::systems::render {
 
     void render(
       const graphics::CommandBuffer& cmdb,
+      const GlobalData& global_data,
+      const ObjectData& object_data,
       vk::DeviceAddress global_bda,
       vk::DeviceAddress object_bda
     );
@@ -42,6 +44,8 @@ namespace lisa::systems::render {
   private:
     struct ExecutionNode {
       RenderPass* pass;
+      vk::Extent2D extent = {};
+      uint32 layer_count = 1;
       vector<vk::ImageMemoryBarrier2> barriers;
       vector<vk::RenderingAttachmentInfo> color_attachments;
       optional<vk::RenderingAttachmentInfo> depth_attachment;
@@ -52,7 +56,7 @@ namespace lisa::systems::render {
     vector<uptr<RenderPass>> passes_;
     vector<ExecutionNode> nodes_;
     GraphResourceHandle output_handle_;
-    uptr<graphics::Sampler> shared_sampler_;
+    umap<GraphResourceSamplerProfile, uptr<graphics::Sampler>> samplers_;
 
     void allocate_resources(const pugi::xml_node& doc_element);
     void allocate_passes(const pugi::xml_node& doc_element);

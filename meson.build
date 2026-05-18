@@ -99,6 +99,7 @@ vma_hpp = dependency('VulkanMemoryAllocator-Hpp', required: true)
 ###############################################################################
 src = files(
     'src/lisa/build.h',
+    'src/lisa/constants.h',
     'src/lisa/implementations.cpp',
 
     'src/lisa/graphics/vk/VkObject.h',
@@ -180,6 +181,8 @@ src = files(
     'src/lisa/render/SSAOPass.cpp',
     'src/lisa/render/ConvolutionalPass.h',
     'src/lisa/render/ConvolutionalPass.cpp',
+    'src/lisa/render/ShadowPass.h',
+    'src/lisa/render/ShadowPass.cpp',
 
     'src/lisa/scene/xml.h',
     'src/lisa/scene/xml.cpp',

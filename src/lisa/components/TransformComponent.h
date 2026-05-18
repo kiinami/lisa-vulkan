@@ -73,6 +73,10 @@ namespace lisa::components {
       return matrix_;
     }
 
+    vec3 direction() const {
+      return glm::normalize(rotation_ * vec3(0.0f, 0.0f, -1.0f));
+    }
+
   private:
     vec3 position_;
     quat rotation_;

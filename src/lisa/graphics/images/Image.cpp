@@ -18,11 +18,13 @@ namespace lisa::graphics {
     vk::ImageType type,
     uint32 mips,
     vk::ImageLayout initial_layout,
+    uint32 layers,
     const vma::AllocationCreateInfo& allocation_ci
   ) :
     NamedVkObject(id),
     size_(size),
     mips_(mips),
+    layers_(layers),
     format_(format),
     usage_(usage),
     type_(type),
@@ -38,10 +40,10 @@ namespace lisa::graphics {
         vk::Extent3D{
           static_cast<uint32_t>(size_.x),
           static_cast<uint32_t>(size_.y),
-          static_cast<uint32_t>(size_.z)
+          type_ == vk::ImageType::e2D ? 1u : static_cast<uint32_t>(size_.z)
         },
       .mipLevels = mips_,
-      .arrayLayers = 1,
+      .arrayLayers = layers_,
       .samples = vk::SampleCountFlagBits::e1,
       .tiling = vk::ImageTiling::eOptimal,
       .usage = usage_,
@@ -94,7 +96,8 @@ namespace lisa::graphics {
     ImageFormat format,
     vk::ImageUsageFlags usage,
     const CommandBuffer& cmdb,
-    uint32 mip_levels
+    uint32 mips,
+    uint32 layers
   ) {
     auto transfer_buffer = Buffer(
       logging::genid(id, "transfer"),
@@ -114,8 +117,9 @@ namespace lisa::graphics {
         vk::ImageUsageFlagBits::eTransferSrc,
       extent,
       vk::ImageType::e2D,
-      mip_levels,
+      mips,
       vk::ImageLayout::eUndefined,
+      layers,
       DEFAULT_ALLOCATION_CI
     );
 
@@ -134,7 +138,7 @@ namespace lisa::graphics {
         .baseMipLevel = 0,
         .levelCount = 1,
         .baseArrayLayer = 0,
-        .layerCount = 1
+        .layerCount = layers
       }
     };
     vk::DependencyInfo dependency_i{
@@ -150,11 +154,11 @@ namespace lisa::graphics {
         {.aspectMask = aspect_mask,
          .mipLevel = 0,
          .baseArrayLayer = 0,
-         .layerCount = 1},
+         .layerCount = layers},
       .imageExtent = {
         .width = static_cast<uint32>(extent.x),
         .height = static_cast<uint32>(extent.y),
-        .depth = static_cast<uint32>(extent.z)
+        .depth = 1
       }
     };
     cmdb->copyBufferToImage(
@@ -167,7 +171,7 @@ namespace lisa::graphics {
     int32 mip_width = static_cast<int32>(extent.x);
     int32 mip_height = static_cast<int32>(extent.y);
 
-    for (uint32 i = 1; i < mip_levels; i++) {
+    for (uint32 i = 1; i < mips; i++) {
       barrier.subresourceRange.baseMipLevel = i - 1;
       barrier.oldLayout = vk::ImageLayout::eTransferDstOptimal;
       barrier.newLayout = vk::ImageLayout::eTransferSrcOptimal;
@@ -191,12 +195,12 @@ namespace lisa::graphics {
           {.aspectMask = aspect_mask,
            .mipLevel = i - 1,
            .baseArrayLayer = 0,
-           .layerCount = 1},
+           .layerCount = layers},
         .dstSubresource = {
           .aspectMask = aspect_mask,
           .mipLevel = i,
           .baseArrayLayer = 0,
-          .layerCount = 1
+          .layerCount = layers
         }
       };
 
@@ -231,7 +235,7 @@ namespace lisa::graphics {
       if (mip_height > 1) mip_height /= 2;
     }
 
-    barrier.subresourceRange.baseMipLevel = mip_levels - 1;
+    barrier.subresourceRange.baseMipLevel = mips - 1;
     barrier.oldLayout = vk::ImageLayout::eTransferDstOptimal;
     barrier.newLayout = vk::ImageLayout::eReadOnlyOptimal;
     barrier.srcStageMask = vk::PipelineStageFlagBits2::eTransfer;
@@ -252,13 +256,14 @@ namespace lisa::graphics {
     const vec3& extent,
     const ImageFormat format,
     const vk::ImageUsageFlags usage,
-    const uint32 mip_levels
+    const uint32 mips,
+    uint32 layers
   ) {
     const auto cmdb = context::device().cmd_buffer();
     cmdb.begin_onetime();
 
     auto image =
-      from_data(id, data, size, extent, format, usage, cmdb, mip_levels);
+      from_data(id, data, size, extent, format, usage, cmdb, mips, layers);
 
     cmdb->end();
     context::device().submit_cmd_buffer_with_fence(cmdb);

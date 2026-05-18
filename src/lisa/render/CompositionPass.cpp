@@ -59,7 +59,12 @@ namespace lisa::render {
       .normal_idx = input_indices_.at("normal"),
       .position_idx = input_indices_.at("position"),
       .material_idx = input_indices_.at("material"),
-      .ssao_idx = input_indices_.at("ssao")
+      .ssao_idx = input_indices_.contains("ssao")
+                    ? input_indices_.at("ssao")
+                    : std::numeric_limits<uint32>::max(),
+      .shadow_idx = input_indices_.contains("shadow")
+                     ? input_indices_.at("shadow")
+                     : std::numeric_limits<uint32>::max()
     };
 
     ctx.cmdb->pushConstants<CompositionPushConstants>(

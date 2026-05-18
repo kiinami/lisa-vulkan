@@ -3,3 +3,4 @@
 //
 
 public static const float PI = float.getPi();
+public static const float SHADOW_BIAS = 0.005;

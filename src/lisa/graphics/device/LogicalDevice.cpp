@@ -4,6 +4,7 @@
 
 #include "LogicalDevice.h"
 
+#include "constants.h"
 #include "graphics/constants.h"
 #include "graphics/context.h"
 #include "utils/chk.h"
@@ -45,13 +46,24 @@ namespace lisa::graphics {
       .shaderDrawParameters = VK_TRUE
     };
 
+    VkPhysicalDeviceVulkan12Features vulkan12_features{
+      .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
+      .pNext = &vulkan11_features,
+      .shaderOutputLayer = VK_TRUE,
+    };
+
+    VkPhysicalDeviceFeatures device_features{
+      .geometryShader = VK_TRUE,
+    };
+
     VkDeviceCreateInfo vk_device_ci{
       .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
-      .pNext = &vulkan11_features,
+      .pNext = &vulkan12_features,
       .queueCreateInfoCount = 1,
       .pQueueCreateInfos = &device_queue_ci,
       .enabledExtensionCount = static_cast<uint32>(device_extensions.size()),
       .ppEnabledExtensionNames = device_extensions.data(),
+      .pEnabledFeatures = &device_features,
     };
 
     const VpDeviceCreateInfo device_ci{
@@ -77,7 +89,7 @@ namespace lisa::graphics {
 
     const vk::CommandBufferAllocateInfo command_buffers_ai{
       .commandPool = command_pool_,
-      .commandBufferCount = constants::MAX_FRAMES_IN_FLIGHT
+      .commandBufferCount = lisa::constants::MAX_FRAMES_IN_FLIGHT
     };
     command_buffers_ = object_.allocateCommandBuffers(command_buffers_ai);
   }

@@ -64,6 +64,7 @@ namespace lisa::graphics {
       vk::ImageType type = vk::ImageType::e2D,
       uint32 mips = 1,
       vk::ImageLayout initial_layout = vk::ImageLayout::eUndefined,
+      uint32 layers = 1,
       const vma::AllocationCreateInfo& allocation_ci = DEFAULT_ALLOCATION_CI
     );
 
@@ -71,13 +72,37 @@ namespace lisa::graphics {
 
     const vec3& size() const { return size_; }
 
+    vk::Extent2D extent2d() const {
+      return {static_cast<uint32>(size_.x), static_cast<uint32>(size_.y)};
+    }
+
+    vk::Extent3D extent3d() const {
+      return {
+        static_cast<uint32>(size_.x),
+        static_cast<uint32>(size_.y),
+        static_cast<uint32>(size_.z)
+      };
+    }
+
     uint32 mipmaps() const { return mips_; }
+
+    uint32 layers() const { return layers_; }
 
     ImageFormat format() const { return format_; }
 
     vk::ImageUsageFlags usage() const { return usage_; }
 
     vk::ImageLayout initial_layout() const { return initial_layout_; }
+
+    vk::ImageSubresourceRange full_range() const {
+      return vk::ImageSubresourceRange{
+        .aspectMask = format_.aspect_mask(),
+        .baseMipLevel = 0,
+        .levelCount = mips_,
+        .baseArrayLayer = 0,
+        .layerCount = layers_
+      };
+    }
 
     static Image from_data(
       const str& id,
@@ -87,7 +112,8 @@ namespace lisa::graphics {
       ImageFormat format,
       vk::ImageUsageFlags usage,
       const CommandBuffer& cmdb,
-      uint32 mip_levels = 1
+      uint32 mips = 1,
+      uint32 layers = 1
     );
 
     static Image from_data(
@@ -97,7 +123,8 @@ namespace lisa::graphics {
       const vec3& extent,
       ImageFormat format,
       vk::ImageUsageFlags usage,
-      uint32 mip_levels = 1
+      uint32 mips = 1,
+      uint32 layers = 1
     );
 
   protected:
@@ -106,6 +133,7 @@ namespace lisa::graphics {
 
     vec3 size_;
     uint32 mips_ = 1;
+    uint32 layers_ = 1;
 
     ImageFormat format_{vk::Format::eUndefined};
     vk::ImageUsageFlags usage_{0};

@@ -19,6 +19,11 @@ namespace lisa::systems::render {
     float intensity;
     rgb color;
     float radius;
+    float near;
+    float far;
+    uint32 shadow_base_index = std::numeric_limits<uint32>::max();
+
+    float padding = 0.0f;
 
     PointLightData(
       const components::TransformComponent& transform,
@@ -28,6 +33,8 @@ namespace lisa::systems::render {
       intensity = light.intensity;
       color = light.color;
       radius = light.radius;
+      near = light.near();
+      far = light.far();
     }
   };
 
@@ -35,6 +42,7 @@ namespace lisa::systems::render {
     vec3 direction;
     float intensity;
     rgb color;
+    uint32 shadow_index = std::numeric_limits<uint32>::max();
 
     DirLightData(
       const components::TransformComponent& transform,
@@ -56,6 +64,13 @@ namespace lisa::systems::render {
     }
   };
 
+  struct alignas(16) ShadowData {
+    mat4 view_projection;
+    uint32 layer;
+
+    uint32 padding[3];
+  };
+
   struct alignas(16) GlobalData {
     mat4 view_projection;
     mat4 projection;
@@ -64,10 +79,12 @@ namespace lisa::systems::render {
     vk::DeviceAddress point_lights_bda;
     vk::DeviceAddress dir_lights_bda;
     vk::DeviceAddress ambient_lights_bda;
+    vk::DeviceAddress shadow_data_bda;
 
     uint32 point_lights_count;
     uint32 dir_lights_count;
     uint32 ambient_lights_count;
+    uint32 shadow_count;
 
     vec3 camera_position;
     vec2 texel_size;
@@ -98,6 +115,11 @@ namespace lisa::systems::render {
       update_ambient_lights(const vk::DeviceAddress bda, const uint32 count) {
       ambient_lights_bda = bda;
       ambient_lights_count = count;
+    }
+
+    void update_shadow_data(const vk::DeviceAddress bda, const uint32 count) {
+      shadow_data_bda = bda;
+      shadow_count = count;
     }
   };
 

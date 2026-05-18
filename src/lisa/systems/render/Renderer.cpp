@@ -28,7 +28,7 @@ namespace lisa::systems::render {
                vma::AllocationCreateFlagBits::eHostAccessSequentialWrite,
       .usage = vma::MemoryUsage::eAuto
     };
-    for (size i = 0; i < graphics::constants::MAX_FRAMES_IN_FLIGHT; i++) {
+    for (size i = 0; i < constants::MAX_FRAMES_IN_FLIGHT; i++) {
       global_data_buffers_[i] = graphics::Buffer(
         logging::genid("graph", "frames", i, "global_data"),
         sizeof(GlobalData),
@@ -37,25 +37,31 @@ namespace lisa::systems::render {
       );
       object_data_buffers_[i] = graphics::Buffer(
         logging::genid("graph", "frames", i, "object_data"),
-        sizeof(ObjectData) * graphics::constants::MAX_OBJECTS,
+        sizeof(ObjectData) * constants::MAX_OBJECTS,
         usage,
         allocation_ci
       );
       point_lights_buffers_[i] = graphics::Buffer(
         logging::genid("graph", "frames", i, "point_lights"),
-        sizeof(PointLightData) * graphics::constants::MAX_POINT_LIGHTS,
+        sizeof(PointLightData) * constants::MAX_POINT_LIGHTS,
         usage,
         allocation_ci
       );
       dir_lights_buffers_[i] = graphics::Buffer(
         logging::genid("graph", "frames", i, "dir_lights"),
-        sizeof(DirLightData) * graphics::constants::MAX_DIR_LIGHTS,
+        sizeof(DirLightData) * constants::MAX_DIR_LIGHTS,
         usage,
         allocation_ci
       );
       ambient_lights_buffers_[i] = graphics::Buffer(
         logging::genid("graph", "frames", i, "ambient_lights"),
-        sizeof(AmbientLightData) * graphics::constants::MAX_AMBIENT_LIGHTS,
+        sizeof(AmbientLightData) * constants::MAX_AMBIENT_LIGHTS,
+        usage,
+        allocation_ci
+      );
+      shadow_data_buffers_[i] = graphics::Buffer(
+        logging::genid("graph", "frames", i, "shadow_data"),
+        sizeof(ShadowData) * (constants::MAX_SHADOW_LAYERS),
         usage,
         allocation_ci
       );
@@ -114,6 +120,11 @@ namespace lisa::systems::render {
       }
     }
 
+    auto* shadow_data = static_cast<ShadowData*>(
+      shadow_data_buffers_[current_frame_].mapped_data()
+    );
+    uint32 shadow_count = 0;
+
     auto* point_light_data = static_cast<PointLightData*>(
       point_lights_buffers_[current_frame_].mapped_data()
     );
@@ -126,8 +137,27 @@ namespace lisa::systems::render {
             const components::PointLightComponent>();
 
       uint32 i = 0;
+      uint32 shadowed_point_lights = 0;
       for (auto [e, transform_c, point_light_c] : point_lights_view.each()) {
         point_light_data[i] = PointLightData(transform_c, point_light_c);
+        if (
+          point_light_c.cast_shadows &&
+          shadowed_point_lights <
+          constants::MAX_POINT_LIGHT_SHADOWS &&
+          shadow_count +
+          6 <= constants::MAX_SHADOW_LAYERS
+        ) {
+          const auto proj = point_light_c.projection();
+          const auto& views = point_light_c.views(transform_c);
+          point_light_data[i].shadow_base_index = shadow_count;
+          for (uint32 j = 0; j < 6; j++) {
+            shadow_data[shadow_count] = ShadowData{
+              .view_projection = proj * views[j], .layer = shadow_count
+            };
+            shadow_count++;
+          }
+          shadowed_point_lights++;
+        }
         i++;
       }
 
@@ -148,8 +178,24 @@ namespace lisa::systems::render {
             const components::DirectionalLightComponent>();
 
       uint32 i = 0;
+      uint32 shadowed_dir_lights = 0;
       for (auto [e, transform_c, dir_light_c] : dir_lights_view.each()) {
         dir_light_data[i] = DirLightData(transform_c, dir_light_c);
+        if (
+          dir_light_c.cast_shadows &&
+          shadowed_dir_lights <
+          constants::MAX_DIR_LIGHT_SHADOWS &&
+          shadow_count < constants::MAX_SHADOW_LAYERS
+        ) {
+          dir_light_data[i].shadow_index = shadow_count;
+          shadow_data[shadow_count] = ShadowData{
+            .view_projection =
+              dir_light_c.shadow_view_projection(transform_c.direction()),
+            .layer = shadow_count
+          };
+          shadow_count++;
+          shadowed_dir_lights++;
+        }
         i++;
       }
 
@@ -177,6 +223,10 @@ namespace lisa::systems::render {
         ambient_lights_buffers_[current_frame_].address(), i
       );
     }
+
+    global_data->update_shadow_data(
+      shadow_data_buffers_[current_frame_].address(), shadow_count
+    );
 
     global_data->texel_size = window::context::texel_size();
 
@@ -253,6 +303,8 @@ namespace lisa::systems::render {
 
     graph_.render(
       cmd_buffer_,
+      *global_data,
+      *object_data,
       global_data_buffers_[current_frame_].address(),
       object_data_buffers_[current_frame_].address()
     );
@@ -271,7 +323,6 @@ namespace lisa::systems::render {
     submit_to_queue(swapchain_image);
     swapchain_.present(swapchain_image, finished_s_[swapchain_image]);
 
-    current_frame_ =
-      (current_frame_ + 1) % graphics::constants::MAX_FRAMES_IN_FLIGHT;
+    current_frame_ = (current_frame_ + 1) % constants::MAX_FRAMES_IN_FLIGHT;
   }
 }

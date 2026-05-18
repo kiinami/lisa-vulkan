@@ -145,6 +145,7 @@ namespace lisa::resources {
       vk::ImageType::e2D,
       texture->numLevels,
       vk::ImageLayout::eUndefined,
+      1,
       {.usage = vma::MemoryUsage::eAuto}
     );
 

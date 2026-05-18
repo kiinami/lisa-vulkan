@@ -12,7 +12,10 @@ namespace lisa::resources {
   const Slang::ComPtr<slang::IGlobalSession>& Shader::get_global_session() {
     static auto s = []() {
       Slang::ComPtr<slang::IGlobalSession> global_session;
-      slang::createGlobalSession(global_session.writeRef());
+      const SlangResult result =
+        slang::createGlobalSession(global_session.writeRef());
+      if (SLANG_FAILED(result) || !global_session)
+        logging::abort("Failed to create Slang global session");
       return global_session;
     }();
     return s;
@@ -21,16 +24,22 @@ namespace lisa::resources {
   Slang::ComPtr<slang::ISession> Shader::create_session() {
     const auto& global_session = get_global_session();
 
-    auto targets = std::to_array<slang::TargetDesc>(
-      {{.format = SLANG_SPIRV,
-        .profile = global_session->findProfile("spirv_1_4")}}
-    );
-    auto options = std::to_array<slang::CompilerOptionEntry>(
+    // Slang `SessionDesc` may retain pointers to arrays/strings.
+    // Keep them alive for program lifetime to avoid UAF/SIGSEGV.
+    static const str search_path_str = SHADERS_PATH.string();
+    static const char* search_paths[] = {search_path_str.c_str()};
+
+    static const auto targets = []() {
+      return std::to_array<slang::TargetDesc>(
+        {{.format = SLANG_SPIRV,
+          .profile = get_global_session()->findProfile("spirv_1_5")}}
+      );
+    }();
+
+    static auto options = std::to_array<slang::CompilerOptionEntry>(
       {{slang::CompilerOptionName::EmitSpirvDirectly,
         {slang::CompilerOptionValueKind::Int, 1}}}
     );
-    const auto search_path_str = SHADERS_PATH.string();
-    const char* search_paths[] = {search_path_str.c_str()};
 
     const slang::SessionDesc session_desc{
       .targets = targets.data(),
@@ -43,7 +52,10 @@ namespace lisa::resources {
     };
 
     Slang::ComPtr<slang::ISession> session;
-    global_session->createSession(session_desc, session.writeRef());
+    const SlangResult result =
+      global_session->createSession(session_desc, session.writeRef());
+    if (SLANG_FAILED(result) || !session)
+      logging::abort("Failed to create Slang session");
 
     return session;
   }
@@ -55,11 +67,22 @@ namespace lisa::resources {
     }
 
     const auto session = create_session();
+    if (!session) {
+      logging::abort("Slang session creation returned null");
+      return;
+    }
     Slang::ComPtr<ISlangBlob> load_diagnostics;
     const auto module = session->loadModule(
       utils::pstr(filepath).c_str(), load_diagnostics.writeRef()
     );
     if (!module) {
+      if (load_diagnostics) {
+        logging::abort(
+          "Failed to load shader module at {}\n{}",
+          utils::pstr(filepath).c_str(),
+          static_cast<const char*>(load_diagnostics->getBufferPointer())
+        );
+      }
       logging::abort(
         "Failed to load shader module at {}", utils::pstr(filepath).c_str()
       );
@@ -79,15 +102,57 @@ namespace lisa::resources {
     }
 
     Slang::ComPtr<slang::IComponentType> program;
-    session->createCompositeComponentType(
-      components.data(), components.size(), program.writeRef()
-    );
+    {
+      Slang::ComPtr<ISlangBlob> compose_diagnostics;
+      const SlangResult result = session->createCompositeComponentType(
+        components.data(),
+        static_cast<SlangInt>(components.size()),
+        program.writeRef(),
+        compose_diagnostics.writeRef()
+      );
+      if (SLANG_FAILED(result) || !program) {
+        if (compose_diagnostics) {
+          logging::abort(
+            "Failed to compose shader program for {}\n{}",
+            utils::pstr(filepath).c_str(),
+            static_cast<const char*>(compose_diagnostics->getBufferPointer())
+          );
+        }
+        logging::abort(
+          "Failed to compose shader program for {}",
+          utils::pstr(filepath).c_str()
+        );
+        return;
+      }
+    }
 
     Slang::ComPtr<ISlangBlob> spirv;
     Slang::ComPtr<ISlangBlob> diagnostics;
-    program->getTargetCode(0, spirv.writeRef(), diagnostics.writeRef());
+    {
+      const SlangResult result =
+        program->getTargetCode(0, spirv.writeRef(), diagnostics.writeRef());
+      if (SLANG_FAILED(result) || !spirv) {
+        if (diagnostics) {
+          logging::abort(
+            "Failed to compile shader {}\n{}",
+            utils::pstr(filepath).c_str(),
+            static_cast<const char*>(diagnostics->getBufferPointer())
+          );
+        }
+        logging::abort(
+          "Failed to compile shader {}", utils::pstr(filepath).c_str()
+        );
+        return;
+      }
+    }
 
     slang::ShaderReflection* reflection = program->getLayout();
+    if (!reflection) {
+      logging::abort(
+        "Failed to reflect shader layout for {}", utils::pstr(filepath).c_str()
+      );
+      return;
+    }
     const uint32 entry_point_count = reflection->getEntryPointCount();
 
     vector<graphics::ShaderStage> stages;

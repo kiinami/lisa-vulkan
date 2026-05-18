@@ -263,11 +263,13 @@ namespace lisa::scene::xml {
     struct DirectionalLight {
       vec3 color;
       Positive<float> intensity;
+      optional<bool> cast_shadows;
 
       components::DirectionalLightComponent to_component() {
         components::DirectionalLightComponent component;
         component.color = color;
         component.intensity = intensity.get();
+        component.cast_shadows = cast_shadows.value_or(false);
         return component;
       }
     };
@@ -277,6 +279,7 @@ namespace lisa::scene::xml {
       Positive<float> intensity;
       Positive<float> attenuation;
       Positive<float> radius;
+      optional<bool> cast_shadows;
 
       components::PointLightComponent to_component() {
         components::PointLightComponent component;
@@ -284,6 +287,7 @@ namespace lisa::scene::xml {
         component.intensity = intensity.get();
         component.attenuation = attenuation.get();
         component.radius = radius.get();
+        component.cast_shadows = cast_shadows.value_or(false);
         return component;
       }
     };

@@ -16,18 +16,28 @@ public struct PointLight {
   public float intensity;
   public float3 color;
   public float radius;
+  public float near;
+  public float far;
+  public uint32_t shadow_base_index;
+  float padding;
 }
 
 public struct DirLight {
   public float3 direction;
   public float intensity;
   public float3 color;
-  float padding;
+  public uint32_t shadow_index;
 }
 
 public struct AmbientLight {
   public float intensity;
   public float3 color;
+}
+
+public struct Shadow {
+  public float4x4 view_projection;
+  public uint32_t index;
+  float3 padding;
 }
 
 public struct GlobalData {
@@ -38,10 +48,12 @@ public struct GlobalData {
   public PointLight* point_lights;
   public DirLight* dir_lights;
   public AmbientLight* ambient_lights;
+  public Shadow* shadows;
 
   public uint32_t point_lights_count;
   public uint32_t dir_lights_count;
   public uint32_t ambient_lights_count;
+  public uint32_t shadows_count;
 
   public float3 camera_position;
   public float2 texel_size;
