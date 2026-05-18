@@ -79,12 +79,12 @@ namespace lisa::resources {
       if (load_diagnostics) {
         logging::abort(
           "Failed to load shader module at {}\n{}",
-          utils::pstr(filepath).c_str(),
+          filepath,
           static_cast<const char*>(load_diagnostics->getBufferPointer())
         );
       }
       logging::abort(
-        "Failed to load shader module at {}", utils::pstr(filepath).c_str()
+        "Failed to load shader module at {}", filepath
       );
       return;
     }
@@ -114,13 +114,13 @@ namespace lisa::resources {
         if (compose_diagnostics) {
           logging::abort(
             "Failed to compose shader program for {}\n{}",
-            utils::pstr(filepath).c_str(),
+            filepath,
             static_cast<const char*>(compose_diagnostics->getBufferPointer())
           );
         }
         logging::abort(
           "Failed to compose shader program for {}",
-          utils::pstr(filepath).c_str()
+          filepath
         );
         return;
       }
@@ -135,12 +135,12 @@ namespace lisa::resources {
         if (diagnostics) {
           logging::abort(
             "Failed to compile shader {}\n{}",
-            utils::pstr(filepath).c_str(),
+            filepath,
             static_cast<const char*>(diagnostics->getBufferPointer())
           );
         }
         logging::abort(
-          "Failed to compile shader {}", utils::pstr(filepath).c_str()
+          "Failed to compile shader {}", filepath
         );
         return;
       }
@@ -149,7 +149,7 @@ namespace lisa::resources {
     slang::ShaderReflection* reflection = program->getLayout();
     if (!reflection) {
       logging::abort(
-        "Failed to reflect shader layout for {}", utils::pstr(filepath).c_str()
+        "Failed to reflect shader layout for {}", filepath
       );
       return;
     }

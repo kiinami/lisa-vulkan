@@ -13,6 +13,7 @@
 #include "components/context.h"
 #include "resources/context.h"
 #include "utils/logging.h"
+#include "utils/path.h"
 
 #include <fastgltf/core.hpp>
 #include <fastgltf/tools.hpp>
@@ -32,7 +33,7 @@ namespace lisa::scene::gltf {
         logging::abort(
           "The scene file at '{}' couldn't be loaded, or the buffer could not "
           "be allocated",
-          filepath.c_str()
+          filepath
         );
 
       auto asset = parser_.loadGltf(

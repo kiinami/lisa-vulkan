@@ -48,13 +48,10 @@ namespace lisa::resources {
   MeshSpec::MeshSpec(const str& id, const path& filepath) : ResourceSpec(id) {
     const auto ext = filepath.extension().string();
 
-    if (ext == ".obj") {
+    if (ext == ".obj")
       load_obj(filepath);
-    } else {
-      logging::error(
-        "Mesh format of file '{}' not supported", filepath.c_str()
-      );
-    }
+    else
+      logging::error("Mesh format of file '{}' not supported", filepath);
   }
 
   void MeshSpec::load_obj(const path& filepath) {

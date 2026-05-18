@@ -47,6 +47,9 @@ The engine was primarily implemented in Linux, but adaptations have been made so
    - [LunarG Vulkan SDK](https://vulkan.lunarg.com/sdk/home#windows) (and note the installation directory path)
    - [KTX](https://github.com/KhronosGroup/KTX-Software/releases) (and note the installation directory path)
    - [Boost](https://www.boost.org/releases/latest/)
+
+> NOTE: you may need to run commands 2, 3 and 4 inside the Developer Command Prompt for VS so that the dependencies are found correctly
+
 2. Run the following command to set up the build directory
    ```shell
    meson setup -Dvulkan_sdk=<vulkan SDK path> "-Dktx_path<KTX path>"  --default-library=static buildDir
@@ -58,7 +61,6 @@ The engine was primarily implemented in Linux, but adaptations have been made so
    ```
 4. Now you can run the engine! Refer to the usage section.
 
-> NOTE: you may need to run commands 2, 3 and 4 inside the Developer Command Prompt for VS so that the dependencies are found correctly
 
 ## Usage
 

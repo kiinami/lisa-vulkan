@@ -106,7 +106,7 @@ int main(const int argc, char** argv) {
       else if (ext == ".gltf" || ext == ".glb")
         scene::gltf::load(scene_filepath);
       else
-        logging::abort("Unsupported scene file format: '{}'", ext.c_str());
+        logging::abort("Unsupported scene file format: '{}'", ext);
 
       renderer_ =
         std::make_unique<systems::render::Renderer>(rendergraph_filepath);
