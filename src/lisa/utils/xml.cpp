@@ -13,7 +13,7 @@ namespace lisa::utils::xml {
     pugi::xml_document doc;
 
     if (const auto result = doc.load_file(pstr(filepath).c_str())) {
-      logging::debug("XML file '{}' parsed correctly", filepath);
+      logging::debug("XML file '{}' parsed correctly", pstr(filepath));
     } else {
       logging::abort(
         "Error parsing XML file\n\tDescription: {}\n\tAt: {}",

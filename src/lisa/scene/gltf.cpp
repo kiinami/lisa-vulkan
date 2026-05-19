@@ -33,7 +33,7 @@ namespace lisa::scene::gltf {
         logging::abort(
           "The scene file at '{}' couldn't be loaded, or the buffer could not "
           "be allocated",
-          filepath
+          utils::pstr(filepath)
         );
 
       auto asset = parser_.loadGltf(
@@ -309,8 +309,7 @@ namespace lisa::scene::gltf {
     resources::context::manager().load_all();
 
     logging::info(
-      "Scene loaded successfully with {} entities",
-      components::context::registry()->size()
+      "Scene loaded successfully"
     );
   }
 }

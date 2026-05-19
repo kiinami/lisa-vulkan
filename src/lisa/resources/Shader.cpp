@@ -24,9 +24,7 @@ namespace lisa::resources {
   Slang::ComPtr<slang::ISession> Shader::create_session() {
     const auto& global_session = get_global_session();
 
-    // Slang `SessionDesc` may retain pointers to arrays/strings.
-    // Keep them alive for program lifetime to avoid UAF/SIGSEGV.
-    static const str search_path_str = SHADERS_PATH.string();
+    static const str search_path_str = build::shaders_path.string();
     static const char* search_paths[] = {search_path_str.c_str()};
 
     static const auto targets = []() {
@@ -79,12 +77,12 @@ namespace lisa::resources {
       if (load_diagnostics) {
         logging::abort(
           "Failed to load shader module at {}\n{}",
-          filepath,
+          utils::pstr(filepath),
           static_cast<const char*>(load_diagnostics->getBufferPointer())
         );
       }
       logging::abort(
-        "Failed to load shader module at {}", filepath
+        "Failed to load shader module at {}", utils::pstr(filepath)
       );
       return;
     }
@@ -114,14 +112,11 @@ namespace lisa::resources {
         if (compose_diagnostics) {
           logging::abort(
             "Failed to compose shader program for {}\n{}",
-            filepath,
+            utils::pstr(filepath),
             static_cast<const char*>(compose_diagnostics->getBufferPointer())
           );
         }
-        logging::abort(
-          "Failed to compose shader program for {}",
-          filepath
-        );
+        logging::abort("Failed to compose shader program for {}", utils::pstr(filepath));
         return;
       }
     }
@@ -135,22 +130,18 @@ namespace lisa::resources {
         if (diagnostics) {
           logging::abort(
             "Failed to compile shader {}\n{}",
-            filepath,
+            utils::pstr(filepath),
             static_cast<const char*>(diagnostics->getBufferPointer())
           );
         }
-        logging::abort(
-          "Failed to compile shader {}", filepath
-        );
+        logging::abort("Failed to compile shader {}", utils::pstr(filepath));
         return;
       }
     }
 
     slang::ShaderReflection* reflection = program->getLayout();
     if (!reflection) {
-      logging::abort(
-        "Failed to reflect shader layout for {}", filepath
-      );
+      logging::abort("Failed to reflect shader layout for {}", utils::pstr(filepath));
       return;
     }
     const uint32 entry_point_count = reflection->getEntryPointCount();

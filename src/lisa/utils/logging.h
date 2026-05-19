@@ -12,14 +12,6 @@
 #include <vulkan/vulkan_profiles.hpp>
 #include <vulkan/vulkan_raii.hpp>
 
-template<>
-struct std::formatter<std::filesystem::path, char> :
-  std::formatter<std::string> {
-  auto format(const std::filesystem::path& p, std::format_context& ctx) const {
-    return std::formatter<std::string>::format(p.generic_string(), ctx);
-  }
-};
-
 namespace lisa::logging {
   void init(const str& level);
   void set_level(const str& level);

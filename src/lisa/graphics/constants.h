@@ -14,9 +14,9 @@ namespace lisa::graphics::constants {
   static const vector VALIDATION_LAYERS_DEBUG = {"VK_LAYER_KHRONOS_validation"};
 
   static constexpr VpProfileProperties PROFILE = {
-    VP_KHR_ROADMAP_2022_NAME, VP_KHR_ROADMAP_2022_SPEC_VERSION
+    VP_LISA_BASE_NAME, VP_LISA_BASE_SPEC_VERSION
   };
-  static constexpr auto API_VERSION = VP_KHR_ROADMAP_2022_MIN_API_VERSION;
+  static constexpr auto API_VERSION = VP_LISA_BASE_MIN_API_VERSION;
 
   static constexpr auto APPLICATION_NAME = "lisa";
 

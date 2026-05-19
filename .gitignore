@@ -252,3 +252,10 @@ subprojects/*
 subprojects/simdjson.wrap
 
 !subprojects/packagefiles
+
+build*
+.cache
+compile_commands.json
+pyproject.toml
+uv.lock
+.venv

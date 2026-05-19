@@ -22,7 +22,7 @@ namespace lisa::render {
     str shader_id() const { return shader_id_; }
 
     void set_shader(const path& shader_path) {
-      auto p = resources::Shader::SHADERS_PATH / shader_path;
+      auto p = build::shaders_path / shader_path;
       shader_id_ = resources::context::manager()
                      .add<resources::Shader, resources::ShaderSpec>(
                        logging::genid(id(), shader_path), p

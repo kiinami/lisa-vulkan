@@ -1,9 +1,0 @@
-[wrap-file]
-directory = stb-31c1ad37456438565541f4919958214b6e762fb4
-source_url = https://github.com/nothings/stb/archive/31c1ad37456438565541f4919958214b6e762fb4.zip
-source_filename = stb.zip
-patch_directory = stb
-source_hash = 617266695cf191a45bec2405427207011a09b057133134594b0db6ccbf9ee0b2
-
-[provide]
-stb = stb_dep
