@@ -99,9 +99,7 @@ namespace lisa::graphics {
   }
 
   vector<const char*> Instance::get_validation_layers() {
-    const auto& vlayers = logging::debug_enabled()
-                            ? constants::VALIDATION_LAYERS_DEBUG
-                            : constants::VALIDATION_LAYERS;
+    const auto& vlayers = constants::VALIDATION_LAYERS;
 
     vector<const char*> return_layers;
     const auto available_layers = vk::enumerateInstanceLayerProperties();
@@ -116,7 +114,7 @@ namespace lisa::graphics {
         }
       }
 
-      if (!found) logging::abort("Validation layer not found: {}", layer);
+      if (!found) logging::warning("Validation layer not found: {}", layer);
     }
 
     return return_layers;
