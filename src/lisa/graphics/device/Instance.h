@@ -21,7 +21,7 @@ namespace lisa::graphics {
   private:
     vk::raii::DebugUtilsMessengerEXT debug_messenger_ = nullptr;
 
-    bool supports_profile();
+    static bool supports_profile();
     static vector<const char*> get_instance_extensions();
     static vector<const char*> get_validation_layers();
     void add_debug_messenger();
