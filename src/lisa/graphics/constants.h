@@ -4,6 +4,7 @@
 
 #ifndef LISA_VULKAN_GRAPHICS_CONSTANTS_H
 #define LISA_VULKAN_GRAPHICS_CONSTANTS_H
+#include "build.h"
 #include "utils/common.h"
 
 #include <vulkan/vulkan_profiles.hpp>
