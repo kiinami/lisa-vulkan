@@ -284,6 +284,8 @@ target_link_libraries(lisa_lib
         vulkan_profiles
 )
 
+target_precompile_headers(lisa_lib PRIVATE src/lisa/pch/pch.h)
+
 # Executable target ###########################################################
 
 add_executable(lisa src/main.cpp)

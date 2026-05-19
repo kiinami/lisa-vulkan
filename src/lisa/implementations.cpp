@@ -2,6 +2,7 @@
 #include <vulkan/vulkan_profiles.hpp>
 
 #define VMA_IMPLEMENTATION
+#include <vk_mem_alloc.h>
 #include <vk_mem_alloc.hpp>
 
 #define TINYOBJLOADER_IMPLEMENTATION

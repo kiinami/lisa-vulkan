@@ -18,7 +18,8 @@
       "generator": "Ninja",
       "toolchainFile": "${sourceDir}/build/Debug/generators/conan_toolchain.cmake",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug"
+        "CMAKE_BUILD_TYPE": "Debug",
+        "VULKAN_SDK": "/home/kinami/.vulkan/latest/x86_64"
       }
     }
   ],
