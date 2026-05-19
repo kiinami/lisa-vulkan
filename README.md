@@ -28,8 +28,7 @@ The build process has only been tested in Fedora 43. Other distros will probably
     - From DNF:
       `git cmake gcc gcc-c++ ninja ccache freetype-devel harfbuzz-devel libpng-devel libtiff-devel libwebp-devel libvorbis-devel opus-devel opusfile-devel flac-devel mpg123-devel libXcursor-devel libXfixes-devel libXi-devel libXrandr-devel libXScrnSaver-devel libXext-devel mesa-vulkan-drivers vulkan-loader-devel vulkan-validation-layers-devel libpng-static flac`
     - [Conan2](https://docs.conan.io/2/installation.html) (`pip install conan` or `uv tool install conan`)
-    - [LunarG Vulkan SDK](https://vulkan.lunarg.com/sdk/home#windows) (and note the installation directory path)
-    -
+    - [LunarG Vulkan SDK](https://vulkan.lunarg.com/sdk/home#windows) (and note the installation directory path
 2. Clone the repository:
     ```shell
     git clone https://github.com/kiinami/lisa-vulkan.git
@@ -47,6 +46,7 @@ The build process has only been tested in Fedora 43. Other distros will probably
 5. Compile the app:
    ```shell
     cmake --build build/Debug --target lisa -j 10
+6. Now you can run the engine! Refer to the usage section.
 
 ---
 
