@@ -70,7 +70,6 @@ find_package(EnTT REQUIRED)
 find_package(fastgltf REQUIRED)
 find_package(glm REQUIRED)
 find_package(Ktx REQUIRED)
-find_package(magic_enum REQUIRED)
 find_package(miniz REQUIRED)
 find_package(pugixml REQUIRED)
 find_package(reflectcpp REQUIRED)
@@ -78,6 +77,7 @@ find_package(spdlog REQUIRED)
 find_package(Stb REQUIRED)
 find_package(tinyexr REQUIRED)
 find_package(tinyobjloader REQUIRED)
+find_package(WiseEnum)
 
 # Git dependencies ############################################################
 
@@ -269,7 +269,6 @@ target_link_libraries(lisa_lib
         fastgltf::fastgltf
         glm::glm
         KTX::ktx
-        magic_enum::magic_enum
         miniz::miniz
         pugixml::pugixml
         reflectcpp::reflectcpp
@@ -282,6 +281,7 @@ target_link_libraries(lisa_lib
         Vulkan::Vulkan
         VulkanMemoryAllocator-Hpp::VulkanMemoryAllocator-Hpp
         vulkan_profiles
+        WiseEnum::wise_enum
 )
 
 target_precompile_headers(lisa_lib PRIVATE src/lisa/pch/pch.h)

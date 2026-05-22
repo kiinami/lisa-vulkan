@@ -8,10 +8,13 @@
 #include "utils/common.h"
 #include "utils/logging.h"
 
+#include <wise_enum.h>
+
 namespace lisa::systems::render {
   using GraphResourceHandle = uint32;
 
-  enum GraphResourceUsage {
+  WISE_ENUM(
+    GraphResourceUsage,
     ColorAttachmentWrite,
     DepthStencilAttachmentWrite,
     DepthStencilAttachmentRead,
@@ -19,7 +22,7 @@ namespace lisa::systems::render {
     StorageComputeWrite,
     TransferSrc,
     TransferDst
-  };
+  );
 
   struct GraphResourceState {
     vk::PipelineStageFlags2 stage = vk::PipelineStageFlagBits2::eTopOfPipe;

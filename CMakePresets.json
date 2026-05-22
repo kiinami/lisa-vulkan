@@ -6,9 +6,11 @@
       "displayName": "Release (Conan)",
       "binaryDir": "${sourceDir}/build/Release",
       "generator": "Ninja",
-      "toolchainFile": "${sourceDir}/build/Release/generators/conan_toolchain.cmake",
+      "toolchainFile":
+        "${sourceDir}/build/Release/generators/conan_toolchain.cmake",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release"
+        "CMAKE_BUILD_TYPE": "Release",
+        "VULKAN_SDK": "/home/kinami/.vulkan/latest/x86_64"
       }
     },
     {
@@ -16,7 +18,8 @@
       "displayName": "Debug (Conan)",
       "binaryDir": "${sourceDir}/build/Debug",
       "generator": "Ninja",
-      "toolchainFile": "${sourceDir}/build/Debug/generators/conan_toolchain.cmake",
+      "toolchainFile":
+        "${sourceDir}/build/Debug/generators/conan_toolchain.cmake",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
         "VULKAN_SDK": "/home/kinami/.vulkan/latest/x86_64"
@@ -24,7 +27,13 @@
     }
   ],
   "buildPresets": [
-    { "name": "Release", "configurePreset": "release" },
-    { "name": "Debug",   "configurePreset": "debug"   }
+    {
+      "name": "Release",
+      "configurePreset": "release"
+    },
+    {
+      "name": "Debug",
+      "configurePreset": "debug"
+    }
   ]
 }
