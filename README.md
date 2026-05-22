@@ -22,12 +22,13 @@ Hobby rendering engine in Vulkan
 
 ### Linux
 
-The build process has only been tested in Fedora 43. Other distros will probably work but may require some adjustments.
+The build process has only been tested in Fedora 43. Other distros will probably work but may require some adjustments,
+especially regarding the dependencies' installation.
 
 1. Install dependencies:
     - From DNF:
       `git cmake gcc gcc-c++ ninja ccache freetype-devel harfbuzz-devel libpng-devel libtiff-devel libwebp-devel libvorbis-devel opus-devel opusfile-devel flac-devel mpg123-devel libXcursor-devel libXfixes-devel libXi-devel libXrandr-devel libXScrnSaver-devel libXext-devel mesa-vulkan-drivers vulkan-loader-devel vulkan-validation-layers-devel libpng-static flac`
-    - [Conan2](https://docs.conan.io/2/installation.html) (`pip install conan` or `uv tool install conan`)
+    - [Conan2](https://docs.conan.io/2/installation.html) (`uv tool install conan` or `pip install conan`)
     - [LunarG Vulkan SDK](https://vulkan.lunarg.com/sdk/home#windows) (and note the installation directory path
 2. Clone the repository:
     ```shell
@@ -47,22 +48,6 @@ The build process has only been tested in Fedora 43. Other distros will probably
    ```shell
     cmake --build build/Debug --target lisa -j 10
 6. Now you can run the engine! Refer to the usage section.
-
----
-
-1. Install dependencies:
-    - [LunarG Vulkan SDK](https://vulkan.lunarg.com/sdk/home#windows) (and note the installation directory path)
-    - [Boost](https://www.boost.org/releases/latest/)
-2. Run the following command to set up the build directory
-   ```shell
-   meson setup -Dvulkan_sdk=<vulkan SDK path>
-   ```
-3. Compile the app:
-   ```shell
-   cd buildDir
-   meson compile lisa_app -j 10
-   ```
-4. Now you can run the engine! Refer to the usage section.
 
 ### Windows
 
