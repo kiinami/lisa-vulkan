@@ -77,7 +77,6 @@ find_package(spdlog REQUIRED)
 find_package(Stb REQUIRED)
 find_package(tinyexr REQUIRED)
 find_package(tinyobjloader REQUIRED)
-find_package(WiseEnum)
 
 # Git dependencies ############################################################
 
@@ -94,7 +93,16 @@ FetchContent_Declare(
         URL_HASH SHA256=8c2a0573babe1f86f3241d12b4c9df40bb944649b7f4239c1c611797f8af6cd5
 )
 
-FetchContent_MakeAvailable(sdl3pp vmahpp)
+FetchContent_Declare(
+        better-enums
+        URL https://github.com/aantron/better-enums/archive/refs/tags/0.11.3.tar.gz
+        URL_HASH SHA256=1b1597f0aa5452b971a94ab13d8de3b59cce17d9c43c8081aa62f42b3376df96
+)
+
+FetchContent_MakeAvailable(sdl3pp vmahpp better-enums)
+
+add_library(better-enums INTERFACE)
+target_include_directories(better-enums INTERFACE ${better-enums_SOURCE_DIR})
 
 # Sources #####################################################################
 
@@ -281,7 +289,7 @@ target_link_libraries(lisa_lib
         Vulkan::Vulkan
         VulkanMemoryAllocator-Hpp::VulkanMemoryAllocator-Hpp
         vulkan_profiles
-        WiseEnum::wise_enum
+        better-enums
 )
 
 target_precompile_headers(lisa_lib PRIVATE src/lisa/pch/pch.h)

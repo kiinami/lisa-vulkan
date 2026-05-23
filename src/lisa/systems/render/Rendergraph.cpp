@@ -12,12 +12,9 @@
 #include "graphics/descriptors/DescriptorContainer.h"
 #include "utils/logging.h"
 #include "utils/path.h"
-#include "utils/xml.h"
-#include "window/context.h"
 
 #include <algorithm>
 #include <functional>
-#include <wise_enum.h>
 
 namespace lisa::systems::render {
   Rendergraph::Rendergraph(const path& filepath) {
@@ -240,36 +237,42 @@ namespace lisa::systems::render {
         auto handle = resource_id_map_.at(ref);
         auto& img = images_[handle];
 
-        auto usage = wise_enum::from_string<GraphResourceUsage>(
-                       input.attribute("usage").value()
-        )
-                       .value();
+        auto usage = GraphResourceUsage::_from_string_nocase(
+          input.attribute("usage").value()
+        );
 
         vk::ImageMemoryBarrier2 barrier =
           img.transition(resource_states[handle], usage);
         exec_node.barriers.push_back(barrier);
 
-        if (usage == DepthStencilAttachmentRead) {
-          set_render_extent(ref, img);
-          vk::RenderingAttachmentInfo attachment =
-            img.attachment_info(true, true);
-          exec_node.depth_attachment = attachment;
-        } else if (usage == SampledFragment) {
-          vk::Sampler sampler_handle = samplers_[img.sampler_profile]->handle();
+        switch (usage) {
+          case GraphResourceUsage::DepthStencilAttachmentRead: {
+            set_render_extent(ref, img);
+            vk::RenderingAttachmentInfo attachment =
+              img.attachment_info(true, true);
+            exec_node.depth_attachment = attachment;
+          }
+          case GraphResourceUsage::SampledFragment: {
+            vk::Sampler sampler_handle =
+              samplers_[img.sampler_profile]->handle();
 
-          const vk::DescriptorImageInfo img_info{
-            sampler_handle,
-            *img.image.view(
-              {img.layers() == 1 ? vk::ImageViewType::e2D
-                                 : vk::ImageViewType::e2DArray,
-               img.format(),
-               {img.aspect(), 0, 1, 0, img.layers()}}
-            ),
-            vk::ImageLayout::eShaderReadOnlyOptimal
-          };
-          uint32 index =
-            graphics::context::descriptor_container().write(img_info);
-          exec_node.pass->set_input_index(input.attribute("id").value(), index);
+            const vk::DescriptorImageInfo img_info{
+              sampler_handle,
+              *img.image.view(
+                {img.layers() == 1 ? vk::ImageViewType::e2D
+                                   : vk::ImageViewType::e2DArray,
+                 img.format(),
+                 {img.aspect(), 0, 1, 0, img.layers()}}
+              ),
+              vk::ImageLayout::eShaderReadOnlyOptimal
+            };
+            uint32 index =
+              graphics::context::descriptor_container().write(img_info);
+            exec_node.pass->set_input_index(
+              input.attribute("id").value(), index
+            );
+          }
+          default:;
         }
       }
 
@@ -280,10 +283,9 @@ namespace lisa::systems::render {
 
         set_render_extent(ref, img);
 
-        auto usage = wise_enum::from_string<GraphResourceUsage>(
-                       output.attribute("usage").value()
-        )
-                       .value();
+        auto usage = GraphResourceUsage::_from_string_nocase(
+          output.attribute("usage").value()
+        );
 
         vk::ImageMemoryBarrier2 barrier =
           img.transition(resource_states[handle], usage);

@@ -72,8 +72,8 @@
 #include <entt/meta/factory.hpp>
 #include <entt/meta/meta.hpp>
 
-// wise_enum
-#include <wise_enum.h>
+// better-enum
+#include <enum.h>
 
 // stb
 #include <stb_image.h>

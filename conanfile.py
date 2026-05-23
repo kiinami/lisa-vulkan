@@ -44,7 +44,6 @@ class LisaConan(ConanFile):
         self.requires("vulkan-memory-allocator/3.3.0")
         self.requires("reflect-cpp/0.23.0")
         self.requires("ktx/4.4.2")
-        self.requires("wise_enum/3.1.0")
 
     def layout(self):
         cmake_layout(self)
