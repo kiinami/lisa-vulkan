@@ -251,6 +251,7 @@ namespace lisa::systems::render {
             vk::RenderingAttachmentInfo attachment =
               img.attachment_info(true, true);
             exec_node.depth_attachment = attachment;
+            break;
           }
           case GraphResourceUsage::SampledFragment: {
             vk::Sampler sampler_handle =
@@ -271,8 +272,9 @@ namespace lisa::systems::render {
             exec_node.pass->set_input_index(
               input.attribute("id").value(), index
             );
+            break;
           }
-          default:;
+          default: break;
         }
       }
 
