@@ -32,6 +32,9 @@ add_compile_definitions(
 # Git dependencies ############################################################
 
 set(SDL3PP_FORCE_BUNDLED ON)
+set(SDL3PP_ENABLE_IMAGE OFF)
+set(SDL3PP_ENABLE_MIXER OFF)
+set(SDL3PP_ENABLE_NET OFF)
 set(SDL3PP_ENABLE_TTF OFF)
 FetchContent_Declare(
         sdl3pp
