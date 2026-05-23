@@ -7,6 +7,7 @@
 #include "utils/common.h"
 
 #include <queue>
+#include <mutex>
 
 using DescriptorIndex = uint32_t;
 

@@ -12,7 +12,6 @@ include(FetchContent)
 # Options #####################################################################
 
 set(VULKAN_SDK "" CACHE PATH "Path to the Vulkan SDK root (e.g. /home/user/vulkan/1.x.x.x/x86_64)")
-set(KTX_PATH "" CACHE PATH "Manual path to KTX install (only needed on Windows)")
 
 # Compile definitions #########################################################
 
@@ -29,6 +28,40 @@ add_compile_definitions(
         MAGIC_ENUM_RANGE_MAX=2000
         $<$<CONFIG:Debug>:DEBUG>
 )
+
+# Git dependencies ############################################################
+
+set(SDL3PP_FORCE_BUNDLED ON)
+set(SDL3PP_ENABLE_TTF OFF)
+FetchContent_Declare(
+        sdl3pp
+        URL https://github.com/talesm/SDL3pp/releases/download/0.10.1/SDL3pp-0.10.1.tar.gz
+        URL_HASH SHA256=edc5dc16a97cec42e98c5d50ef1b5311073daa216e298c164ba00542787c7233
+)
+
+FetchContent_Declare(
+        vmahpp
+        URL https://github.com/YaaZ/VulkanMemoryAllocator-Hpp/releases/download/v3.3.0%2B3/VulkanMemoryAllocator-Hpp-3.3.0.tar.gz
+        URL_HASH SHA256=8c2a0573babe1f86f3241d12b4c9df40bb944649b7f4239c1c611797f8af6cd5
+)
+
+FetchContent_Declare(
+        better-enums
+        URL https://github.com/aantron/better-enums/archive/refs/tags/0.11.3.tar.gz
+        URL_HASH SHA256=1b1597f0aa5452b971a94ab13d8de3b59cce17d9c43c8081aa62f42b3376df96
+)
+
+FetchContent_MakeAvailable(sdl3pp vmahpp better-enums)
+
+set(SDL3PP_RENDER_H "${sdl3pp_SOURCE_DIR}/include/SDL3pp/SDL3pp_render.h")
+if(EXISTS "${SDL3PP_RENDER_H}")
+    file(READ "${SDL3PP_RENDER_H}" _sdl3pp_content)
+    string(REGEX REPLACE "const[ \t\r\n]+(SDL::)?GPURenderStateCreateInfo" "\\1GPURenderStateCreateInfo" _sdl3pp_content "${_sdl3pp_content}")
+    file(WRITE "${SDL3PP_RENDER_H}" "${_sdl3pp_content}")
+endif()
+
+add_library(better-enums INTERFACE)
+target_include_directories(better-enums INTERFACE ${better-enums_SOURCE_DIR})
 
 # Vulkan SDK ##################################################################
 
@@ -77,32 +110,7 @@ find_package(spdlog REQUIRED)
 find_package(Stb REQUIRED)
 find_package(tinyexr REQUIRED)
 find_package(tinyobjloader REQUIRED)
-
-# Git dependencies ############################################################
-
-set(SDL3PP_FORCE_BUNDLED ON)
-FetchContent_Declare(
-        sdl3pp
-        URL https://github.com/talesm/SDL3pp/releases/download/0.10.1/SDL3pp-0.10.1.tar.gz
-        URL_HASH SHA256=edc5dc16a97cec42e98c5d50ef1b5311073daa216e298c164ba00542787c7233
-)
-
-FetchContent_Declare(
-        vmahpp
-        URL https://github.com/YaaZ/VulkanMemoryAllocator-Hpp/releases/download/v3.3.0%2B3/VulkanMemoryAllocator-Hpp-3.3.0.tar.gz
-        URL_HASH SHA256=8c2a0573babe1f86f3241d12b4c9df40bb944649b7f4239c1c611797f8af6cd5
-)
-
-FetchContent_Declare(
-        better-enums
-        URL https://github.com/aantron/better-enums/archive/refs/tags/0.11.3.tar.gz
-        URL_HASH SHA256=1b1597f0aa5452b971a94ab13d8de3b59cce17d9c43c8081aa62f42b3376df96
-)
-
-FetchContent_MakeAvailable(sdl3pp vmahpp better-enums)
-
-add_library(better-enums INTERFACE)
-target_include_directories(better-enums INTERFACE ${better-enums_SOURCE_DIR})
+find_package(VulkanMemoryAllocator)
 
 # Sources #####################################################################
 
@@ -272,24 +280,24 @@ target_include_directories(lisa_lib
 
 target_link_libraries(lisa_lib
         PUBLIC
-        Boost::headers
+        boost::boost
         EnTT::EnTT
         fastgltf::fastgltf
         glm::glm
         KTX::ktx
-        miniz::miniz
         pugixml::pugixml
         reflectcpp::reflectcpp
-        SDL3pp::SDL3pp
         slang::slang
         spdlog::spdlog
         stb::stb
         tinyexr::tinyexr
         tinyobjloader::tinyobjloader
         Vulkan::Vulkan
+        GPUOpen::VulkanMemoryAllocator
         VulkanMemoryAllocator-Hpp::VulkanMemoryAllocator-Hpp
-        vulkan_profiles
+        SDL3pp::SDL3pp
         better-enums
+        vulkan_profiles
 )
 
 target_precompile_headers(lisa_lib PRIVATE src/lisa/pch/pch.h)
@@ -301,7 +309,7 @@ add_executable(lisa src/main.cpp)
 target_link_libraries(lisa PRIVATE lisa_lib CLI11::CLI11)
 
 if (WIN32)
-    target_compile_definitions(lisa_app PRIVATE SDL_MAIN_HANDLED)
+    target_compile_definitions(lisa PRIVATE SDL_MAIN_HANDLED)
 endif ()
 
 install(TARGETS lisa)

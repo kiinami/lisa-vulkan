@@ -1,0 +1,15 @@
+[settings]
+arch=x86_64
+build_type=Debug
+compiler=msvc
+compiler.cppstd=20
+compiler.runtime=dynamic
+compiler.version=195
+os=Windows
+
+ktx/*:compiler.cppstd=17
+wise_enum/*:compiler.cppstd=17
+
+[conf]
+tools.cmake.cmaketoolchain:generator=Ninja
+reflect-cpp/*:tools.cmake.cmaketoolchain:generator=Ninja
