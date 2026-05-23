@@ -56,12 +56,14 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(sdl3pp vmahpp better-enums)
 
-set(SDL3PP_RENDER_H "${sdl3pp_SOURCE_DIR}/include/SDL3pp/SDL3pp_render.h")
-if(EXISTS "${SDL3PP_RENDER_H}")
-    file(READ "${SDL3PP_RENDER_H}" _sdl3pp_content)
-    string(REGEX REPLACE "const[ \t\r\n]+(SDL::)?GPURenderStateCreateInfo" "\\1GPURenderStateCreateInfo" _sdl3pp_content "${_sdl3pp_content}")
-    file(WRITE "${SDL3PP_RENDER_H}" "${_sdl3pp_content}")
-endif()
+if (WIN32)
+    set(SDL3PP_RENDER_H "${sdl3pp_SOURCE_DIR}/include/SDL3pp/SDL3pp_render.h")
+    if (EXISTS "${SDL3PP_RENDER_H}")
+        file(READ "${SDL3PP_RENDER_H}" _sdl3pp_content)
+        string(REGEX REPLACE "const[ \t\r\n]+(SDL::)?GPURenderStateCreateInfo" "\\1GPURenderStateCreateInfo" _sdl3pp_content "${_sdl3pp_content}")
+        file(WRITE "${SDL3PP_RENDER_H}" "${_sdl3pp_content}")
+    endif ()
+endif ()
 
 add_library(better-enums INTERFACE)
 target_include_directories(better-enums INTERFACE ${better-enums_SOURCE_DIR})
