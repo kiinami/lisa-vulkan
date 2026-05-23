@@ -35,7 +35,7 @@ especially regarding the dependencies' installation.
     git clone https://github.com/kiinami/lisa-vulkan.git
     cd lisa-vulkan
     ```
-3. Copy the `.env.example` file into a new `.env` file and set the `VULKAN_SDK` variable to the installation path you noted in step 1.
+3. Copy the `.env.sample` file into a new `.env` file and set the `VULKAN_SDK` variable to the installation path you noted in step 1.
 
 You can now continue to the [Building and running](#building-and-running) section.
 
@@ -60,7 +60,7 @@ recommended to run the engine in Linux if possible.
     git clone https://github.com/kiinami/lisa-vulkan.git
     cd lisa-vulkan
     ```
-3. Copy the `.env.example` file into a new `.env` file and set the `VULKAN_SDK` variable to the installation path you noted in step 1.
+3. Copy the `.env.sample` file into a new `.env` file and set the `VULKAN_SDK` variable to the installation path you noted in step 1.
 
 You can now continue to the [Building and running](#building-and-running) section.
 
