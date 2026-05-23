@@ -25,8 +25,8 @@ class LisaConan(ConanFile):
 
     def validate(self):
         cppstd = self.settings.compiler.get_safe("cppstd")
-        if cppstd and int(str(cppstd).replace("gnu", "")) < 17:
-            raise ConanInvalidConfiguration("C++17 or higher required")
+        if cppstd and int(str(cppstd).replace("gnu", "")) < 20:
+            raise ConanInvalidConfiguration("C++20 or higher required")
 
     def requirements(self):
         self.requires("boost/1.86.0")
