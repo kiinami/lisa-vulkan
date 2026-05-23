@@ -115,7 +115,7 @@ find_package(spdlog REQUIRED)
 find_package(Stb REQUIRED)
 find_package(tinyexr REQUIRED)
 find_package(tinyobjloader REQUIRED)
-find_package(VulkanMemoryAllocator)
+find_package(VulkanMemoryAllocator REQUIRED)
 
 # Sources #####################################################################
 
