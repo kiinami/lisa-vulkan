@@ -27,7 +27,7 @@ especially regarding the dependencies' installation.
 
 1. Install dependencies:
     - From DNF:
-      `git cmake gcc gcc-c++ ninja ccache freetype-devel harfbuzz-devel libpng-devel libtiff-devel libwebp-devel libvorbis-devel opus-devel opusfile-devel flac-devel mpg123-devel libXcursor-devel libXfixes-devel libXi-devel libXrandr-devel libXScrnSaver-devel libXext-devel mesa-vulkan-drivers vulkan-loader-devel vulkan-validation-layers-devel libpng-static flac`
+      `git cmake gcc gcc-c++ ninja ccache freetype-devel harfbuzz-devel libpng-devel libtiff-devel libwebp-devel libvorbis-devel opus-devel opusfile-devel flac-devel mpg123-devel libXcursor-devel libXfixes-devel libXi-devel libXrandr-devel libXScrnSaver-devel libXext-devel mesa-vulkan-drivers vulkan-loader-devel vulkan-validation-layers-devel libpng-static flac just`
     - [Conan2](https://docs.conan.io/2/installation.html) (`uv tool install conan` or `pip install conan`)
     - [LunarG Vulkan SDK](https://vulkan.lunarg.com/sdk/home#windows) (and note the installation directory path
 2. Clone the repository:
@@ -38,16 +38,19 @@ especially regarding the dependencies' installation.
 3. Get the dependencies using Conan (if this is your first time using Conan, grab a coffee, it may take a while to
    download and build everything):
     ```shell
-    conan install . --build=missing --profile=conan/profiles/debug
+    just deps
     ```
-4. Run the following command to set up the build directory
+4. Build the project:
    ```shell
-   cmake -DCMAKE_BUILD_TYPE=Debug --preset debug -S . -B ./build/Debug -DVULKAN_SDK=<vulkan SDK path>
+   just build
    ```
-5. Compile the app:
+5. Run the app:
    ```shell
-    cmake --build build/Debug --target lisa -j 10
+    just run --help
+   ```
 6. Now you can run the engine! Refer to the usage section.
+
+For release mode, add the `--release` flag (`-r` is also valid) to all `just` commands: `just deps --release`, `just build -r`, etc. To run the app in release mode, you must separate the arguments to the program from the `--release/-r` flag with `--`, otherwise they will be interpreted as arguments for `just` instead of for the app: `just run --release -- --help>`.
 
 ### Windows
 
