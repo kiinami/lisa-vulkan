@@ -234,8 +234,8 @@ namespace lisa::scene::xml {
 
         return components::MaterialComponent(
           albedo.value_or(vec3(1.0f)),
-          roughness.value_or(1.0f).get(),
-          metallic.value_or(0.0f).get(),
+          roughness.value_or(1.0f).value(),
+          metallic.value_or(0.0f).value(),
           albedo_tx,
           normal_tx,
           roughness_tx,
@@ -252,10 +252,10 @@ namespace lisa::scene::xml {
 
       components::CameraComponent to_component() {
         components::CameraComponent component;
-        if (fov) component.fov = glm::radians(fov.value().get());
-        if (aspect_ratio) component.aspect_ratio = aspect_ratio.value().get();
-        if (near_plane) component.near_plane = near_plane.value().get();
-        if (far_plane) component.far_plane = far_plane.value().get();
+        if (fov) component.fov = glm::radians(fov.value().value());
+        if (aspect_ratio) component.aspect_ratio = aspect_ratio.value().value();
+        if (near_plane) component.near_plane = near_plane.value().value();
+        if (far_plane) component.far_plane = far_plane.value().value();
         return component;
       }
     };
@@ -268,7 +268,7 @@ namespace lisa::scene::xml {
       components::DirectionalLightComponent to_component() {
         components::DirectionalLightComponent component;
         component.color = color;
-        component.intensity = intensity.get();
+        component.intensity = intensity.value();
         component.cast_shadows = cast_shadows.value_or(false);
         return component;
       }
@@ -284,9 +284,9 @@ namespace lisa::scene::xml {
       components::PointLightComponent to_component() {
         components::PointLightComponent component;
         component.color = color;
-        component.intensity = intensity.get();
-        component.attenuation = attenuation.get();
-        component.radius = radius.get();
+        component.intensity = intensity.value();
+        component.attenuation = attenuation.value();
+        component.radius = radius.value();
         component.cast_shadows = cast_shadows.value_or(false);
         return component;
       }
@@ -299,7 +299,7 @@ namespace lisa::scene::xml {
       components::AmbientLightComponent to_component() {
         components::AmbientLightComponent component;
         component.color = color;
-        component.intensity = intensity.get();
+        component.intensity = intensity.value();
         return component;
       }
     };
@@ -422,9 +422,8 @@ namespace lisa::scene::xml {
     resources::context::manager().load_all();
 
     logging::info(
-      "Scene '{}' loaded successfully with {} entities",
-      filepath.string(),
-      reg->size()
+      "Scene '{}' loaded successfully",
+      utils::pstr(filepath)
     );
   }
 }

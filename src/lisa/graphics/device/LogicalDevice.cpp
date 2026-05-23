@@ -36,34 +36,10 @@ namespace lisa::graphics {
       .pQueuePriorities = &queue_priority
     };
 
-    vector device_extensions = {
-      vk::KHRSwapchainExtensionName, vk::KHRShaderDrawParametersExtensionName
-    };
-
-    VkPhysicalDeviceVulkan11Features vulkan11_features{
-      .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES,
-      .pNext = nullptr,
-      .shaderDrawParameters = VK_TRUE
-    };
-
-    VkPhysicalDeviceVulkan12Features vulkan12_features{
-      .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
-      .pNext = &vulkan11_features,
-      .shaderOutputLayer = VK_TRUE,
-    };
-
-    VkPhysicalDeviceFeatures device_features{
-      .geometryShader = VK_TRUE,
-    };
-
     VkDeviceCreateInfo vk_device_ci{
       .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
-      .pNext = &vulkan12_features,
       .queueCreateInfoCount = 1,
       .pQueueCreateInfos = &device_queue_ci,
-      .enabledExtensionCount = static_cast<uint32>(device_extensions.size()),
-      .ppEnabledExtensionNames = device_extensions.data(),
-      .pEnabledFeatures = &device_features,
     };
 
     const VpDeviceCreateInfo device_ci{

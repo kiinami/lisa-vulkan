@@ -11,8 +11,7 @@
 #include "graphics/context.h"
 #include "graphics/descriptors/DescriptorContainer.h"
 #include "utils/logging.h"
-#include "utils/xml.h"
-#include "window/context.h"
+#include "utils/path.h"
 
 #include <algorithm>
 #include <functional>
@@ -46,7 +45,18 @@ namespace lisa::systems::render {
         vk::CompareOp::eLessOrEqual
       );
 
-    const auto doc = utils::xml::read(filepath, "rendergraph");
+    pugi::xml_document doc;
+
+    if (const auto result = doc.load_file(utils::pstr(filepath).c_str())) {
+      logging::debug("XML file '{}' parsed correctly", utils::pstr(filepath));
+    } else {
+      logging::abort(
+        "Error parsing XML file\n\tDescription: {}\n\tAt: {}",
+        result.description(),
+        utils::pstr(filepath).c_str() + result.offset
+      );
+    }
+
     const auto doc_element = doc.document_element();
 
     allocate_resources(doc_element);
@@ -135,18 +145,22 @@ namespace lisa::systems::render {
   }
 
   void Rendergraph::allocate_passes(const pugi::xml_node& doc_element) {
-    for (const auto& node : doc_element.children("pass"))
+    for (const auto& node : doc_element.children("pass")) {
       passes_.push_back(
         RenderPassRegistry::create(node.attribute("type").value(), node)
       );
+    }
   }
 
   void Rendergraph::compile_graph(const pugi::xml_node& doc_element) {
     umap<str, size> writers;
     vector<vector<size>> dependents(passes_.size());
 
+    vector<pugi::xml_node> pass_nodes;
+
     uint32_t pass_idx = 0;
     for (const auto& pass_node : doc_element.children("pass")) {
+      pass_nodes.push_back(pass_node);
       for (const auto& output : pass_node.children("output")) {
         str ref = output.attribute("ref").value();
         writers[ref] = pass_idx;
@@ -185,8 +199,7 @@ namespace lisa::systems::render {
     vector has_been_written(images_.size(), false);
 
     for (size pass_idx : order) {
-      const auto& pass_node =
-        *std::next(doc_element.children("pass").begin(), pass_idx);
+      const auto& pass_node = pass_nodes[pass_idx];
 
       ExecutionNode exec_node;
       exec_node.pass = passes_[pass_idx].get();
@@ -224,7 +237,7 @@ namespace lisa::systems::render {
         auto handle = resource_id_map_.at(ref);
         auto& img = images_[handle];
 
-        auto usage = utils::xml::parse_enum<GraphResourceUsage>(
+        auto usage = GraphResourceUsage::_from_string_nocase(
           input.attribute("usage").value()
         );
 
@@ -232,27 +245,36 @@ namespace lisa::systems::render {
           img.transition(resource_states[handle], usage);
         exec_node.barriers.push_back(barrier);
 
-        if (usage == DepthStencilAttachmentRead) {
-          set_render_extent(ref, img);
-          vk::RenderingAttachmentInfo attachment =
-            img.attachment_info(true, true);
-          exec_node.depth_attachment = attachment;
-        } else if (usage == SampledFragment) {
-          vk::Sampler sampler_handle = samplers_[img.sampler_profile]->handle();
+        switch (usage) {
+          case GraphResourceUsage::DepthStencilAttachmentRead: {
+            set_render_extent(ref, img);
+            vk::RenderingAttachmentInfo attachment =
+              img.attachment_info(true, true);
+            exec_node.depth_attachment = attachment;
+            break;
+          }
+          case GraphResourceUsage::SampledFragment: {
+            vk::Sampler sampler_handle =
+              samplers_[img.sampler_profile]->handle();
 
-          const vk::DescriptorImageInfo img_info{
-            sampler_handle,
-            *img.image.view(
-              {img.layers() == 1 ? vk::ImageViewType::e2D
-                                 : vk::ImageViewType::e2DArray,
-               img.format(),
-               {img.aspect(), 0, 1, 0, img.layers()}}
-            ),
-            vk::ImageLayout::eShaderReadOnlyOptimal
-          };
-          uint32 index =
-            graphics::context::descriptor_container().write(img_info);
-          exec_node.pass->set_input_index(input.attribute("id").value(), index);
+            const vk::DescriptorImageInfo img_info{
+              sampler_handle,
+              *img.image.view(
+                {img.layers() == 1 ? vk::ImageViewType::e2D
+                                   : vk::ImageViewType::e2DArray,
+                 img.format(),
+                 {img.aspect(), 0, 1, 0, img.layers()}}
+              ),
+              vk::ImageLayout::eShaderReadOnlyOptimal
+            };
+            uint32 index =
+              graphics::context::descriptor_container().write(img_info);
+            exec_node.pass->set_input_index(
+              input.attribute("id").value(), index
+            );
+            break;
+          }
+          default: break;
         }
       }
 
@@ -263,7 +285,7 @@ namespace lisa::systems::render {
 
         set_render_extent(ref, img);
 
-        auto usage = utils::xml::parse_enum<GraphResourceUsage>(
+        auto usage = GraphResourceUsage::_from_string_nocase(
           output.attribute("usage").value()
         );
 
@@ -293,8 +315,11 @@ namespace lisa::systems::render {
     const vk::DeviceAddress global_bda,
     const vk::DeviceAddress object_bda
   ) {
-    const auto swap_extent = graphics::context::swapchain().extent();
-    if (swap_extent.width == 0 || swap_extent.height == 0) return;
+    if (
+      const auto [width, height] = graphics::context::swapchain().extent();
+      width == 0 || height == 0
+    )
+      return;
 
     for (
       const auto& [pass, extent, layers, barriers, color_attachments, depth_attachment] :

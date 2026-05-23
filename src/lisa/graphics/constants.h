@@ -4,19 +4,21 @@
 
 #ifndef LISA_VULKAN_GRAPHICS_CONSTANTS_H
 #define LISA_VULKAN_GRAPHICS_CONSTANTS_H
+#include "build.h"
 #include "utils/common.h"
 
 #include <vulkan/vulkan_profiles.hpp>
 #include <vulkan/vulkan_raii.hpp>
 
 namespace lisa::graphics::constants {
-  static constexpr vector<const char*> VALIDATION_LAYERS = {};
-  static const vector VALIDATION_LAYERS_DEBUG = {"VK_LAYER_KHRONOS_validation"};
+  static inline const vector<const char*> VALIDATION_LAYERS =
+    build::debug ? vector{"VK_LAYER_KHRONOS_validation"}
+                 : vector<const char*>{};
 
   static constexpr VpProfileProperties PROFILE = {
-    VP_KHR_ROADMAP_2022_NAME, VP_KHR_ROADMAP_2022_SPEC_VERSION
+    VP_LISA_BASE_NAME, VP_LISA_BASE_SPEC_VERSION
   };
-  static constexpr auto API_VERSION = VP_KHR_ROADMAP_2022_MIN_API_VERSION;
+  static constexpr auto API_VERSION = VP_LISA_BASE_MIN_API_VERSION;
 
   static constexpr auto APPLICATION_NAME = "lisa";
 

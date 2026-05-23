@@ -21,8 +21,6 @@ namespace lisa::window {
     explicit Window(WindowSize size);
     ~Window() = default;
 
-    operator const SDL::Window&() const { return window_; }
-
     operator SDL::WindowRef() const { return SDL::WindowRef(window_); }
 
     WindowSize size() const;

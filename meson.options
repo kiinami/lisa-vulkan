@@ -1,2 +1,0 @@
-option('vulkan_sdk', type: 'string', value: '', description: 'Path to the Vulkan SDK root (e.g., /home/user/vulkan/1.x.x.x/x86_64)')
-option('ktx_path', type: 'string', value: '', description: 'Manual path to KTX install (only on Windows)')

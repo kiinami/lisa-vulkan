@@ -1,0 +1,43 @@
+{
+  "version": 6,
+  "configurePresets": [
+    {
+      "name": "debug-configure",
+      "displayName": "Debug (configure)",
+      "binaryDir": "${sourceDir}/build/Debug",
+      "generator": "Ninja",
+      "toolchainFile":
+        "${sourceDir}/build/Debug/generators/conan_toolchain.cmake",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "release-configure",
+      "displayName": "Release (configure)",
+      "binaryDir": "${sourceDir}/build/Release",
+      "generator": "Ninja",
+      "toolchainFile":
+        "${sourceDir}/build/Release/generators/conan_toolchain.cmake",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "debug",
+      "displayName": "Debug",
+      "configurePreset": "debug-configure",
+      "jobs": 10,
+      "targets": [ "lisa" ]
+    },
+    {
+      "name": "release",
+      "displayName": "Release",
+      "configurePreset": "release-configure",
+      "jobs": 10,
+      "targets": [ "lisa" ]
+    }
+  ]
+}

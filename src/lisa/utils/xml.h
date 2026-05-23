@@ -4,10 +4,8 @@
 
 #ifndef LISA_VULKAN_UTILS_XML_H
 #define LISA_VULKAN_UTILS_XML_H
-#include "logging.h"
 #include "utils/common.h"
 
-#include <magic_enum/magic_enum.hpp>
 #include <pugixml.hpp>
 
 namespace lisa::utils::xml {
@@ -89,14 +87,6 @@ namespace lisa::utils::xml {
     }
 
     return T{};
-  }
-
-  template<typename T>
-    requires std::is_enum_v<T>
-  T parse_enum(const str& value) {
-    auto v = magic_enum::enum_cast<T>(value);
-    if (v.has_value()) return v.value();
-    logging::abort("String '{}' could not be casted into enum value", value);
   }
 }
 

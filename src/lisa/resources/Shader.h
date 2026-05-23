@@ -15,8 +15,6 @@ namespace lisa::resources {
 
   class Shader : public systems::resources::Resource {
   public:
-    inline static const path SHADERS_PATH = "src/lisa/shaders";
-
     explicit Shader(const str& id, const path& filepath);
 
     const graphics::ShaderModule& module() const { return module_; }

@@ -72,8 +72,8 @@
 #include <entt/meta/factory.hpp>
 #include <entt/meta/meta.hpp>
 
-// magic_enum
-#include <magic_enum/magic_enum.hpp>
+// better-enum
+#include <enum.h>
 
 // stb
 #include <stb_image.h>

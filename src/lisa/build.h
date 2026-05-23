@@ -12,6 +12,8 @@ namespace lisa::build {
 #else
     false;
 #endif
+
+    inline static const path shaders_path = {LISA_SHADER_DIR};
 }
 
 #endif // LISA_VULKAN_BUILD_H

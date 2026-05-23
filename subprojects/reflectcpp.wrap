@@ -1,9 +1,0 @@
-[wrap-file]
-directory = reflect-cpp-0.24.0
-source_url = https://github.com/getml/reflect-cpp/archive/refs/tags/v0.24.0.tar.gz
-source_filename = reflectcpp-0.24.0.tar.gz
-source_hash = 2185d45cca58f60bcdaca37a995c6f8e90c0105f312610333fed75f2efa6a996
-patch_directory = reflectcpp
-
-[provide]
-reflectcpp = reflectcpp_dep

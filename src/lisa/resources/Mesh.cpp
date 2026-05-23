@@ -51,7 +51,7 @@ namespace lisa::resources {
     if (ext == ".obj")
       load_obj(filepath);
     else
-      logging::error("Mesh format of file '{}' not supported", filepath);
+      logging::error("Mesh format of file '{}' not supported", utils::pstr(filepath));
   }
 
   void MeshSpec::load_obj(const path& filepath) {

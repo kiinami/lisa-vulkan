@@ -8,10 +8,14 @@
 #include "utils/common.h"
 #include "utils/logging.h"
 
+#include <enum.h>
+
 namespace lisa::systems::render {
   using GraphResourceHandle = uint32;
 
-  enum GraphResourceUsage {
+  BETTER_ENUM(
+    GraphResourceUsage,
+    int,
     ColorAttachmentWrite,
     DepthStencilAttachmentWrite,
     DepthStencilAttachmentRead,
@@ -19,7 +23,7 @@ namespace lisa::systems::render {
     StorageComputeWrite,
     TransferSrc,
     TransferDst
-  };
+  );
 
   struct GraphResourceState {
     vk::PipelineStageFlags2 stage = vk::PipelineStageFlagBits2::eTopOfPipe;
@@ -129,14 +133,14 @@ namespace lisa::systems::render {
       GraphResourceState dst_state;
 
       switch (dst_usage) {
-        case ColorAttachmentWrite:
+        case GraphResourceUsage::ColorAttachmentWrite:
           dst_state = {
             vk::PipelineStageFlagBits2::eColorAttachmentOutput,
             vk::AccessFlagBits2::eColorAttachmentWrite,
             vk::ImageLayout::eColorAttachmentOptimal
           };
           break;
-        case DepthStencilAttachmentWrite:
+        case GraphResourceUsage::DepthStencilAttachmentWrite:
           dst_state = {
             vk::PipelineStageFlagBits2::eEarlyFragmentTests |
               vk::PipelineStageFlagBits2::eLateFragmentTests,
@@ -144,7 +148,7 @@ namespace lisa::systems::render {
             vk::ImageLayout::eDepthAttachmentOptimal
           };
           break;
-        case DepthStencilAttachmentRead:
+        case GraphResourceUsage::DepthStencilAttachmentRead:
           dst_state = {
             vk::PipelineStageFlagBits2::eEarlyFragmentTests |
               vk::PipelineStageFlagBits2::eLateFragmentTests,
@@ -152,7 +156,7 @@ namespace lisa::systems::render {
             vk::ImageLayout::eDepthReadOnlyOptimal
           };
           break;
-        case SampledFragment:
+        case GraphResourceUsage::SampledFragment:
           dst_state = {
             vk::PipelineStageFlagBits2::eFragmentShader,
             vk::AccessFlagBits2::eShaderRead,
