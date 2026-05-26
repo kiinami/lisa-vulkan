@@ -16,9 +16,9 @@ namespace lisa::graphics::constants {
                  : vector<const char*>{};
 
   static constexpr VpProfileProperties PROFILE = {
-    VP_LISA_BASE_NAME, VP_LISA_BASE_SPEC_VERSION
+    VP_LISA_RAYTRACING_NAME, VP_LISA_RAYTRACING_SPEC_VERSION
   };
-  static constexpr auto API_VERSION = VP_LISA_BASE_MIN_API_VERSION;
+  static constexpr auto API_VERSION = VP_LISA_RAYTRACING_MIN_API_VERSION;
 
   static constexpr auto APPLICATION_NAME = "lisa";
 

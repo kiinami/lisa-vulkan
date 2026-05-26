@@ -1,5 +1,5 @@
 {
-  "$schema": "https://schema.khronos.org/vulkan/profiles-0.8.2-328.json#",
+  "$schema": "https://schema.khronos.org/vulkan/profiles-0.8.2-351.json",
   "capabilities": {
     "vulkan10requirements": {
       "features": {
@@ -222,11 +222,11 @@
       }
     },
     "lisa": {
-      "extensions": {"VK_KHR_swapchain":  1, "VK_KHR_shader_draw_parameters":  1},
+      "extensions": {
+        "VK_KHR_swapchain": 1,
+        "VK_KHR_shader_draw_parameters": 1
+      },
       "features": {
-        "VkPhysicalDeviceFeatures": {
-          "geometryShader": true
-        },
         "VkPhysicalDeviceVulkan11Features": {
           "shaderDrawParameters": true
         },
@@ -235,8 +235,28 @@
         }
       }
     },
-    "lisa_raytracing": {},
-    "lisa_optionals": {}
+    "lisa_raytracing": {
+      "extensions": {
+        "VK_KHR_acceleration_structure": 1,
+        "VK_KHR_ray_tracing_pipeline": 1,
+        "VK_EXT_descriptor_indexing": 1,
+        "VK_KHR_ray_query": 1,
+        "VK_KHR_deferred_host_operations": 1
+      },
+      "features": {
+        "VkPhysicalDeviceAccelerationStructureFeaturesKHR": {
+          "accelerationStructure": true
+        },
+        "VkPhysicalDeviceRayQueryFeaturesKHR": {
+          "rayQuery": true
+        }
+      }
+    },
+    "lisa_optionals": {
+      "VkPhysicalDeviceFeatures": {
+        "geometryShader": true
+      }
+    }
   },
   "profiles": {
     "VP_LISA_base": {
@@ -256,7 +276,7 @@
         "vulkan13requirements_roadmap2022",
         "lisa"
       ],
-      "optionals": [ "vulkan10optionals_roadmap2022" ]
+      "optionals": [ "vulkan10optionals_roadmap2022", "lisa_optionals" ]
     },
     "VP_LISA_raytracing": {
       "version": 1,
