@@ -39,6 +39,7 @@ namespace lisa::render {
       .descriptorCount = 1,
     };
     tlas_pool_ = graphics::context::device()->createDescriptorPool({
+      .flags = vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet,
       .maxSets = 1,
       .poolSizeCount = 1,
       .pPoolSizes = &pool_size,
