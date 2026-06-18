@@ -1,6 +1,7 @@
 <rendergraph xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
              xsi:noNamespaceSchemaLocation="rendergraph.xsd"
-             output="final">
+             output="final"
+             profile="base">
 
     <resource id="depth" type="depth"/>
     <resource id="albedo" type="color"/>
