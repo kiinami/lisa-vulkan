@@ -86,6 +86,8 @@ namespace lisa::graphics {
     };
 
     const vk::PipelineRasterizationStateCreateInfo rasterization_state{
+      .cullMode = params.cull_mode,
+      .frontFace = vk::FrontFace::eCounterClockwise,
       .lineWidth = 1.0f
     };
 

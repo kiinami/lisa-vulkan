@@ -25,6 +25,7 @@ namespace lisa::graphics {
       const ShaderModule& shader;
       bool vertex_input = true;
       bool position_only = false;
+      vk::CullModeFlags cull_mode = vk::CullModeFlagBits::eNone;
       const vector<vk::Format>& color_attachment_formats = {};
       bool depth_test_read = true;
       bool depth_test_write = false;

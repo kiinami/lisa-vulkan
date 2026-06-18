@@ -61,6 +61,7 @@ namespace lisa::render {
           .size = sizeof(systems::render::PushConstants)
         },
       .shader = shader()->module(),
+      .cull_mode = vk::CullModeFlagBits::eBack,
       .color_attachment_formats =
         vector<vk::Format>{albedo_fmt, normal_fmt, position_fmt, material_fmt},
       .depth_attachment_format = depth_fmt,
