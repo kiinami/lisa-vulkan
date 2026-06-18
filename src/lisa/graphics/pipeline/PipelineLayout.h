@@ -29,6 +29,21 @@ namespace lisa::graphics {
       };
       set(context::device()->createPipelineLayout(layout_ci));
     }
+
+    explicit PipelineLayout(
+      const str& id,
+      const vector<vk::DescriptorSetLayout>& layouts,
+      vk::PushConstantRange push_constant_range
+    ) :
+      NamedVkObject(id) {
+      const vk::PipelineLayoutCreateInfo layout_ci{
+        .setLayoutCount = static_cast<uint32>(layouts.size()),
+        .pSetLayouts = layouts.data(),
+        .pushConstantRangeCount = 1,
+        .pPushConstantRanges = &push_constant_range,
+      };
+      set(context::device()->createPipelineLayout(layout_ci));
+    }
   };
 
 }

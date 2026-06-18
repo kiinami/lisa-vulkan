@@ -314,6 +314,9 @@ namespace lisa::systems::render {
     const ObjectData& object_data,
     const vk::DeviceAddress global_bda,
     const vk::DeviceAddress object_bda
+#ifdef VK_KHR_acceleration_structure
+    , const vk::AccelerationStructureKHR tlas_handle
+#endif
   ) {
     if (
       const auto [width, height] = graphics::context::swapchain().extent();
@@ -363,7 +366,16 @@ namespace lisa::systems::render {
         cmdb->setScissor(0, {{.extent = extent}});
       }
 
-      RenderContext ctx{cmdb, global_data, object_data, global_bda, object_bda};
+      RenderContext ctx{
+        .cmdb = cmdb,
+        .global_data = global_data,
+        .object_data = object_data,
+        .global_bda = global_bda,
+        .object_bda = object_bda,
+#ifdef VK_KHR_acceleration_structure
+        .tlas_handle = tlas_handle,
+#endif
+      };
       pass->execute(ctx);
 
       if (has_attachments) cmdb->endRendering();

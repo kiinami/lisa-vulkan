@@ -35,6 +35,9 @@ namespace lisa::systems::render {
       const ObjectData& object_data,
       vk::DeviceAddress global_bda,
       vk::DeviceAddress object_bda
+#ifdef VK_KHR_acceleration_structure
+      , vk::AccelerationStructureKHR tlas_handle = {}
+#endif
     );
 
     const ImageGraphResource& output_resource() const {

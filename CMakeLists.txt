@@ -200,6 +200,8 @@ set(LISA_SOURCES
         src/lisa/render/GeometryPass.cpp
         src/lisa/render/CompositionPass.h
         src/lisa/render/CompositionPass.cpp
+        src/lisa/render/CompositionRtxPass.h
+        src/lisa/render/CompositionRtxPass.cpp
         src/lisa/render/DepthPass.h
         src/lisa/render/DepthPass.cpp
         src/lisa/render/SSAOPass.h

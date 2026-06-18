@@ -20,6 +20,7 @@ namespace lisa::graphics {
     struct CreateParameters {
       vk::DescriptorSetLayout descriptor_set_layout =
         context::descriptor_container().layout();
+      optional<vk::DescriptorSetLayout> extra_descriptor_set_layout;
       vk::PushConstantRange push_constant_range;
       const ShaderModule& shader;
       bool vertex_input = true;
@@ -38,9 +39,9 @@ namespace lisa::graphics {
   private:
     PipelineLayout layout_;
 
-    static vk::raii::PipelineLayout create_layout(
-      vk::DescriptorSetLayout descriptor_set_layout,
-      vk::PushConstantRange push_constant_range
+    static PipelineLayout create_layout(
+      const str& id,
+      const CreateParameters& params
     );
   };
 

@@ -330,6 +330,11 @@ namespace lisa::systems::render {
       *object_data,
       global_data_buffers_[current_frame_].address(),
       object_data_buffers_[current_frame_].address()
+#ifdef VK_KHR_acceleration_structure
+      , tlas_[current_frame_].has_value()
+          ? tlas_[current_frame_]->handle()
+          : vk::AccelerationStructureKHR{}
+#endif
     );
 
     cmd_buffer_.end_region();

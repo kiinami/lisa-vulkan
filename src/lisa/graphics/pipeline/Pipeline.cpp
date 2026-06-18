@@ -9,13 +9,21 @@
 #include "utils/logging.h"
 
 namespace lisa::graphics {
+  PipelineLayout Pipeline::create_layout(
+    const str& id, const CreateParameters& params
+  ) {
+    const vector<vk::DescriptorSetLayout> layouts =
+      params.extra_descriptor_set_layout
+        ? vector<vk::DescriptorSetLayout>{
+            params.descriptor_set_layout, *params.extra_descriptor_set_layout
+          }
+        : vector<vk::DescriptorSetLayout>{params.descriptor_set_layout};
+    return PipelineLayout{logging::genid(id, "layout"), layouts, params.push_constant_range};
+  }
+
   Pipeline::Pipeline(const str& id, CreateParameters params) :
     NamedVkObject(id),
-    layout_(
-      logging::genid(id, "layout"),
-      params.descriptor_set_layout,
-      params.push_constant_range
-    ) {
+    layout_(create_layout(id, params)) {
     vk::PipelineVertexInputStateCreateInfo vertex_input_state{
       .vertexBindingDescriptionCount = 0u,
       .pVertexBindingDescriptions = nullptr,

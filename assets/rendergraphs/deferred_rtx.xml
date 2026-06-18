@@ -1,0 +1,54 @@
+<rendergraph xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:noNamespaceSchemaLocation="rendergraph.xsd"
+             output="final"
+             profile="raytracing">
+    <resource id="depth" type="depth"/>
+    <resource id="albedo" type="color"/>
+    <resource id="normal" type="normal"/>
+    <resource id="position" type="position"/>
+    <resource id="material" type="material"/>
+    <resource id="ssao" type="ssao"/>
+    <resource id="ssao_blurred" type="ssao"/>
+    <resource id="final" type="final"/>
+
+    <pass id="depth_pass" type="preprocess::depth">
+        <output id="depth" ref="depth" usage="DepthStencilAttachmentWrite"/>
+    </pass>
+
+    <pass id="geometry_pass" type="deferred::geometry">
+        <input id="depth" ref="depth" usage="DepthStencilAttachmentRead"/>
+        <output id="albedo" ref="albedo" usage="ColorAttachmentWrite"/>
+        <output id="normal" ref="normal" usage="ColorAttachmentWrite"/>
+        <output id="position" ref="position" usage="ColorAttachmentWrite"/>
+        <output id="material" ref="material" usage="ColorAttachmentWrite"/>
+    </pass>
+
+    <pass id="ssao_pass" type="preprocess::ssao">
+        <input id="depth" ref="depth" usage="SampledFragment"/>
+        <input id="position" ref="position" usage="SampledFragment"/>
+        <input id="normal" ref="normal" usage="SampledFragment"/>
+        <output id="ssao" ref="ssao" usage="ColorAttachmentWrite"/>
+    </pass>
+
+    <pass id="ssao_blur_pass" type="postprocess::convolutional">
+        <parameter id="kernel">
+            1 1 1 1 1
+            1 1 1 1 1
+            1 1 1 1 1
+            1 1 1 1 1
+            1 1 1 1 1
+        </parameter>
+        <input id="input" ref="ssao" usage="SampledFragment"/>
+        <output id="output" ref="ssao_blurred" usage="ColorAttachmentWrite"/>
+    </pass>
+
+    <pass id="composition_rtx_pass" type="deferred::composition_rtx">
+        <input id="albedo" ref="albedo" usage="SampledFragment"/>
+        <input id="normal" ref="normal" usage="SampledFragment"/>
+        <input id="position" ref="position" usage="SampledFragment"/>
+        <input id="material" ref="material" usage="SampledFragment"/>
+        <input id="ssao" ref="ssao_blurred" usage="SampledFragment"/>
+        <output id="final" ref="final" usage="ColorAttachmentWrite"/>
+    </pass>
+
+</rendergraph>
