@@ -134,6 +134,9 @@ set(LISA_SOURCES
         src/lisa/graphics/buffer/Buffer.h
         src/lisa/graphics/buffer/Buffer.cpp
 
+        src/lisa/graphics/acceleration/AccelerationStructure.h
+        src/lisa/graphics/acceleration/AccelerationStructure.cpp
+
         src/lisa/graphics/descriptors/DescriptorAllocator.h
         src/lisa/graphics/descriptors/DescriptorAllocator.cpp
         src/lisa/graphics/descriptors/DescriptorContainer.h

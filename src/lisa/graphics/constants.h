@@ -68,6 +68,29 @@ namespace lisa::graphics::constants {
     return vpGetProfileAPIVersion(capabilities(), &active_profile());
   }
 
+  inline bool profile_has_extension(const char* name) {
+    uint32 count = 0;
+    vpGetProfileDeviceExtensionProperties(
+      capabilities(), &active_profile(), nullptr, &count, nullptr
+    );
+    vector<VkExtensionProperties> exts(count);
+    vpGetProfileDeviceExtensionProperties(
+      capabilities(), &active_profile(), nullptr, &count, exts.data()
+    );
+    for (const auto& e : exts)
+      if (str(e.extensionName) == name)
+        return true;
+    return false;
+  }
+
+  inline bool has_acceleration_structure() {
+#ifdef VK_KHR_acceleration_structure
+    return profile_has_extension(VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME);
+#else
+    return false;
+#endif
+  }
+
 }
 
 #endif // LISA_VULKAN_GRAPHICS_CONSTANTS_H

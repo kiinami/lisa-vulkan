@@ -1,7 +1,7 @@
 <rendergraph xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
              xsi:noNamespaceSchemaLocation="rendergraph.xsd"
              output="final"
-             profile="base">
+             profile="raytracing">
     <resource id="depth" type="depth"/>
     <resource id="shadow" type="shadow_depth" width="2048" height="2048"/>
     <resource id="albedo" type="color"/>
