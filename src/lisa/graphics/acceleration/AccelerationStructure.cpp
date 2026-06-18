@@ -51,7 +51,7 @@ namespace lisa::graphics {
       {primitive_count}
     );
 
-    AccelerationStructure result;
+    AccelerationStructure result(id);
 
     result.buffer_ = Buffer{
       logging::genid(id, "blas"),
@@ -61,11 +61,11 @@ namespace lisa::graphics {
       {.usage = vma::MemoryUsage::eAuto},
     };
 
-    result.handle_ = context::device()->createAccelerationStructureKHR({
+    result.set(context::device()->createAccelerationStructureKHR({
       .buffer = result.buffer_.handle(),
       .size = sizes.accelerationStructureSize,
       .type = vk::AccelerationStructureTypeKHR::eBottomLevel,
-    });
+    }));
 
     auto scratch = Buffer{
       logging::genid(id, "blas_scratch"),
@@ -75,7 +75,7 @@ namespace lisa::graphics {
       {.usage = vma::MemoryUsage::eAuto},
     };
 
-    build_info.dstAccelerationStructure = *result.handle_;
+    build_info.dstAccelerationStructure = result.handle();
     build_info.scratchData.deviceAddress = scratch.address();
 
     const vk::AccelerationStructureBuildRangeInfoKHR range_info{
@@ -104,7 +104,7 @@ namespace lisa::graphics {
     );
 
     result.address_ = context::device()->getAccelerationStructureAddressKHR({
-      .accelerationStructure = *result.handle_,
+      .accelerationStructure = result.handle(),
     });
 
     logging::trace("Built BLAS for '{}'", id);

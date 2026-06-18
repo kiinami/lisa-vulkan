@@ -9,13 +9,15 @@
 
 #include "graphics/buffer/Buffer.h"
 #include "graphics/commands/CommandBuffer.h"
+#include "graphics/vk/NamedVkObject.h"
 #include "utils/common.h"
 
 #include <vulkan/vulkan_raii.hpp>
 
 namespace lisa::graphics {
 
-  class AccelerationStructure {
+  class AccelerationStructure :
+    public NamedVkObject<vk::raii::AccelerationStructureKHR> {
   public:
     static AccelerationStructure build_blas(
       const str& id,
@@ -26,13 +28,12 @@ namespace lisa::graphics {
       const CommandBuffer& cmdb
     );
 
-    vk::AccelerationStructureKHR handle() const { return *handle_; }
     vk::DeviceAddress address() const { return address_; }
 
   private:
-    AccelerationStructure() = default;
+    explicit AccelerationStructure(const str& id) :
+      NamedVkObject(id) {}
 
-    vk::raii::AccelerationStructureKHR handle_{nullptr};
     Buffer buffer_;
     vk::DeviceAddress address_ = 0;
   };
