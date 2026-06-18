@@ -14,6 +14,10 @@
 #include "graphics/sync/Semaphore.h"
 #include "utils/common.h"
 
+#ifdef VK_KHR_acceleration_structure
+#include "graphics/acceleration/AccelerationStructure.h"
+#endif
+
 namespace lisa::systems::render {
 
   class Renderer {
@@ -32,6 +36,12 @@ namespace lisa::systems::render {
     graphics::Buffer& object_data_buffer() {
       return object_data_buffers_[current_frame_];
     }
+
+#ifdef VK_KHR_acceleration_structure
+    optional<graphics::AccelerationStructure>& tlas() {
+      return tlas_[current_frame_];
+    }
+#endif
 
   private:
     Rendergraph graph_;
@@ -56,6 +66,11 @@ namespace lisa::systems::render {
     array<graphics::Semaphore, constants::MAX_FRAMES_IN_FLIGHT>
       available_s_;
     vector<graphics::Semaphore> finished_s_;
+
+#ifdef VK_KHR_acceleration_structure
+    array<optional<graphics::AccelerationStructure>, constants::MAX_FRAMES_IN_FLIGHT>
+      tlas_;
+#endif
 
     uint32 current_frame_ = 0;
     float time_ = 0.0f;

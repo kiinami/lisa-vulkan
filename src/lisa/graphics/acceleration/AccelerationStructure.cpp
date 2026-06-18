@@ -112,6 +112,133 @@ namespace lisa::graphics {
     return result;
   }
 
+  AccelerationStructure AccelerationStructure::build_tlas(
+    const str& id,
+    const vector<TlasInstance>& instances,
+    const CommandBuffer& cmdb
+  ) {
+    const uint32 instance_count = static_cast<uint32>(instances.size());
+
+    vector<vk::AccelerationStructureInstanceKHR> vk_instances;
+    vk_instances.reserve(instance_count);
+    for (const auto& inst : instances) {
+      vk::TransformMatrixKHR t{};
+      for (int r = 0; r < 3; r++)
+        for (int c = 0; c < 4; c++)
+          t.matrix[r][c] = inst.transform[c][r];
+
+      vk_instances.push_back({
+        .transform = t,
+        .instanceCustomIndex = inst.instance_index,
+        .mask = 0xFF,
+        .instanceShaderBindingTableRecordOffset = 0,
+        .flags = static_cast<VkGeometryInstanceFlagsKHR>(
+          vk::GeometryInstanceFlagBitsKHR::eTriangleFacingCullDisable),
+        .accelerationStructureReference = inst.blas_address,
+      });
+    }
+
+    auto instances_buf = Buffer{
+      logging::genid(id, "tlas_instances"),
+      sizeof(vk::AccelerationStructureInstanceKHR) * instance_count,
+      vk::BufferUsageFlagBits::eAccelerationStructureBuildInputReadOnlyKHR |
+        vk::BufferUsageFlagBits::eShaderDeviceAddress,
+      {
+        .flags = vma::AllocationCreateFlagBits::eHostAccessSequentialWrite |
+                 vma::AllocationCreateFlagBits::eMapped,
+        .usage = vma::MemoryUsage::eAuto,
+      },
+    };
+    std::memcpy(
+      instances_buf.mapped_data(),
+      vk_instances.data(),
+      sizeof(vk::AccelerationStructureInstanceKHR) * instance_count
+    );
+
+    const vk::AccelerationStructureGeometryInstancesDataKHR inst_data{
+      .data = {.deviceAddress = instances_buf.address()},
+    };
+
+    const vk::AccelerationStructureGeometryKHR geometry{
+      .geometryType = vk::GeometryTypeKHR::eInstances,
+      .geometry = {.instances = inst_data},
+    };
+
+    vk::AccelerationStructureBuildGeometryInfoKHR build_info{
+      .type = vk::AccelerationStructureTypeKHR::eTopLevel,
+      .flags = vk::BuildAccelerationStructureFlagBitsKHR::ePreferFastTrace,
+      .mode = vk::BuildAccelerationStructureModeKHR::eBuild,
+      .geometryCount = 1,
+      .pGeometries = &geometry,
+    };
+
+    const auto sizes = context::device()->getAccelerationStructureBuildSizesKHR(
+      vk::AccelerationStructureBuildTypeKHR::eDevice,
+      build_info,
+      {instance_count}
+    );
+
+    AccelerationStructure result(id);
+
+    result.buffer_ = Buffer{
+      logging::genid(id, "tlas"),
+      sizes.accelerationStructureSize,
+      vk::BufferUsageFlagBits::eAccelerationStructureStorageKHR |
+        vk::BufferUsageFlagBits::eShaderDeviceAddress,
+      {.usage = vma::MemoryUsage::eAuto},
+    };
+
+    result.set(context::device()->createAccelerationStructureKHR({
+      .buffer = result.buffer_.handle(),
+      .size = sizes.accelerationStructureSize,
+      .type = vk::AccelerationStructureTypeKHR::eTopLevel,
+    }));
+
+    auto scratch = Buffer{
+      logging::genid(id, "tlas_scratch"),
+      sizes.buildScratchSize,
+      vk::BufferUsageFlagBits::eStorageBuffer |
+        vk::BufferUsageFlagBits::eShaderDeviceAddress,
+      {.usage = vma::MemoryUsage::eAuto},
+    };
+
+    build_info.dstAccelerationStructure = result.handle();
+    build_info.scratchData.deviceAddress = scratch.address();
+
+    const vk::AccelerationStructureBuildRangeInfoKHR range_info{
+      .primitiveCount = instance_count,
+    };
+    const vk::AccelerationStructureBuildRangeInfoKHR* p_range_info = &range_info;
+
+    cmdb->buildAccelerationStructuresKHR(build_info, p_range_info);
+
+    cmdb.keep_alive(std::move(instances_buf));
+    cmdb.keep_alive(std::move(scratch));
+
+    const vk::MemoryBarrier2 barrier{
+      .srcStageMask =
+        vk::PipelineStageFlagBits2::eAccelerationStructureBuildKHR,
+      .srcAccessMask = vk::AccessFlagBits2::eAccelerationStructureWriteKHR,
+      .dstStageMask =
+        vk::PipelineStageFlagBits2::eAccelerationStructureBuildKHR,
+      .dstAccessMask = vk::AccessFlagBits2::eAccelerationStructureReadKHR,
+    };
+    cmdb->pipelineBarrier2(
+      vk::DependencyInfo{
+        .memoryBarrierCount = 1,
+        .pMemoryBarriers = &barrier,
+      }
+    );
+
+    result.address_ = context::device()->getAccelerationStructureAddressKHR({
+      .accelerationStructure = result.handle(),
+    });
+
+    logging::trace("Built TLAS for '{}'", id);
+
+    return result;
+  }
+
 }
 
 #endif // VK_KHR_acceleration_structure

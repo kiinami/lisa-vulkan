@@ -19,12 +19,24 @@ namespace lisa::graphics {
   class AccelerationStructure :
     public NamedVkObject<vk::raii::AccelerationStructureKHR> {
   public:
+    struct TlasInstance {
+      vk::DeviceAddress blas_address;
+      mat4 transform;
+      uint32 instance_index;
+    };
+
     static AccelerationStructure build_blas(
       const str& id,
       const Buffer& vertex_buffer,
       uint32 vertex_count,
       const Buffer& index_buffer,
       uint32 index_count,
+      const CommandBuffer& cmdb
+    );
+
+    static AccelerationStructure build_tlas(
+      const str& id,
+      const vector<TlasInstance>& instances,
       const CommandBuffer& cmdb
     );
 
