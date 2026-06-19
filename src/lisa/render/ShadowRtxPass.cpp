@@ -62,7 +62,6 @@ namespace lisa::render {
       .descriptorSetCount = constants::MAX_FRAMES_IN_FLIGHT,
       .pSetLayouts = layouts.data(),
     });
-    tlas_sets_valid_.assign(constants::MAX_FRAMES_IN_FLIGHT, false);
 
     {
       const auto child =
@@ -109,9 +108,6 @@ namespace lisa::render {
         }},
         {}
       );
-      tlas_sets_valid_[frame] = true;
-    } else {
-      tlas_sets_valid_[frame] = false;
     }
 
     ctx.cmdb->bindPipeline(

@@ -323,17 +323,17 @@ namespace lisa::systems::render {
 #ifdef VK_KHR_acceleration_structure
     if (graphics::constants::has_acceleration_structure()) {
       vector<graphics::AccelerationStructure::TlasInstance> instances;
-      uint32 tlas_i = 0;
       const auto tlas_view = components::context::registry()
         ->view<const components::TransformComponent,
                const components::MeshComponent>();
       for (auto [entity, transform, mesh_comp] : tlas_view.each()) {
         const auto* mesh = mesh_comp.resource();
         if (mesh && mesh->has_blas())
-          instances.push_back(
-            {mesh->blas().address(), transform.matrix(), tlas_i}
-          );
-        tlas_i++;
+          instances.push_back({
+            mesh->blas().address(),
+            transform.matrix(),
+            static_cast<uint32>(instances.size()),
+          });
       }
       tlas_[current_frame_] = instances.empty()
         ? nullopt

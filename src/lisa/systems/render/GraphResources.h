@@ -81,6 +81,11 @@ namespace lisa::systems::render {
           vk::ImageUsageFlagBits::eColorAttachment |
             vk::ImageUsageFlagBits::eSampled,
           GraphResourceSamplerProfile::Linear}},
+        {"shadow_visibility",
+         {vk::Format::eR8Unorm,
+          vk::ImageUsageFlagBits::eColorAttachment |
+            vk::ImageUsageFlagBits::eSampled,
+          GraphResourceSamplerProfile::Linear}},
         {"shadow_depth",
          {vk::Format::eD32Sfloat,
           vk::ImageUsageFlagBits::eDepthStencilAttachment |

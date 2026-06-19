@@ -9,8 +9,8 @@
     <resource id="material"       type="material"/>
     <resource id="ssao"           type="ssao"/>
     <resource id="ssao_blurred"   type="ssao"/>
-    <resource id="shadow_vis_raw" type="ssao"/>
-    <resource id="shadow_vis"     type="ssao"/>
+    <resource id="shadow_vis_raw" type="shadow_visibility"/>
+    <resource id="shadow_vis"     type="shadow_visibility"/>
     <resource id="final"          type="final"/>
 
     <pass id="depth_pass" type="preprocess::depth">

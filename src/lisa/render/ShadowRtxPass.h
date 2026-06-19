@@ -39,7 +39,6 @@ namespace lisa::render {
     vk::raii::DescriptorSetLayout tlas_layout_ = nullptr;
     vk::raii::DescriptorPool tlas_pool_ = nullptr;
     vector<vk::raii::DescriptorSet> tlas_sets_;
-    vector<bool> tlas_sets_valid_;
     uint32 num_shadow_samples_ = 8;
   };
 
