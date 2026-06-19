@@ -38,6 +38,7 @@ namespace lisa::render {
     vk::raii::DescriptorSetLayout tlas_layout_ = nullptr;
     vk::raii::DescriptorPool tlas_pool_ = nullptr;
     vk::raii::DescriptorSet tlas_set_ = nullptr;
+    bool tlas_set_valid_ = false;
   };
 
 }

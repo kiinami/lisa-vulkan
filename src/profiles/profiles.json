@@ -253,8 +253,10 @@
       }
     },
     "lisa_optionals": {
-      "VkPhysicalDeviceFeatures": {
-        "geometryShader": true
+      "features": {
+        "VkPhysicalDeviceFeatures": {
+          "geometryShader": true
+        }
       }
     }
   },

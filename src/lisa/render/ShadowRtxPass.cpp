@@ -6,9 +6,9 @@
 
 #ifdef VK_KHR_acceleration_structure
 
-#include "graphics/context.h"
-#include "systems/render/RenderPassRegistry.h"
-#include "systems/render/Rendergraph.h"
+  #include "graphics/context.h"
+  #include "systems/render/RenderPassRegistry.h"
+  #include "systems/render/Rendergraph.h"
 
 namespace lisa::render {
   REGISTER_RENDER_PASS(ShadowRtxPass);
@@ -74,7 +74,7 @@ namespace lisa::render {
 
   void ShadowRtxPass::execute(const systems::render::RenderContext& ctx) {
     if (ctx.tlas_handle) {
-      vk::WriteDescriptorSetAccelerationStructureKHR as_write{
+      const vk::WriteDescriptorSetAccelerationStructureKHR as_write{
         .accelerationStructureCount = 1,
         .pAccelerationStructures = &ctx.tlas_handle,
       };
@@ -88,6 +88,7 @@ namespace lisa::render {
         }},
         {}
       );
+      tlas_set_valid_ = true;
     }
 
     ctx.cmdb->bindPipeline(
@@ -98,9 +99,18 @@ namespace lisa::render {
       vk::PipelineBindPoint::eGraphics,
       pipeline_->layout(),
       0,
-      {*graphics::context::descriptor_container().set(), *tlas_set_},
+      {*graphics::context::descriptor_container().set()},
       {}
     );
+
+    if (tlas_set_valid_)
+      ctx.cmdb->bindDescriptorSets(
+        vk::PipelineBindPoint::eGraphics,
+        pipeline_->layout(),
+        1,
+        {*tlas_set_},
+        {}
+      );
 
     const ShadowRtxPushConstants push{
       .global_bda = ctx.global_bda,

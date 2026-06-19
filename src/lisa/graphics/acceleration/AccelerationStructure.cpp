@@ -219,8 +219,7 @@ namespace lisa::graphics {
       .srcStageMask =
         vk::PipelineStageFlagBits2::eAccelerationStructureBuildKHR,
       .srcAccessMask = vk::AccessFlagBits2::eAccelerationStructureWriteKHR,
-      .dstStageMask =
-        vk::PipelineStageFlagBits2::eAccelerationStructureBuildKHR,
+      .dstStageMask = vk::PipelineStageFlagBits2::eFragmentShader,
       .dstAccessMask = vk::AccessFlagBits2::eAccelerationStructureReadKHR,
     };
     cmdb->pipelineBarrier2(
