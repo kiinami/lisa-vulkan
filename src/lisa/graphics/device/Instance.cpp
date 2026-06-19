@@ -21,7 +21,7 @@ namespace lisa::graphics {
     vk::ApplicationInfo app_info{
       .pApplicationName = constants::APPLICATION_NAME,
       .pEngineName = constants::APPLICATION_NAME,
-      .apiVersion = constants::API_VERSION
+      .apiVersion = constants::active_api_version()
     };
 
     auto extensions = get_instance_extensions();
@@ -38,7 +38,7 @@ namespace lisa::graphics {
     const VpInstanceCreateInfo vp_instance_ci{
       .pCreateInfo = instance_ci,
       .enabledFullProfileCount = 1,
-      .pEnabledFullProfiles = &constants::PROFILE
+      .pEnabledFullProfiles = &constants::active_profile()
     };
 
     VkInstance instance = VK_NULL_HANDLE;
@@ -82,7 +82,7 @@ namespace lisa::graphics {
     auto supported = vk::False;
 
     utils::chk(vpGetInstanceProfileSupport(
-      constants::capabilities(), nullptr, &constants::PROFILE, &supported
+      constants::capabilities(), nullptr, &constants::active_profile(), &supported
     ));
 
     return static_cast<bool>(supported);

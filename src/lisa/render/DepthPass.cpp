@@ -36,6 +36,7 @@ namespace lisa::render {
         },
       .shader = shader()->module(),
       .position_only = true,
+      .cull_mode = vk::CullModeFlagBits::eBack,
       .depth_test_write = true,
       .depth_attachment_format = depth_fmt
     };

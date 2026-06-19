@@ -20,10 +20,12 @@ namespace lisa::graphics {
     struct CreateParameters {
       vk::DescriptorSetLayout descriptor_set_layout =
         context::descriptor_container().layout();
+      optional<vk::DescriptorSetLayout> extra_descriptor_set_layout;
       vk::PushConstantRange push_constant_range;
       const ShaderModule& shader;
       bool vertex_input = true;
       bool position_only = false;
+      vk::CullModeFlags cull_mode = vk::CullModeFlagBits::eNone;
       const vector<vk::Format>& color_attachment_formats = {};
       bool depth_test_read = true;
       bool depth_test_write = false;
@@ -38,9 +40,9 @@ namespace lisa::graphics {
   private:
     PipelineLayout layout_;
 
-    static vk::raii::PipelineLayout create_layout(
-      vk::DescriptorSetLayout descriptor_set_layout,
-      vk::PushConstantRange push_constant_range
+    static PipelineLayout create_layout(
+      const str& id,
+      const CreateParameters& params
     );
   };
 

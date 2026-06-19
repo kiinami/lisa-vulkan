@@ -10,6 +10,7 @@
 #include "memory/MemoryAllocator.h"
 #include "swapchain/Surface.h"
 #include "swapchain/Swapchain.h"
+#include "utils/common.h"
 
 namespace lisa::graphics {
   class Swapchain;
@@ -17,7 +18,7 @@ namespace lisa::graphics {
 }
 
 namespace lisa::graphics::context {
-  void init();
+  void init(const path& rendergraph_path);
   void destroy();
 
   const Instance& instance();

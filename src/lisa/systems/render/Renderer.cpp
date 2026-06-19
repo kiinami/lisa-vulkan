@@ -204,6 +204,26 @@ namespace lisa::systems::render {
       );
     }
 
+    {
+      float cone_sum = 0.0f, weight_sum = 0.0f;
+      const uint32 pt_count = global_data->point_lights_count;
+      const uint32 dir_count = global_data->dir_lights_count;
+      for (uint32 i = 0; i < pt_count; i++) {
+        const auto& l = point_light_data[i];
+        const float approx =
+          l.radius > 0.0f ? l.source_radius / l.radius : 0.0f;
+        cone_sum   += l.intensity * approx;
+        weight_sum += l.intensity;
+      }
+      for (uint32 i = 0; i < dir_count; i++) {
+        const auto& l = dir_light_data[i];
+        cone_sum   += l.intensity * glm::sin(l.angular_radius);
+        weight_sum += l.intensity;
+      }
+      global_data->soft_shadow_cone_r =
+        weight_sum > 0.0f ? cone_sum / weight_sum : 0.0f;
+    }
+
     auto* ambient_light_data = static_cast<AmbientLightData*>(
       ambient_lights_buffers_[current_frame_].mapped_data()
     );
@@ -299,6 +319,29 @@ namespace lisa::systems::render {
     }
 
     cmd_buffer_.end_region();
+
+#ifdef VK_KHR_acceleration_structure
+    if (graphics::constants::has_acceleration_structure()) {
+      vector<graphics::AccelerationStructure::TlasInstance> instances;
+      const auto tlas_view = components::context::registry()
+        ->view<const components::TransformComponent,
+               const components::MeshComponent>();
+      for (auto [entity, transform, mesh_comp] : tlas_view.each()) {
+        const auto* mesh = mesh_comp.resource();
+        if (mesh && mesh->has_blas())
+          instances.push_back({
+            mesh->blas().address(),
+            transform.matrix(),
+            static_cast<uint32>(instances.size()),
+          });
+      }
+      tlas_[current_frame_] = instances.empty()
+        ? nullopt
+        : optional{graphics::AccelerationStructure::build_tlas(
+            "scene_tlas", instances, cmd_buffer_)};
+    }
+#endif
+
     cmd_buffer_.begin_region("passes");
 
     graph_.render(
@@ -306,7 +349,13 @@ namespace lisa::systems::render {
       *global_data,
       *object_data,
       global_data_buffers_[current_frame_].address(),
-      object_data_buffers_[current_frame_].address()
+      object_data_buffers_[current_frame_].address(),
+      current_frame_
+#ifdef VK_KHR_acceleration_structure
+      , tlas_[current_frame_].has_value()
+          ? tlas_[current_frame_]->handle()
+          : vk::AccelerationStructureKHR{}
+#endif
     );
 
     cmd_buffer_.end_region();

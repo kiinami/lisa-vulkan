@@ -45,7 +45,7 @@ namespace lisa::graphics {
     const VpDeviceCreateInfo device_ci{
       .pCreateInfo = &vk_device_ci,
       .enabledFullProfileCount = 1,
-      .pEnabledFullProfiles = &constants::PROFILE,
+      .pEnabledFullProfiles = &constants::active_profile(),
     };
     VkDevice dev;
     utils::chk(vpCreateDevice(

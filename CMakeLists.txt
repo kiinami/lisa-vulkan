@@ -134,6 +134,9 @@ set(LISA_SOURCES
         src/lisa/graphics/buffer/Buffer.h
         src/lisa/graphics/buffer/Buffer.cpp
 
+        src/lisa/graphics/acceleration/AccelerationStructure.h
+        src/lisa/graphics/acceleration/AccelerationStructure.cpp
+
         src/lisa/graphics/descriptors/DescriptorAllocator.h
         src/lisa/graphics/descriptors/DescriptorAllocator.cpp
         src/lisa/graphics/descriptors/DescriptorContainer.h
@@ -197,6 +200,8 @@ set(LISA_SOURCES
         src/lisa/render/GeometryPass.cpp
         src/lisa/render/CompositionPass.h
         src/lisa/render/CompositionPass.cpp
+        src/lisa/render/CompositionRtxPass.h
+        src/lisa/render/CompositionRtxPass.cpp
         src/lisa/render/DepthPass.h
         src/lisa/render/DepthPass.cpp
         src/lisa/render/SSAOPass.h
@@ -205,6 +210,10 @@ set(LISA_SOURCES
         src/lisa/render/ConvolutionalPass.cpp
         src/lisa/render/ShadowPass.h
         src/lisa/render/ShadowPass.cpp
+        src/lisa/render/ShadowRtxPass.h
+        src/lisa/render/ShadowRtxPass.cpp
+        src/lisa/render/BilateralPass.h
+        src/lisa/render/BilateralPass.cpp
 
         src/lisa/scene/xml.h
         src/lisa/scene/xml.cpp

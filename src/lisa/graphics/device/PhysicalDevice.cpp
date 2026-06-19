@@ -25,7 +25,7 @@ namespace lisa::graphics {
       constants::capabilities(),
       context::instance().handle(),
       handle(),
-      &constants::PROFILE,
+      &constants::active_profile(),
       &supported
     ));
     return supported;

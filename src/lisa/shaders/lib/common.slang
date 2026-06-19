@@ -19,7 +19,7 @@ public struct PointLight {
   public float near;
   public float far;
   public uint32_t shadow_base_index;
-  float padding;
+  public float source_radius;
 }
 
 public struct DirLight {
@@ -27,6 +27,10 @@ public struct DirLight {
   public float intensity;
   public float3 color;
   public uint32_t shadow_index;
+  public float angular_radius;
+  float _pad0;
+  float _pad1;
+  float _pad2;
 }
 
 public struct AmbientLight {
@@ -58,7 +62,8 @@ public struct GlobalData {
   public float3 camera_position;
   public float2 texel_size;
 
-  float2 padding;
+  public float soft_shadow_cone_r;
+  float _pad_gd;
 };
 
 public struct ObjectData {

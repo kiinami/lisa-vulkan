@@ -18,6 +18,10 @@ namespace lisa::systems::render {
     const ObjectData& object_data;
     vk::DeviceAddress global_bda = 0;
     vk::DeviceAddress object_bda = 0;
+    uint32 current_frame = 0;
+#ifdef VK_KHR_acceleration_structure
+    vk::AccelerationStructureKHR tlas_handle = nullptr;
+#endif
   };
 
   class RenderPass {

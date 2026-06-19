@@ -5,6 +5,7 @@
 #include "Mesh.h"
 
 #include "Vertex.h"
+#include "graphics/constants.h"
 #include "graphics/context.h"
 #include "utils/chk.h"
 #include "utils/path.h"
@@ -24,13 +25,18 @@ namespace lisa::resources {
     vertex_count_ = static_cast<uint32>(vertices.size());
     index_count_ = static_cast<uint32>(indices.size());
 
+    const auto rt_flags = graphics::constants::has_acceleration_structure()
+      ? vk::BufferUsageFlagBits::eShaderDeviceAddress |
+          vk::BufferUsageFlagBits::eAccelerationStructureBuildInputReadOnlyKHR
+      : vk::BufferUsageFlags{};
+
     vertex_buffer_ = graphics::Buffer::from_data(
       logging::genid(id, "vertices"),
       cmdb,
       vertices.data(),
       sizeof(Vertex) * vertices.size(),
       vk::BufferUsageFlagBits::eVertexBuffer |
-        vk::BufferUsageFlagBits::eTransferDst,
+        vk::BufferUsageFlagBits::eTransferDst | rt_flags,
       {.usage = vma::MemoryUsage::eAuto}
     );
 
@@ -40,9 +46,16 @@ namespace lisa::resources {
       indices.data(),
       sizeof(uint32) * indices.size(),
       vk::BufferUsageFlagBits::eIndexBuffer |
-        vk::BufferUsageFlagBits::eTransferDst,
+        vk::BufferUsageFlagBits::eTransferDst | rt_flags,
       {.usage = vma::MemoryUsage::eAuto}
     );
+
+#ifdef VK_KHR_acceleration_structure
+    if (graphics::constants::has_acceleration_structure())
+      blas_ = graphics::AccelerationStructure::build_blas(
+        id, vertex_buffer_, vertex_count_, index_buffer_, index_count_, cmdb
+      );
+#endif
   }
 
   MeshSpec::MeshSpec(const str& id, const path& filepath) : ResourceSpec(id) {

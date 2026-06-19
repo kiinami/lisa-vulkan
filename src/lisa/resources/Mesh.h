@@ -10,6 +10,10 @@
 #include "systems/resources/Resource.h"
 #include "utils/common.h"
 
+#ifdef VK_KHR_acceleration_structure
+#include "graphics/acceleration/AccelerationStructure.h"
+#endif
+
 namespace lisa::resources {
 
   class Mesh : public systems::resources::Resource {
@@ -29,11 +33,19 @@ namespace lisa::resources {
 
     uint32 index_count() const { return index_count_; }
 
+#ifdef VK_KHR_acceleration_structure
+    bool has_blas() const { return blas_.has_value(); }
+    const graphics::AccelerationStructure& blas() const { return *blas_; }
+#endif
+
   private:
     graphics::Buffer vertex_buffer_;
     graphics::Buffer index_buffer_;
     uint32 vertex_count_ = 0;
     uint32 index_count_ = 0;
+#ifdef VK_KHR_acceleration_structure
+    optional<graphics::AccelerationStructure> blas_;
+#endif
   };
 
   struct MeshSpec : systems::resources::ResourceSpec<Mesh> {

@@ -93,7 +93,7 @@ int main(const int argc, char** argv) {
 
   {
     window::context::init(width, height);
-    graphics::context::init();
+    graphics::context::init(rendergraph_filepath);
     resources::context::init();
     components::context::init();
     update::context::init();

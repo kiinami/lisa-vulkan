@@ -264,12 +264,14 @@ namespace lisa::scene::xml {
       vec3 color;
       Positive<float> intensity;
       optional<bool> cast_shadows;
+      optional<float> angular_radius;
 
       components::DirectionalLightComponent to_component() {
         components::DirectionalLightComponent component;
         component.color = color;
         component.intensity = intensity.value();
         component.cast_shadows = cast_shadows.value_or(false);
+        component.angular_radius = glm::radians(angular_radius.value_or(0.0f));
         return component;
       }
     };
@@ -280,6 +282,7 @@ namespace lisa::scene::xml {
       Positive<float> attenuation;
       Positive<float> radius;
       optional<bool> cast_shadows;
+      optional<float> soft_radius;
 
       components::PointLightComponent to_component() {
         components::PointLightComponent component;
@@ -287,6 +290,7 @@ namespace lisa::scene::xml {
         component.intensity = intensity.value();
         component.attenuation = attenuation.value();
         component.radius = radius.value();
+        component.source_radius = soft_radius.value_or(0.0f);
         component.cast_shadows = cast_shadows.value_or(false);
         return component;
       }

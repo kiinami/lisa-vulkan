@@ -4,11 +4,13 @@
 
 #include "context.h"
 
+#include "graphics/constants.h"
 #include "utils/logging.h"
 #include "window/context.h"
 #include "descriptors/DescriptorContainer.h"
 
 #include <memory>
+#include <pugixml.hpp>
 
 namespace lisa::graphics::context {
   namespace {
@@ -22,7 +24,28 @@ namespace lisa::graphics::context {
     uptr<DescriptorContainer> descriptor_container_;
   }
 
-  void init() {
+  namespace {
+    VpProfileProperties read_rendergraph_profile(const path& filepath) {
+      pugi::xml_document doc;
+      if (!doc.load_file(filepath.c_str()))
+        logging::abort("Failed to open rendergraph '{}'", filepath.string());
+      const str name = doc.document_element().attribute("profile").as_string();
+      if (name.empty())
+        logging::abort(
+          "Rendergraph '{}' missing required 'profile' attribute",
+          filepath.string()
+        );
+      auto profile = constants::resolve_profile(name);
+      if (!profile)
+        logging::abort(
+          "Unknown profile '{}' in rendergraph '{}'", name, filepath.string()
+        );
+      return *profile;
+    }
+  }
+
+  void init(const path& rendergraph_path) {
+    constants::set_active_profile(read_rendergraph_profile(rendergraph_path));
     context_ = std::make_unique<vk::raii::Context>();
     instance_ = std::make_unique<Instance>(*context_);
     physical_device_ =
