@@ -87,7 +87,8 @@ float4 fragment(Vertex2Fragment input) : SV_Target {
     DirLight light = push_constants.global_data->dir_lights[i];
     float3 L = normalize(-light.direction);
     float NdotL = saturate(dot(N, L));
-    shading += brdf(albedo, roughness, metallic, N, L, V) * light.color * light.intensity * NdotL * shadow;
+    float s = (light.shadow_index != 0xFFFFFFFF) ? shadow : 1.0;
+    shading += brdf(albedo, roughness, metallic, N, L, V) * light.color * light.intensity * NdotL * s;
   }
 
   for (uint32_t i = 0; i < pt_count; i++) {
@@ -97,7 +98,8 @@ float4 fragment(Vertex2Fragment input) : SV_Target {
     float3 L = normalize(lightVec);
     float falloff = pow(saturate(1.0 - pow(distance / light.radius, 4)), 2) / (distance * distance + 1.0);
     float NdotL = saturate(dot(N, L));
-    shading += brdf(albedo, roughness, metallic, N, L, V) * light.color * light.intensity * falloff * NdotL * shadow;
+    float s = (light.shadow_base_index != 0xFFFFFFFF) ? shadow : 1.0;
+    shading += brdf(albedo, roughness, metallic, N, L, V) * light.color * light.intensity * falloff * NdotL * s;
   }
 
   for (uint32_t i = 0; i < amb_count; i++) {

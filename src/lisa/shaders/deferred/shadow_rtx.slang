@@ -13,6 +13,7 @@ struct ShadowRtxPushConstants {
   uint32_t position_idx;
   uint32_t normal_idx;
   uint32_t has_tlas;
+  uint32_t num_shadow_samples;
 };
 
 [[vk::push_constant]]
@@ -22,8 +23,6 @@ struct Vertex2Fragment {
   float4 position : SV_POSITION;
   float2 uv;
 };
-
-static const int SOFT_SHADOW_SAMPLES = 8;
 
 uint pcg(uint v) {
   uint state = v * 747796405u + 2891336453u;
@@ -43,11 +42,11 @@ void make_onb(float3 n, out float3 t, out float3 b) {
   t = cross(b, n);
 }
 
-float eval_visibility_rtx(float3 world_pos, float3 L, float t_max,
+float eval_visibility_rtx(float3 world_pos, float3 N, float3 L, float t_max,
                            float area_radius, uint2 pixel, uint light_idx) {
   if (push_constants.has_tlas == 0) return 1.0;
 
-  int n = area_radius > 0.0 ? SOFT_SHADOW_SAMPLES : 1;
+  int n = area_radius > 0.0 ? int(push_constants.num_shadow_samples) : 1;
   float3 tan, bit;
   make_onb(L, tan, bit);
 
@@ -55,13 +54,13 @@ float eval_visibility_rtx(float3 world_pos, float3 L, float t_max,
   for (int i = 0; i < n; i++) {
     float3 dir = L;
     if (area_radius > 0.0) {
-      float2 xi    = rand2(pixel.x, pixel.y, light_idx * uint(SOFT_SHADOW_SAMPLES) + uint(i));
+      float2 xi    = rand2(pixel.x, pixel.y, light_idx * push_constants.num_shadow_samples + uint(i));
       float  r     = area_radius * sqrt(xi.x);
       float  theta = 6.28318 * xi.y;
       dir = normalize(L + (cos(theta) * tan + sin(theta) * bit) * r);
     }
     RayDesc ray;
-    ray.Origin    = world_pos + dir * 0.001;
+    ray.Origin    = world_pos + N * 0.001;
     ray.Direction = dir;
     ray.TMin      = 0.0;
     ray.TMax      = t_max;
@@ -96,32 +95,42 @@ float4 fragment(Vertex2Fragment input) : SV_Target {
   uint32_t dir_count = push_constants.global_data->dir_lights_count;
   uint32_t pt_count  = push_constants.global_data->point_lights_count;
 
-  float total_vis = 0.0;
-  uint n_lights = 0;
+  float total_vis    = 0.0;
+  float total_weight = 0.0;
 
   for (uint32_t di = 0; di < dir_count; di++) {
     DirLight light = push_constants.global_data->dir_lights[di];
-    float3 L = normalize(-light.direction);
-    if (saturate(dot(N, L)) > 0.0) {
-      total_vis += eval_visibility_rtx(world_pos, L, 10000.0,
-                                        sin(light.angular_radius), pixel, di);
-      n_lights++;
+    if (light.shadow_index == 0xFFFFFFFF) continue;
+    float3 L    = normalize(-light.direction);
+    float NdotL = saturate(dot(N, L));
+    if (NdotL > 0.0) {
+      float vis    = eval_visibility_rtx(world_pos, N, L, 10000.0,
+                                         sin(light.angular_radius), pixel, di);
+      float weight = NdotL * light.intensity;
+      total_vis    += vis * weight;
+      total_weight += weight;
     }
   }
 
   for (uint32_t pi = 0; pi < pt_count; pi++) {
     PointLight light = push_constants.global_data->point_lights[pi];
+    if (light.shadow_base_index == 0xFFFFFFFF) continue;
     float3 lightVec = light.position - world_pos;
-    float dist = length(lightVec);
-    float3 L = normalize(lightVec);
-    if (saturate(dot(N, L)) > 0.0) {
-      float disk_r = light.source_radius / max(dist, 0.0001);
-      total_vis += eval_visibility_rtx(world_pos, L, dist, disk_r, pixel,
-                                        dir_count + pi);
-      n_lights++;
+    float  dist     = length(lightVec);
+    float3 L        = normalize(lightVec);
+    float  NdotL    = saturate(dot(N, L));
+    if (NdotL > 0.0) {
+      float falloff = pow(saturate(1.0 - pow(dist / light.radius, 4.0)), 2.0)
+                    / (dist * dist + 1.0);
+      float disk_r  = light.source_radius / max(dist, 0.0001);
+      float vis     = eval_visibility_rtx(world_pos, N, L, dist, disk_r, pixel,
+                                          dir_count + pi);
+      float weight  = NdotL * light.intensity * falloff;
+      total_vis    += vis * weight;
+      total_weight += weight;
     }
   }
 
-  float vis = n_lights > 0 ? total_vis / float(n_lights) : 1.0;
+  float vis = total_weight > 0.0 ? total_vis / total_weight : 1.0;
   return float4(vis, 0.0, 0.0, 1.0);
 }

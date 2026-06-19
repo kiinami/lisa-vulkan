@@ -238,7 +238,6 @@
     "lisa_raytracing": {
       "extensions": {
         "VK_KHR_acceleration_structure": 1,
-        "VK_KHR_ray_tracing_pipeline": 1,
         "VK_EXT_descriptor_indexing": 1,
         "VK_KHR_ray_query": 1,
         "VK_KHR_deferred_host_operations": 1

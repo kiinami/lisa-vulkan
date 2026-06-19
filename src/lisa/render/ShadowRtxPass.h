@@ -4,7 +4,6 @@
 
 #ifndef LISA_VULKAN_SHADOWRTXPASS_H
 #define LISA_VULKAN_SHADOWRTXPASS_H
-#pragma once
 
 #ifdef VK_KHR_acceleration_structure
 
@@ -21,6 +20,7 @@ namespace lisa::render {
     DescriptorIndex position_idx;
     DescriptorIndex normal_idx;
     uint32 has_tlas;
+    uint32 num_shadow_samples;
   };
 
   class ShadowRtxPass : public ShaderPass {
@@ -40,6 +40,7 @@ namespace lisa::render {
     vk::raii::DescriptorPool tlas_pool_ = nullptr;
     vector<vk::raii::DescriptorSet> tlas_sets_;
     vector<bool> tlas_sets_valid_;
+    uint32 num_shadow_samples_ = 8;
   };
 
 }

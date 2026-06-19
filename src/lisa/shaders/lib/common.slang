@@ -62,7 +62,8 @@ public struct GlobalData {
   public float3 camera_position;
   public float2 texel_size;
 
-  float2 padding;
+  public float soft_shadow_cone_r;
+  float _pad_gd;
 };
 
 public struct ObjectData {

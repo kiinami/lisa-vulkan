@@ -4,7 +4,6 @@
 
 #ifndef LISA_VULKAN_COMPOSITIONRTXPASS_H
 #define LISA_VULKAN_COMPOSITIONRTXPASS_H
-#pragma once
 
 #include "ShaderPass.h"
 #include "graphics/pipeline/Pipeline.h"

@@ -12,6 +12,19 @@
 
 namespace lisa::graphics {
 
+  namespace {
+    uint64 scratch_alignment() {
+      static const uint64 align = context::physical_device()
+        .handle()
+        .getProperties2<
+          vk::PhysicalDeviceProperties2,
+          vk::PhysicalDeviceAccelerationStructurePropertiesKHR>()
+        .get<vk::PhysicalDeviceAccelerationStructurePropertiesKHR>()
+        .minAccelerationStructureScratchOffsetAlignment;
+      return align;
+    }
+  }
+
   AccelerationStructure AccelerationStructure::build_blas(
     const str& id,
     const Buffer& vertex_buffer,
@@ -67,16 +80,18 @@ namespace lisa::graphics {
       .type = vk::AccelerationStructureTypeKHR::eBottomLevel,
     }));
 
+    const uint64 align = scratch_alignment();
     auto scratch = Buffer{
       logging::genid(id, "blas_scratch"),
-      sizes.buildScratchSize,
+      sizes.buildScratchSize + align - 1,
       vk::BufferUsageFlagBits::eStorageBuffer |
         vk::BufferUsageFlagBits::eShaderDeviceAddress,
       {.usage = vma::MemoryUsage::eAuto},
     };
 
     build_info.dstAccelerationStructure = result.handle();
-    build_info.scratchData.deviceAddress = scratch.address();
+    build_info.scratchData.deviceAddress =
+      (scratch.address() + align - 1) & ~(align - 1);
 
     const vk::AccelerationStructureBuildRangeInfoKHR range_info{
       .primitiveCount = primitive_count,
@@ -194,16 +209,18 @@ namespace lisa::graphics {
       .type = vk::AccelerationStructureTypeKHR::eTopLevel,
     }));
 
+    const uint64 align = scratch_alignment();
     auto scratch = Buffer{
       logging::genid(id, "tlas_scratch"),
-      sizes.buildScratchSize,
+      sizes.buildScratchSize + align - 1,
       vk::BufferUsageFlagBits::eStorageBuffer |
         vk::BufferUsageFlagBits::eShaderDeviceAddress,
       {.usage = vma::MemoryUsage::eAuto},
     };
 
     build_info.dstAccelerationStructure = result.handle();
-    build_info.scratchData.deviceAddress = scratch.address();
+    build_info.scratchData.deviceAddress =
+      (scratch.address() + align - 1) & ~(align - 1);
 
     const vk::AccelerationStructureBuildRangeInfoKHR range_info{
       .primitiveCount = instance_count,

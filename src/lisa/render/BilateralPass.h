@@ -4,7 +4,6 @@
 
 #ifndef LISA_VULKAN_BILATERALPASS_H
 #define LISA_VULKAN_BILATERALPASS_H
-#pragma once
 
 #include "ShaderPass.h"
 #include "graphics/pipeline/Pipeline.h"
@@ -34,7 +33,7 @@ namespace lisa::render {
 
   private:
     uptr<graphics::Pipeline> pipeline_;
-    float sigma_spatial_ = 5.0f;
+    float sigma_spatial_ = 200.0f;
     float sigma_depth_ = 0.5f;
     float sigma_normal_ = 8.0f;
   };

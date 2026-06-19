@@ -40,30 +40,7 @@ float4 fragment(Vertex2Fragment input) : SV_Target {
   float3 n_p   = normalize(textures[push.normal_idx].Sample(input.uv).xyz);
   float2 ts    = push.global_data->texel_size;
 
-  // hoist counts — llvmpipe crashes when BDA fields read in multiple loop
-  // conditions simultaneously with R8Unorm render target
-  uint32_t pt_count  = push.global_data->point_lights_count;
-  uint32_t dir_count = push.global_data->dir_lights_count;
-
-  float cone_sum   = 0.0;
-  float weight_sum = 0.0;
-
-  for (uint32_t pi = 0; pi < pt_count; pi++) {
-    PointLight light = push.global_data->point_lights[pi];
-    float dist   = length(light.position - pos_p);
-    float cone_r = light.source_radius / max(dist, 0.001);
-    cone_sum    += light.intensity * cone_r;
-    weight_sum  += light.intensity;
-  }
-
-  for (uint32_t di = 0; di < dir_count; di++) {
-    DirLight light = push.global_data->dir_lights[di];
-    float cone_r = sin(light.angular_radius);
-    cone_sum    += light.intensity * cone_r;
-    weight_sum  += light.intensity;
-  }
-
-  float effective_cone_r = weight_sum > 0.0 ? cone_sum / weight_sum : 0.0;
+  float effective_cone_r = push.global_data->soft_shadow_cone_r;
   float sigma_s = max(push.sigma_spatial * effective_cone_r, 0.01);
 
   float sum_w = 0.0;

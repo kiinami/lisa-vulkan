@@ -10,6 +10,7 @@
   #include "graphics/context.h"
   #include "systems/render/RenderPassRegistry.h"
   #include "systems/render/Rendergraph.h"
+  #include "utils/xml.h"
 
 namespace lisa::render {
   REGISTER_RENDER_PASS(ShadowRtxPass);
@@ -30,7 +31,14 @@ namespace lisa::render {
       .descriptorCount = 1,
       .stageFlags = vk::ShaderStageFlagBits::eFragment,
     };
+    const vk::DescriptorBindingFlags binding_flags =
+      vk::DescriptorBindingFlagBits::ePartiallyBound;
+    const vk::DescriptorSetLayoutBindingFlagsCreateInfo flags_ci{
+      .bindingCount = 1,
+      .pBindingFlags = &binding_flags,
+    };
     tlas_layout_ = graphics::context::device()->createDescriptorSetLayout({
+      .pNext = &flags_ci,
       .bindingCount = 1,
       .pBindings = &tlas_binding,
     });
@@ -55,6 +63,14 @@ namespace lisa::render {
       .pSetLayouts = layouts.data(),
     });
     tlas_sets_valid_.assign(constants::MAX_FRAMES_IN_FLIGHT, false);
+
+    {
+      const auto child =
+        node.find_child_by_attribute("parameter", "id", "shadow_samples");
+      if (!child.empty())
+        num_shadow_samples_ =
+          static_cast<uint32>(utils::xml::parse<int>(child.text().as_string()));
+    }
 
     set_shader("deferred/shadow_rtx.slang");
 
@@ -110,20 +126,20 @@ namespace lisa::render {
       {}
     );
 
-    if (tlas_sets_valid_[frame])
-      ctx.cmdb->bindDescriptorSets(
-        vk::PipelineBindPoint::eGraphics,
-        pipeline_->layout(),
-        1,
-        {*tlas_sets_[frame]},
-        {}
-      );
+    ctx.cmdb->bindDescriptorSets(
+      vk::PipelineBindPoint::eGraphics,
+      pipeline_->layout(),
+      1,
+      {*tlas_sets_[frame]},
+      {}
+    );
 
     const ShadowRtxPushConstants push{
       .global_bda = ctx.global_bda,
       .position_idx = input_indices_.at("position"),
       .normal_idx = input_indices_.at("normal"),
       .has_tlas = ctx.tlas_handle ? 1u : 0u,
+      .num_shadow_samples = num_shadow_samples_,
     };
 
     ctx.cmdb->pushConstants<ShadowRtxPushConstants>(

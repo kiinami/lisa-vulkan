@@ -45,7 +45,7 @@ _run-windows mode *args="":
 _clean-windows:
     powershell -Command "Remove-Item -Recurse -Force -ErrorAction SilentlyContinue build"
 
-_lint-windows mode all:
+_format-windows mode all:
     @$all_flag = "{{ all }}"; \
     if ($all_flag -eq "true") { \
         $files = git ls-files | Where-Object { $_ -match '\.(cpp|hpp|h|cc|cxx)$' } \

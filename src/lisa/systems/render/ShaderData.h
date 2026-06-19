@@ -93,7 +93,8 @@ namespace lisa::systems::render {
     vec3 camera_position;
     vec2 texel_size;
 
-    uint32 padding[2];
+    float soft_shadow_cone_r = 0.0f;
+    uint32 _pad = 0;
 
     void update_camera(
       const components::TransformComponent& transform,

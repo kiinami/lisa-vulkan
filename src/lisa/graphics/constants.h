@@ -85,7 +85,9 @@ namespace lisa::graphics::constants {
 
   inline bool has_acceleration_structure() {
 #ifdef VK_KHR_acceleration_structure
-    return profile_has_extension(VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME);
+    static const bool result =
+      profile_has_extension(VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME);
+    return result;
 #else
     return false;
 #endif
