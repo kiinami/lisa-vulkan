@@ -9,6 +9,7 @@
 #ifdef VK_KHR_acceleration_structure
 
 #include "ShaderPass.h"
+#include "constants.h"
 #include "graphics/pipeline/Pipeline.h"
 #include "systems/render/RenderPass.h"
 
@@ -37,8 +38,8 @@ namespace lisa::render {
     uptr<graphics::Pipeline> pipeline_;
     vk::raii::DescriptorSetLayout tlas_layout_ = nullptr;
     vk::raii::DescriptorPool tlas_pool_ = nullptr;
-    vk::raii::DescriptorSet tlas_set_ = nullptr;
-    bool tlas_set_valid_ = false;
+    vector<vk::raii::DescriptorSet> tlas_sets_;
+    vector<bool> tlas_sets_valid_;
   };
 
 }

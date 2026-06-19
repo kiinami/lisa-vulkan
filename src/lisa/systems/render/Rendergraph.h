@@ -34,7 +34,8 @@ namespace lisa::systems::render {
       const GlobalData& global_data,
       const ObjectData& object_data,
       vk::DeviceAddress global_bda,
-      vk::DeviceAddress object_bda
+      vk::DeviceAddress object_bda,
+      uint32 current_frame = 0
 #ifdef VK_KHR_acceleration_structure
       , vk::AccelerationStructureKHR tlas_handle = {}
 #endif

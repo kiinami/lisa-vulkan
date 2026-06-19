@@ -6,6 +6,7 @@
 
 #ifdef VK_KHR_acceleration_structure
 
+  #include "constants.h"
   #include "graphics/context.h"
   #include "systems/render/RenderPassRegistry.h"
   #include "systems/render/Rendergraph.h"
@@ -36,21 +37,24 @@ namespace lisa::render {
 
     const vk::DescriptorPoolSize pool_size{
       .type = vk::DescriptorType::eAccelerationStructureKHR,
-      .descriptorCount = 1,
+      .descriptorCount = constants::MAX_FRAMES_IN_FLIGHT,
     };
     tlas_pool_ = graphics::context::device()->createDescriptorPool({
       .flags = vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet,
-      .maxSets = 1,
+      .maxSets = constants::MAX_FRAMES_IN_FLIGHT,
       .poolSizeCount = 1,
       .pPoolSizes = &pool_size,
     });
 
-    auto sets = graphics::context::device()->allocateDescriptorSets({
+    const vector<vk::DescriptorSetLayout> layouts(
+      constants::MAX_FRAMES_IN_FLIGHT, *tlas_layout_
+    );
+    tlas_sets_ = graphics::context::device()->allocateDescriptorSets({
       .descriptorPool = *tlas_pool_,
-      .descriptorSetCount = 1,
-      .pSetLayouts = &*tlas_layout_,
+      .descriptorSetCount = constants::MAX_FRAMES_IN_FLIGHT,
+      .pSetLayouts = layouts.data(),
     });
-    tlas_set_ = std::move(sets[0]);
+    tlas_sets_valid_.assign(constants::MAX_FRAMES_IN_FLIGHT, false);
 
     set_shader("deferred/shadow_rtx.slang");
 
@@ -73,6 +77,7 @@ namespace lisa::render {
   }
 
   void ShadowRtxPass::execute(const systems::render::RenderContext& ctx) {
+    const uint32 frame = ctx.current_frame;
     if (ctx.tlas_handle) {
       const vk::WriteDescriptorSetAccelerationStructureKHR as_write{
         .accelerationStructureCount = 1,
@@ -81,14 +86,16 @@ namespace lisa::render {
       graphics::context::device()->updateDescriptorSets(
         {vk::WriteDescriptorSet{
           .pNext = &as_write,
-          .dstSet = *tlas_set_,
+          .dstSet = *tlas_sets_[frame],
           .dstBinding = 0,
           .descriptorCount = 1,
           .descriptorType = vk::DescriptorType::eAccelerationStructureKHR,
         }},
         {}
       );
-      tlas_set_valid_ = true;
+      tlas_sets_valid_[frame] = true;
+    } else {
+      tlas_sets_valid_[frame] = false;
     }
 
     ctx.cmdb->bindPipeline(
@@ -103,12 +110,12 @@ namespace lisa::render {
       {}
     );
 
-    if (tlas_set_valid_)
+    if (tlas_sets_valid_[frame])
       ctx.cmdb->bindDescriptorSets(
         vk::PipelineBindPoint::eGraphics,
         pipeline_->layout(),
         1,
-        {*tlas_set_},
+        {*tlas_sets_[frame]},
         {}
       );
 
