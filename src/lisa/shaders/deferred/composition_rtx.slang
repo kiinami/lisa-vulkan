@@ -5,9 +5,7 @@
 import lib.common;
 import lib.constants;
 
-
 [[vk::binding(0, 0)]] Sampler2D textures[];
-[[vk::binding(0, 1)]] RaytracingAccelerationStructure tlas;
 
 struct CompositionRtxPushConstants {
   GlobalData* global_data;
@@ -16,7 +14,7 @@ struct CompositionRtxPushConstants {
   uint32_t position_idx;
   uint32_t material_idx;
   uint32_t ssao_idx;
-  uint32_t has_tlas;
+  uint32_t shadow_idx;
 };
 
 [[vk::push_constant]]
@@ -61,22 +59,6 @@ Vertex2Fragment vertex(uint32_t vertex_id: SV_VertexID) {
   return output;
 }
 
-float eval_visibility_rtx(float3 world_pos, float3 light_dir, float t_max) {
-  if (push_constants.has_tlas == 0) return 1.0;
-
-  RayDesc ray;
-  ray.Origin = world_pos + light_dir * 0.001;
-  ray.Direction = light_dir;
-  ray.TMin = 0.0;
-  ray.TMax = t_max;
-
-  RayQuery<RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH | RAY_FLAG_SKIP_CLOSEST_HIT_SHADER> rq;
-  rq.TraceRayInline(tlas, RAY_FLAG_NONE, 0xFF, ray);
-  rq.Proceed();
-
-  return rq.CommittedStatus() == COMMITTED_TRIANGLE_HIT ? 0.0 : 1.0;
-}
-
 [shader("fragment")]
 float4 fragment(Vertex2Fragment input) : SV_Target {
   float3 albedo = textures[push_constants.albedo_idx].Sample(input.uv).rgb;
@@ -91,30 +73,34 @@ float4 fragment(Vertex2Fragment input) : SV_Target {
     ssao = textures[push_constants.ssao_idx].Sample(input.uv).r;
   }
 
+  float shadow = textures[push_constants.shadow_idx].Sample(input.uv).r;
+
   float3 V = normalize(push_constants.global_data->camera_position - world_position);
+
+  uint32_t dir_count = push_constants.global_data->dir_lights_count;
+  uint32_t pt_count  = push_constants.global_data->point_lights_count;
+  uint32_t amb_count = push_constants.global_data->ambient_lights_count;
 
   float3 shading = float3(0.0);
 
-  for (uint32_t i = 0; i < push_constants.global_data->dir_lights_count; i++) {
+  for (uint32_t i = 0; i < dir_count; i++) {
     DirLight light = push_constants.global_data->dir_lights[i];
     float3 L = normalize(-light.direction);
     float NdotL = saturate(dot(N, L));
-    float shadow = eval_visibility_rtx(world_position, L, 10000.0);
     shading += brdf(albedo, roughness, metallic, N, L, V) * light.color * light.intensity * NdotL * shadow;
   }
 
-  for (uint32_t i = 0; i < push_constants.global_data->point_lights_count; i++) {
+  for (uint32_t i = 0; i < pt_count; i++) {
     PointLight light = push_constants.global_data->point_lights[i];
     float3 lightVec = light.position - world_position;
     float distance = length(lightVec);
     float3 L = normalize(lightVec);
     float falloff = pow(saturate(1.0 - pow(distance / light.radius, 4)), 2) / (distance * distance + 1.0);
     float NdotL = saturate(dot(N, L));
-    float shadow = eval_visibility_rtx(world_position, L, distance);
     shading += brdf(albedo, roughness, metallic, N, L, V) * light.color * light.intensity * falloff * NdotL * shadow;
   }
 
-  for (uint32_t i = 0; i < push_constants.global_data->ambient_lights_count; i++) {
+  for (uint32_t i = 0; i < amb_count; i++) {
     AmbientLight light = push_constants.global_data->ambient_lights[i];
     float3 diffuse_color = albedo * (1.0 - metallic);
     shading += light.color * light.intensity * diffuse_color * ssao;

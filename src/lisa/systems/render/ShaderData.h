@@ -23,7 +23,7 @@ namespace lisa::systems::render {
     float far;
     uint32 shadow_base_index = std::numeric_limits<uint32>::max();
 
-    float padding = 0.0f;
+    float source_radius = 0.0f;
 
     PointLightData(
       const components::TransformComponent& transform,
@@ -35,6 +35,7 @@ namespace lisa::systems::render {
       radius = light.radius;
       near = light.near();
       far = light.far();
+      source_radius = light.source_radius;
     }
   };
 
@@ -43,6 +44,8 @@ namespace lisa::systems::render {
     float intensity;
     rgb color;
     uint32 shadow_index = std::numeric_limits<uint32>::max();
+    float angular_radius = 0.0f;
+    float padding[3]{};
 
     DirLightData(
       const components::TransformComponent& transform,
@@ -51,6 +54,7 @@ namespace lisa::systems::render {
       direction = transform.rotation() * vec3(0.0f, 0.0f, -1.0f);
       intensity = light.intensity;
       color = light.color;
+      angular_radius = light.angular_radius;
     }
   };
 

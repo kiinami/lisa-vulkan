@@ -210,6 +210,10 @@ set(LISA_SOURCES
         src/lisa/render/ConvolutionalPass.cpp
         src/lisa/render/ShadowPass.h
         src/lisa/render/ShadowPass.cpp
+        src/lisa/render/ShadowRtxPass.h
+        src/lisa/render/ShadowRtxPass.cpp
+        src/lisa/render/BilateralPass.h
+        src/lisa/render/BilateralPass.cpp
 
         src/lisa/scene/xml.h
         src/lisa/scene/xml.cpp

@@ -2,7 +2,7 @@
        xsi:noNamespaceSchemaLocation="../scene.xsd">
     <entity name="main_camera">
         <transform>
-            <lookat origin="0.0, 0.8, 1.8" target="0.0, 0.18, 0.0" up="0, 1, 0"/>
+            <lookat origin="0.0, 1, 2.5" target="0.0, 0.18, 0.0" up="0, 1, 0"/>
         </transform>
         <camera fov="16"/>
     </entity>
@@ -51,13 +51,20 @@
         <transform>
             <translate value="0 0 0"/>
         </transform>
-        <ambient_light color="1 1 1" intensity="0.1"/>
+        <ambient_light color="1 1 1" intensity="0.01"/>
     </entity>
 
     <entity name="light">
         <transform>
             <translate value="-0.25 0.5 0.5"/>
         </transform>
-        <point_light color="0.8 0.5 0.5" intensity="20" attenuation="0.1" radius="2" cast_shadows="true"/>
+        <point_light color="0.8 0.5 0.5" intensity="5" attenuation="0.1" radius="2" cast_shadows="true" soft_radius="0.04"/>
+    </entity>
+
+    <entity name="light">
+        <transform>
+            <translate value="-0.25 0.5 -0.5"/>
+        </transform>
+        <point_light color="0.8 0.8 0.5" intensity="5" attenuation="0.1" radius="2" cast_shadows="true" soft_radius="0.04"/>
     </entity>
 </scene>

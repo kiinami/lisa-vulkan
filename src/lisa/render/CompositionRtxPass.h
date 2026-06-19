@@ -6,14 +6,9 @@
 #define LISA_VULKAN_COMPOSITIONRTXPASS_H
 #pragma once
 
-#ifdef VK_KHR_acceleration_structure
-
 #include "ShaderPass.h"
-#include "graphics/descriptors/DescriptorAllocator.h"
 #include "graphics/pipeline/Pipeline.h"
 #include "systems/render/RenderPass.h"
-
-#include <vulkan/vulkan_raii.hpp>
 
 namespace lisa::render {
   struct CompositionRtxPushConstants {
@@ -23,7 +18,7 @@ namespace lisa::render {
     DescriptorIndex position_idx;
     DescriptorIndex material_idx;
     DescriptorIndex ssao_idx;
-    uint32 has_tlas;
+    DescriptorIndex shadow_idx;
   };
 
   class CompositionRtxPass : public ShaderPass {
@@ -39,12 +34,8 @@ namespace lisa::render {
 
   private:
     uptr<graphics::Pipeline> pipeline_;
-    vk::raii::DescriptorSetLayout tlas_layout_ = nullptr;
-    vk::raii::DescriptorPool tlas_pool_ = nullptr;
-    vk::raii::DescriptorSet tlas_set_ = nullptr;
   };
 
 }
 
-#endif // VK_KHR_acceleration_structure
 #endif // LISA_VULKAN_COMPOSITIONRTXPASS_H

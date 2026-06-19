@@ -15,6 +15,7 @@ namespace lisa::components {
     float intensity;
     float attenuation;
     float radius;
+    float source_radius = 0.0f;
     bool cast_shadows = false;
 
     const array<mat4, 6>& views(const TransformComponent& transform) const {

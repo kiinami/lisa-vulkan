@@ -12,6 +12,7 @@ namespace lisa::components {
   struct DirectionalLightComponent : systems::ecs::Component {
     rgb color;
     float intensity;
+    float angular_radius = 0.0f;
     bool cast_shadows = false;
 
     mat4 shadow_view_projection(const vec3& direction) const {
